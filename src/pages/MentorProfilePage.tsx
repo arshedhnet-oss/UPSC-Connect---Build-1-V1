@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseUntyped } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,61 +28,45 @@ const MentorProfilePage = () => {
   const [booking, setBooking] = useState(false);
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data: mp } = await supabase
+    const fetchData = async () => {
+      const { data: mp } = await supabaseUntyped
         .from("mentor_profiles")
         .select("*, profiles!mentor_profiles_user_id_fkey(name, avatar_url, email, phone)")
-        .eq("user_id", id)
+        .eq("user_id", id!)
         .single();
-
       if (mp) setMentor(mp);
 
-      const { data: sl } = await supabase
+      const { data: sl } = await supabaseUntyped
         .from("slots")
         .select("*")
         .eq("mentor_id", id!)
         .eq("is_booked", false)
         .gte("date", new Date().toISOString().split("T")[0])
         .order("date", { ascending: true });
-
       if (sl) setSlots(sl as Slot[]);
       setLoading(false);
     };
-    if (id) fetch();
+    if (id) fetchData();
   }, [id]);
 
   const handleBook = async (slot: Slot) => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+    if (!user) { navigate("/login"); return; }
     if (authProfile?.role !== "mentee") {
       toast({ title: "Only mentees can book sessions", variant: "destructive" });
       return;
     }
-
     setBooking(true);
     try {
-      // Create booking
-      const { data: bookingData, error: bookingErr } = await supabase
+      const { data: bookingData, error: bookingErr } = await supabaseUntyped
         .from("bookings")
-        .insert({
-          mentee_id: user.id,
-          mentor_id: id!,
-          slot_id: slot.id,
-          status: "confirmed",
-        })
+        .insert({ mentee_id: user.id, mentor_id: id!, slot_id: slot.id, status: "confirmed" })
         .select()
         .single();
-
       if (bookingErr) throw bookingErr;
 
-      // Mark slot as booked
-      await supabase.from("slots").update({ is_booked: true }).eq("id", slot.id);
-
-      // Create transaction record
-      await supabase.from("transactions").insert({
-        booking_id: bookingData.id,
+      await supabaseUntyped.from("slots").update({ is_booked: true }).eq("id", slot.id);
+      await supabaseUntyped.from("transactions").insert({
+        booking_id: bookingData!.id,
         amount: mentor.price_per_session,
         status: "success",
       });
@@ -119,9 +103,7 @@ const MentorProfilePage = () => {
             <h1 className="font-display text-3xl font-bold text-foreground">{p?.name}</h1>
             <p className="text-lg text-accent font-semibold mt-1">₹{mentor.price_per_session}/session</p>
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {(mentor.subjects || []).map((s: string) => (
-                <Badge key={s} variant="secondary">{s}</Badge>
-              ))}
+              {(mentor.subjects || []).map((s: string) => (<Badge key={s} variant="secondary">{s}</Badge>))}
             </div>
           </div>
         </div>

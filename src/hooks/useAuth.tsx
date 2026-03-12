@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { supabaseUntyped } from "@/lib/supabase";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface Profile {
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
+    const { data } = await supabaseUntyped
       .from("profiles")
       .select("*")
       .eq("id", userId)

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseUntyped } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +12,7 @@ interface MentorListing {
   bio: string | null;
   subjects: string[];
   price_per_session: number;
-  profile: {
-    name: string;
-    avatar_url: string | null;
-  };
+  profile: { name: string; avatar_url: string | null };
 }
 
 const MentorListingPage = () => {
@@ -25,7 +22,7 @@ const MentorListingPage = () => {
 
   useEffect(() => {
     const fetchMentors = async () => {
-      const { data } = await supabase
+      const { data } = await supabaseUntyped
         .from("mentor_profiles")
         .select("user_id, bio, subjects, price_per_session, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
         .eq("is_approved", true);
@@ -36,10 +33,7 @@ const MentorListingPage = () => {
           bio: m.bio,
           subjects: m.subjects || [],
           price_per_session: m.price_per_session,
-          profile: {
-            name: m.profiles?.name || "Mentor",
-            avatar_url: m.profiles?.avatar_url,
-          },
+          profile: { name: m.profiles?.name || "Mentor", avatar_url: m.profiles?.avatar_url },
         }));
         setMentors(mapped);
       }
@@ -87,13 +81,9 @@ const MentorListingPage = () => {
                   </div>
                   {m.bio && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{m.bio}</p>}
                   <div className="flex flex-wrap gap-1.5 mb-4">
-                    {m.subjects.map(s => (
-                      <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>
-                    ))}
+                    {m.subjects.map(s => (<Badge key={s} variant="secondary" className="text-xs">{s}</Badge>))}
                   </div>
-                  <Button asChild className="w-full">
-                    <Link to={`/mentors/${m.user_id}`}>View Profile</Link>
-                  </Button>
+                  <Button asChild className="w-full"><Link to={`/mentors/${m.user_id}`}>View Profile</Link></Button>
                 </CardContent>
               </Card>
             ))}
