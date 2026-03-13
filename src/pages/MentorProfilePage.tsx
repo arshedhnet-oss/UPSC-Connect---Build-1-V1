@@ -37,7 +37,7 @@ const MentorProfilePage = () => {
     const fetchData = async () => {
       const { data: mp } = await supabaseUntyped
         .from("mentor_profiles")
-        .select("*, profiles!mentor_profiles_user_id_fkey(name, avatar_url, email, phone)")
+        .select("*, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
         .eq("user_id", id!)
         .single();
       if (mp) setMentor(mp);
