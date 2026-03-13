@@ -141,7 +141,7 @@ const AdminDashboardPage = () => {
         <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Admin Dashboard</h1>
 
         {/* Stats Overview */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
             <CardContent className="pt-6 flex items-start gap-3">
               <div className="rounded-lg bg-primary/10 p-2"><CheckCircle className="h-5 w-5 text-primary" /></div>
