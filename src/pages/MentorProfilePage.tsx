@@ -9,6 +9,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 interface Slot {
   id: string;
   date: string;
