@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { LogOut, Plus, Trash2 } from "lucide-react";
+import AvatarCropUpload from "@/components/AvatarCropUpload";
 
 const DashboardPage = () => {
   const { user, profile, signOut, loading: authLoading } = useAuth();
