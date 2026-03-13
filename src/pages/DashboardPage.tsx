@@ -161,11 +161,11 @@ const DashboardPage = () => {
           <Card>
             <CardHeader><CardTitle className="font-display">Manage Slots</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-wrap gap-3 items-end">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end">
                 <div className="space-y-1"><Label>Date</Label><Input type="date" value={slotDate} onChange={e => setSlotDate(e.target.value)} min={new Date().toISOString().split("T")[0]} /></div>
                 <div className="space-y-1"><Label>Start</Label><Input type="time" value={slotStart} onChange={e => setSlotStart(e.target.value)} /></div>
                 <div className="space-y-1"><Label>End</Label><Input type="time" value={slotEnd} onChange={e => setSlotEnd(e.target.value)} /></div>
-                <Button onClick={addSlot}><Plus className="h-4 w-4 mr-1" /> Add Slot</Button>
+                <Button onClick={addSlot} className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add Slot</Button>
               </div>
               <div className="space-y-2">
                 {slots.filter(s => !s.is_booked).map((slot: any) => (

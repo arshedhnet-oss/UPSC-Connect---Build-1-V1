@@ -42,14 +42,14 @@ const LandingPage = () => {
       </section>
 
       {/* Features */}
-      <section className="px-6 py-16 max-w-5xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-8">
+      <section className="px-4 sm:px-6 py-12 sm:py-16 max-w-5xl mx-auto">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           {[
             { icon: Users, title: "Expert Mentors", desc: "Learn from IAS/IPS officers and experienced educators who've been through the journey." },
             { icon: Calendar, title: "Flexible Scheduling", desc: "Book sessions at times that work for you. Choose from available mentor slots." },
             { icon: BookOpen, title: "All Subjects", desc: "Get guidance on GS, Optional subjects, Essay, Ethics, and Interview preparation." },
           ].map((f, i) => (
-            <div key={i} className="rounded-lg border border-border bg-card p-6 text-center animate-fade-in" style={{ animationDelay: `${0.1 * (i + 3)}s` }}>
+            <div key={i} className="rounded-lg border border-border bg-card p-5 sm:p-6 text-center animate-fade-in" style={{ animationDelay: `${0.1 * (i + 3)}s` }}>
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                 <f.icon className="h-6 w-6 text-primary" />
               </div>

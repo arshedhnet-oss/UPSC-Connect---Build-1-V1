@@ -185,16 +185,16 @@ const AdminDashboardPage = () => {
         </div>
 
         <Tabs defaultValue="sessions" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="sessions">All Sessions</TabsTrigger>
-            <TabsTrigger value="pending">
-              Pending Sessions
-              {pendingSessions.length > 0 && <span className="ml-1.5 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingSessions.length}</span>}
+          <TabsList className="flex flex-wrap h-auto gap-1">
+            <TabsTrigger value="sessions" className="text-xs sm:text-sm">All Sessions</TabsTrigger>
+            <TabsTrigger value="pending" className="text-xs sm:text-sm">
+              Pending
+              {pendingSessions.length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingSessions.length}</span>}
             </TabsTrigger>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="mentors">
-              Mentor Management
-              {pendingMentors.length > 0 && <span className="ml-1.5 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingMentors.length}</span>}
+            <TabsTrigger value="transactions" className="text-xs sm:text-sm">Transactions</TabsTrigger>
+            <TabsTrigger value="mentors" className="text-xs sm:text-sm">
+              Mentors
+              {pendingMentors.length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingMentors.length}</span>}
             </TabsTrigger>
           </TabsList>
 

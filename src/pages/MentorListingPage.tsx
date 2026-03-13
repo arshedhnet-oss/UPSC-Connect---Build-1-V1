@@ -64,7 +64,7 @@ const MentorListingPage = () => {
         ) : mentors.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">No approved mentors yet. Check back soon!</div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {mentors.map(m => (
               <Card key={m.user_id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
