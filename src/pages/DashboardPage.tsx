@@ -138,6 +138,14 @@ const DashboardPage = () => {
           <Card>
             <CardHeader><CardTitle className="font-display">Edit Profile</CardTitle></CardHeader>
             <CardContent className="space-y-4">
+              <AvatarCropUpload
+                userId={user!.id}
+                currentUrl={profile.avatar_url}
+                userName={profile.name}
+                onUploaded={(url) => {
+                  profile.avatar_url = url;
+                }}
+              />
               {!mentorProfile.is_approved && (
                 <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 text-sm text-accent">Your profile is pending admin approval.</div>
               )}
