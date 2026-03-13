@@ -9,6 +9,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 interface Slot {
   id: string;
   date: string;
@@ -57,22 +63,90 @@ const MentorProfilePage = () => {
     }
     setBooking(true);
     try {
+      // 1. Create booking with pending_payment status
       const { data: bookingData, error: bookingErr } = await supabaseUntyped
         .from("bookings")
-        .insert({ mentee_id: user.id, mentor_id: id!, slot_id: slot.id, status: "confirmed" })
+        .insert({ mentee_id: user.id, mentor_id: id!, slot_id: slot.id, status: "pending_payment" })
         .select()
         .single();
       if (bookingErr) throw bookingErr;
 
-      await supabaseUntyped.from("slots").update({ is_booked: true }).eq("id", slot.id);
-      await supabaseUntyped.from("transactions").insert({
-        booking_id: bookingData!.id,
-        amount: mentor.price_per_session,
-        status: "success",
-      });
+      // 2. Create Razorpay order via edge function
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const session = (await supabaseUntyped.auth.getSession()).data.session;
+      const orderRes = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/create-razorpay-order`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({
+            amount: mentor.price_per_session,
+            booking_id: bookingData.id,
+          }),
+        }
+      );
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
 
-      setSlots(prev => prev.filter(s => s.id !== slot.id));
-      toast({ title: "Session booked!", description: `Your session on ${format(new Date(slot.date), "MMM d, yyyy")} is confirmed.` });
+      // 3. Open Razorpay checkout
+      const options = {
+        key: orderData.key_id,
+        amount: mentor.price_per_session * 100,
+        currency: "INR",
+        name: "UPSC Connect",
+        description: `Session with ${p?.name} on ${format(new Date(slot.date), "MMM d, yyyy")}`,
+        order_id: orderData.order_id,
+        handler: async (response: any) => {
+          try {
+            // 4. On success: confirm booking, mark slot, record transaction
+            await supabaseUntyped
+              .from("bookings")
+              .update({ status: "confirmed" })
+              .eq("id", bookingData.id);
+
+            await supabaseUntyped
+              .from("slots")
+              .update({ is_booked: true })
+              .eq("id", slot.id);
+
+            await supabaseUntyped.from("transactions").insert({
+              booking_id: bookingData.id,
+              amount: mentor.price_per_session,
+              razorpay_payment_id: response.razorpay_payment_id,
+              status: "success",
+            });
+
+            setSlots(prev => prev.filter(s => s.id !== slot.id));
+            toast({
+              title: "Payment successful!",
+              description: `Your session on ${format(new Date(slot.date), "MMM d, yyyy")} is confirmed.`,
+            });
+          } catch (err: unknown) {
+            toast({ title: "Payment recorded but booking update failed", description: "Please contact support.", variant: "destructive" });
+          }
+        },
+        modal: {
+          ondismiss: async () => {
+            // Clean up pending booking on cancel
+            await supabaseUntyped
+              .from("bookings")
+              .update({ status: "cancelled" })
+              .eq("id", bookingData.id);
+            toast({ title: "Payment cancelled", variant: "destructive" });
+          },
+        },
+        prefill: {
+          email: authProfile?.email || user.email,
+          contact: authProfile?.phone || "",
+        },
+        theme: { color: "#1a1a2e" },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (err: unknown) {
       toast({ title: "Booking failed", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
     } finally {
