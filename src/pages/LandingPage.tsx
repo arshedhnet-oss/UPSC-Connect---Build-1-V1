@@ -39,6 +39,11 @@ const LandingPage = () => {
             <Link to="/signup">Become a Mentor</Link>
           </Button>
         </div>
+        <div className="mt-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <Button size="lg" variant="secondary" className="rounded-full px-8 shadow-md" asChild>
+            <Link to="/mentors">🧭 Feeling Lost? Talk to a Mentor</Link>
+          </Button>
+        </div>
       </section>
 
       {/* Features */}
