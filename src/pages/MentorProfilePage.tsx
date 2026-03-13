@@ -161,22 +161,22 @@ const MentorProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto border-b border-border">
-        <Link to="/" className="font-display text-xl font-bold text-foreground">UPSC Connect</Link>
-        <Button variant="ghost" asChild><Link to="/mentors">← Back to Mentors</Link></Button>
+      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto border-b border-border">
+        <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</Link>
+        <Button variant="ghost" size="sm" asChild><Link to="/mentors">← Back</Link></Button>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="flex items-start gap-6 mb-8">
-          <Avatar className="h-20 w-20">
-            <AvatarFallback className="bg-primary/10 text-primary font-display text-2xl">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-8 text-center sm:text-left">
+          <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
+            <AvatarFallback className="bg-primary/10 text-primary font-display text-xl sm:text-2xl">
               {p?.name?.charAt(0)?.toUpperCase() || "M"}
             </AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="font-display text-3xl font-bold text-foreground">{p?.name}</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{p?.name}</h1>
             <p className="text-lg text-accent font-semibold mt-1">₹{mentor.price_per_session}/session</p>
-            <div className="flex flex-wrap gap-1.5 mt-3">
+            <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-3">
               {(mentor.subjects || []).map((s: string) => (<Badge key={s} variant="secondary">{s}</Badge>))}
             </div>
           </div>

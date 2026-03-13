@@ -129,19 +129,19 @@ const AdminDashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto border-b border-border">
-        <Link to="/" className="font-display text-xl font-bold text-foreground">UPSC Connect</Link>
-        <div className="flex items-center gap-3">
+      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-7xl mx-auto border-b border-border">
+        <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</Link>
+        <div className="flex items-center gap-2 sm:gap-3">
           <Badge>Admin</Badge>
           <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate("/"); }}><LogOut className="h-4 w-4" /></Button>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        <h1 className="font-display text-3xl font-bold text-foreground">Admin Dashboard</h1>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Admin Dashboard</h1>
 
         {/* Stats Overview */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
             <CardContent className="pt-6 flex items-start gap-3">
               <div className="rounded-lg bg-primary/10 p-2"><CheckCircle className="h-5 w-5 text-primary" /></div>
@@ -185,16 +185,16 @@ const AdminDashboardPage = () => {
         </div>
 
         <Tabs defaultValue="sessions" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="sessions">All Sessions</TabsTrigger>
-            <TabsTrigger value="pending">
-              Pending Sessions
-              {pendingSessions.length > 0 && <span className="ml-1.5 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingSessions.length}</span>}
+          <TabsList className="flex flex-wrap h-auto gap-1">
+            <TabsTrigger value="sessions" className="text-xs sm:text-sm">All Sessions</TabsTrigger>
+            <TabsTrigger value="pending" className="text-xs sm:text-sm">
+              Pending
+              {pendingSessions.length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingSessions.length}</span>}
             </TabsTrigger>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="mentors">
-              Mentor Management
-              {pendingMentors.length > 0 && <span className="ml-1.5 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingMentors.length}</span>}
+            <TabsTrigger value="transactions" className="text-xs sm:text-sm">Transactions</TabsTrigger>
+            <TabsTrigger value="mentors" className="text-xs sm:text-sm">
+              Mentors
+              {pendingMentors.length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingMentors.length}</span>}
             </TabsTrigger>
           </TabsList>
 

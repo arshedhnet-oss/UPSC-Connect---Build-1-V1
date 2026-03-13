@@ -9,29 +9,29 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
-        <h1 className="font-display text-xl font-bold text-foreground">UPSC Connect</h1>
-        <div className="flex gap-3">
+      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto">
+        <h1 className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</h1>
+        <div className="flex gap-2 sm:gap-3">
           {user ? (
-            <Button asChild><Link to="/dashboard">Dashboard</Link></Button>
+            <Button asChild size="sm"><Link to="/dashboard">Dashboard</Link></Button>
           ) : (
             <>
-              <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
-              <Button asChild><Link to="/signup">Sign Up</Link></Button>
+              <Button variant="ghost" size="sm" asChild><Link to="/login">Log in</Link></Button>
+              <Button size="sm" asChild><Link to="/signup">Sign Up</Link></Button>
             </>
           )}
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="px-6 py-20 max-w-4xl mx-auto text-center">
-        <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground leading-tight animate-fade-in">
-          Book 1-on-1 Mentorship<br />with UPSC Toppers
+      <section className="px-4 sm:px-6 py-12 sm:py-20 max-w-4xl mx-auto text-center">
+        <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground leading-tight animate-fade-in">
+          Book 1-on-1 Mentorship<br className="hidden sm:block" /> with UPSC Toppers
         </h2>
-        <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.1s" }}>
+        <p className="mt-4 sm:mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.1s" }}>
           Connect with experienced mentors for personalized guidance on your UPSC preparation journey. Book sessions, get expert advice, and crack the exam.
         </p>
-        <div className="mt-8 flex gap-4 justify-center animate-fade-in" style={{ animationDelay: "0.2s" }}>
+        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-fade-in" style={{ animationDelay: "0.2s" }}>
           <Button size="lg" asChild>
             <Link to="/mentors">Browse Mentors <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
@@ -42,14 +42,14 @@ const LandingPage = () => {
       </section>
 
       {/* Features */}
-      <section className="px-6 py-16 max-w-5xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-8">
+      <section className="px-4 sm:px-6 py-12 sm:py-16 max-w-5xl mx-auto">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           {[
             { icon: Users, title: "Expert Mentors", desc: "Learn from IAS/IPS officers and experienced educators who've been through the journey." },
             { icon: Calendar, title: "Flexible Scheduling", desc: "Book sessions at times that work for you. Choose from available mentor slots." },
             { icon: BookOpen, title: "All Subjects", desc: "Get guidance on GS, Optional subjects, Essay, Ethics, and Interview preparation." },
           ].map((f, i) => (
-            <div key={i} className="rounded-lg border border-border bg-card p-6 text-center animate-fade-in" style={{ animationDelay: `${0.1 * (i + 3)}s` }}>
+            <div key={i} className="rounded-lg border border-border bg-card p-5 sm:p-6 text-center animate-fade-in" style={{ animationDelay: `${0.1 * (i + 3)}s` }}>
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                 <f.icon className="h-6 w-6 text-primary" />
               </div>

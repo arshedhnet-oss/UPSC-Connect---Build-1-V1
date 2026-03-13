@@ -44,27 +44,27 @@ const MentorListingPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto border-b border-border">
-        <Link to="/" className="font-display text-xl font-bold text-foreground">UPSC Connect</Link>
-        <div className="flex gap-3">
+      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto border-b border-border">
+        <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</Link>
+        <div className="flex gap-2 sm:gap-3">
           {user ? (
-            <Button variant="ghost" asChild><Link to="/dashboard">Dashboard</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/dashboard">Dashboard</Link></Button>
           ) : (
-            <Button asChild><Link to="/login">Log in</Link></Button>
+            <Button size="sm" asChild><Link to="/login">Log in</Link></Button>
           )}
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <h1 className="font-display text-3xl font-bold text-foreground mb-2">Find a Mentor</h1>
-        <p className="text-muted-foreground mb-8">Browse approved mentors and book a session</p>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">Find a Mentor</h1>
+        <p className="text-muted-foreground mb-6 sm:mb-8">Browse approved mentors and book a session</p>
 
         {loading ? (
           <div className="text-center py-12 text-muted-foreground">Loading mentors...</div>
         ) : mentors.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">No approved mentors yet. Check back soon!</div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {mentors.map(m => (
               <Card key={m.user_id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
