@@ -20,7 +20,6 @@ interface MentorListing {
 const MentorListingPage = () => {
   const [mentors, setMentors] = useState<MentorListing[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   useEffect(() => {
     const fetchMentors = async () => {
