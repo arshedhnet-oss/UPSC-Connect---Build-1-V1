@@ -11,6 +11,8 @@ import MentorListingPage from "./pages/MentorListingPage";
 import MentorProfilePage from "./pages/MentorProfilePage";
 import DashboardPage from "./pages/DashboardPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,8 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/mentors" element={<MentorListingPage />} />
             <Route path="/mentors/:id" element={<MentorProfilePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
