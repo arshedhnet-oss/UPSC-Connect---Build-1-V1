@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import Navbar from "@/components/Navbar";
 
 declare global {
   interface Window {
@@ -157,10 +158,7 @@ const MentorProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto border-b border-border">
-        <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</Link>
-        <Button variant="ghost" size="sm" asChild><Link to="/mentors">← Back</Link></Button>
-      </nav>
+      <Navbar />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-8 text-center sm:text-left">

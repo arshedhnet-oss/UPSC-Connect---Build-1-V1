@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/hooks/useAuth";
+import Navbar from "@/components/Navbar";
 
 interface MentorListing {
   user_id: string;
@@ -20,7 +20,6 @@ interface MentorListing {
 const MentorListingPage = () => {
   const [mentors, setMentors] = useState<MentorListing[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   useEffect(() => {
     const fetchMentors = async () => {
@@ -48,16 +47,7 @@ const MentorListingPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto border-b border-border">
-        <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</Link>
-        <div className="flex gap-2 sm:gap-3">
-          {user ? (
-            <Button variant="ghost" size="sm" asChild><Link to="/dashboard">Dashboard</Link></Button>
-          ) : (
-            <Button size="sm" asChild><Link to="/login">Log in</Link></Button>
-          )}
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">Find a Mentor</h1>

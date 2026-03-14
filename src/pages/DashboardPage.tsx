@@ -5,14 +5,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { LogOut, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import MentorProfileForm from "@/components/MentorProfileForm";
 import DeleteMentorAccount from "@/components/DeleteMentorAccount";
+import Navbar from "@/components/Navbar";
 
 const DashboardPage = () => {
   const { user, profile, signOut, loading: authLoading } = useAuth();
@@ -94,22 +94,7 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto border-b border-border">
-        <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</Link>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Avatar className="h-8 w-8 border border-border">
-            <AvatarImage src={avatarUrl || undefined} alt={profile.name} />
-            <AvatarFallback className="text-xs bg-primary/10 text-primary font-display">
-              {profile.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">{profile.name}</span>
-          <Badge variant="secondary" className="text-xs">{profile.role}</Badge>
-          <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate("/"); }}>
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">
