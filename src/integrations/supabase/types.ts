@@ -68,7 +68,13 @@ export type Database = {
           bio: string | null
           created_at: string | null
           id: string
+          interview_years: string[] | null
+          interviews_appeared: number | null
           is_approved: boolean | null
+          languages: string[] | null
+          mains_written: number | null
+          mains_years: string[] | null
+          optional_subject: string | null
           price_per_session: number | null
           subjects: string[] | null
           user_id: string
@@ -77,7 +83,13 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id?: string
+          interview_years?: string[] | null
+          interviews_appeared?: number | null
           is_approved?: boolean | null
+          languages?: string[] | null
+          mains_written?: number | null
+          mains_years?: string[] | null
+          optional_subject?: string | null
           price_per_session?: number | null
           subjects?: string[] | null
           user_id: string
@@ -86,7 +98,13 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id?: string
+          interview_years?: string[] | null
+          interviews_appeared?: number | null
           is_approved?: boolean | null
+          languages?: string[] | null
+          mains_written?: number | null
+          mains_years?: string[] | null
+          optional_subject?: string | null
           price_per_session?: number | null
           subjects?: string[] | null
           user_id?: string
