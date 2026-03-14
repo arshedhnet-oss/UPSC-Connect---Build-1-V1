@@ -1,27 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
 import { BookOpen, Users, Calendar, ArrowRight } from "lucide-react";
+import Navbar from "@/components/Navbar";
 
 const LandingPage = () => {
-  const { user } = useAuth();
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto">
-        <h1 className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</h1>
-        <div className="flex gap-2 sm:gap-3">
-          {user ? (
-            <Button asChild size="sm"><Link to="/dashboard">Dashboard</Link></Button>
-          ) : (
-            <>
-              <Button variant="ghost" size="sm" asChild><Link to="/login">Log in</Link></Button>
-              <Button size="sm" asChild><Link to="/signup">Sign Up</Link></Button>
-            </>
-          )}
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
       <section className="px-4 sm:px-6 py-12 sm:py-20 max-w-4xl mx-auto text-center">
@@ -46,8 +31,9 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="px-4 sm:px-6 py-12 sm:py-16 max-w-5xl mx-auto">
+      {/* How It Works */}
+      <section id="how-it-works" className="px-4 sm:px-6 py-12 sm:py-16 max-w-5xl mx-auto">
+        <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground text-center mb-8 sm:mb-10">How It Works</h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           {[
             { icon: Users, title: "Expert Mentors", desc: "Learn from IAS/IPS officers and experienced educators who've been through the journey." },
