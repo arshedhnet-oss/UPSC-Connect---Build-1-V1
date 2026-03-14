@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { LogOut, Plus, Trash2 } from "lucide-react";
-import AvatarCropUpload from "@/components/AvatarCropUpload";
+import MentorProfileForm from "@/components/MentorProfileForm";
+import DeleteMentorAccount from "@/components/DeleteMentorAccount";
 
 const DashboardPage = () => {
   const { user, profile, signOut, loading: authLoading } = useAuth();
@@ -22,10 +23,8 @@ const DashboardPage = () => {
   const [mentorProfile, setMentorProfile] = useState<any>(null);
   const [slots, setSlots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  const [bio, setBio] = useState("");
-  const [subjects, setSubjects] = useState("");
-  const [price, setPrice] = useState(500);
   const [slotDate, setSlotDate] = useState("");
   const [slotStart, setSlotStart] = useState("");
   const [slotEnd, setSlotEnd] = useState("");
@@ -36,6 +35,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     if (!user || !profile) return;
+    setAvatarUrl(profile.avatar_url);
     const fetchData = async () => {
       const { data: bk } = await supabaseUntyped
         .from("bookings")
@@ -50,12 +50,7 @@ const DashboardPage = () => {
           .select("*")
           .eq("user_id", user.id)
           .single();
-        if (mp) {
-          setMentorProfile(mp);
-          setBio(mp.bio || "");
-          setSubjects((mp.subjects || []).join(", "));
-          setPrice(mp.price_per_session || 500);
-        }
+        if (mp) setMentorProfile(mp);
 
         const { data: sl } = await supabaseUntyped
           .from("slots")
@@ -68,17 +63,6 @@ const DashboardPage = () => {
     };
     fetchData();
   }, [user, profile]);
-
-  const updateMentorProfile = async () => {
-    if (!mentorProfile) return;
-    const subjectArr = subjects.split(",").map(s => s.trim()).filter(Boolean);
-    const { error } = await supabaseUntyped
-      .from("mentor_profiles")
-      .update({ bio, subjects: subjectArr, price_per_session: price })
-      .eq("user_id", user!.id);
-    if (error) toast({ title: "Update failed", description: error.message, variant: "destructive" });
-    else toast({ title: "Profile updated!" });
-  };
 
   const addSlot = async () => {
     if (!slotDate || !slotStart || !slotEnd) return;
@@ -113,6 +97,12 @@ const DashboardPage = () => {
       <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto border-b border-border">
         <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</Link>
         <div className="flex items-center gap-2 sm:gap-3">
+          <Avatar className="h-8 w-8 border border-border">
+            <AvatarImage src={avatarUrl || undefined} alt={profile.name} />
+            <AvatarFallback className="text-xs bg-primary/10 text-primary font-display">
+              {profile.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+            </AvatarFallback>
+          </Avatar>
           <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">{profile.name}</span>
           <Badge variant="secondary" className="text-xs">{profile.role}</Badge>
           <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate("/"); }}>
@@ -135,26 +125,12 @@ const DashboardPage = () => {
         </div>
 
         {profile.role === "mentor" && mentorProfile && (
-          <Card>
-            <CardHeader><CardTitle className="font-display">Edit Profile</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <AvatarCropUpload
-                userId={user!.id}
-                currentUrl={profile.avatar_url}
-                userName={profile.name}
-                onUploaded={(url) => {
-                  profile.avatar_url = url;
-                }}
-              />
-              {!mentorProfile.is_approved && (
-                <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 text-sm text-accent">Your profile is pending admin approval.</div>
-              )}
-              <div className="space-y-2"><Label>Bio</Label><Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell aspirants about your experience..." /></div>
-              <div className="space-y-2"><Label>Subjects (comma-separated)</Label><Input value={subjects} onChange={e => setSubjects(e.target.value)} placeholder="Geography Optional, Ethics, Essay" /></div>
-              <div className="space-y-2"><Label>Price per session (₹)</Label><Input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} min={0} /></div>
-              <Button onClick={updateMentorProfile}>Save Changes</Button>
-            </CardContent>
-          </Card>
+          <MentorProfileForm
+            userId={user!.id}
+            profile={{ ...profile, avatar_url: avatarUrl }}
+            mentorProfile={mentorProfile}
+            onProfileUpdate={(url) => setAvatarUrl(url)}
+          />
         )}
 
         {profile.role === "mentor" && (
@@ -205,6 +181,10 @@ const DashboardPage = () => {
             )}
           </CardContent>
         </Card>
+
+        {profile.role === "mentor" && (
+          <DeleteMentorAccount onDeleted={() => signOut()} />
+        )}
       </div>
     </div>
   );
