@@ -11,6 +11,8 @@ import MentorListingPage from "./pages/MentorListingPage";
 import MentorProfilePage from "./pages/MentorProfilePage";
 import DashboardPage from "./pages/DashboardPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
