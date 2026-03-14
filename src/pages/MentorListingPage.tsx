@@ -4,7 +4,7 @@ import { supabaseUntyped } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 
 interface MentorListing {
@@ -12,6 +12,8 @@ interface MentorListing {
   bio: string | null;
   subjects: string[];
   price_per_session: number;
+  languages: string[];
+  optional_subject: string | null;
   profile: { name: string; avatar_url: string | null };
 }
 
@@ -24,7 +26,7 @@ const MentorListingPage = () => {
     const fetchMentors = async () => {
       const { data } = await supabaseUntyped
         .from("mentor_profiles")
-        .select("user_id, bio, subjects, price_per_session, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
+        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
         .eq("is_approved", true);
 
       if (data) {
@@ -33,6 +35,8 @@ const MentorListingPage = () => {
           bio: m.bio,
           subjects: m.subjects || [],
           price_per_session: m.price_per_session,
+          languages: m.languages || [],
+          optional_subject: m.optional_subject,
           profile: { name: m.profiles?.name || "Mentor", avatar_url: m.profiles?.avatar_url },
         }));
         setMentors(mapped);
@@ -70,6 +74,7 @@ const MentorListingPage = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <Avatar className="h-12 w-12">
+                      <AvatarImage src={m.profile.avatar_url || undefined} alt={m.profile.name} />
                       <AvatarFallback className="bg-primary/10 text-primary font-display">
                         {m.profile.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
@@ -80,9 +85,15 @@ const MentorListingPage = () => {
                     </div>
                   </div>
                   {m.bio && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{m.bio}</p>}
-                  <div className="flex flex-wrap gap-1.5 mb-4">
+                  <div className="flex flex-wrap gap-1.5 mb-2">
                     {m.subjects.map(s => (<Badge key={s} variant="secondary" className="text-xs">{s}</Badge>))}
                   </div>
+                  {m.languages.length > 0 && (
+                    <p className="text-xs text-muted-foreground mb-2">🗣 {m.languages.join(", ")}</p>
+                  )}
+                  {m.optional_subject && (
+                    <p className="text-xs text-muted-foreground mb-3">Optional: {m.optional_subject}</p>
+                  )}
                   <Button asChild className="w-full"><Link to={`/mentors/${m.user_id}`}>View Profile</Link></Button>
                 </CardContent>
               </Card>

@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -63,7 +63,6 @@ const MentorProfilePage = () => {
     }
     setBooking(true);
     try {
-      // 1. Create booking with pending_payment status
       const { data: bookingData, error: bookingErr } = await supabaseUntyped
         .from("bookings")
         .insert({ mentee_id: user.id, mentor_id: id!, slot_id: slot.id, status: "pending_payment" })
@@ -71,7 +70,6 @@ const MentorProfilePage = () => {
         .single();
       if (bookingErr) throw bookingErr;
 
-      // 2. Create Razorpay order via edge function
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const session = (await supabaseUntyped.auth.getSession()).data.session;
       const orderRes = await fetch(
@@ -91,7 +89,7 @@ const MentorProfilePage = () => {
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
 
-      // 3. Open Razorpay checkout
+      const p = mentor.profiles;
       const options = {
         key: orderData.key_id,
         amount: mentor.price_per_session * 100,
@@ -101,7 +99,6 @@ const MentorProfilePage = () => {
         order_id: orderData.order_id,
         handler: async (response: any) => {
           try {
-            // 4. On success: confirm booking, mark slot, record transaction
             await supabaseUntyped
               .from("bookings")
               .update({ status: "confirmed" })
@@ -124,13 +121,12 @@ const MentorProfilePage = () => {
               title: "Payment successful!",
               description: `Your session on ${format(new Date(slot.date), "MMM d, yyyy")} is confirmed.`,
             });
-          } catch (err: unknown) {
+          } catch {
             toast({ title: "Payment recorded but booking update failed", description: "Please contact support.", variant: "destructive" });
           }
         },
         modal: {
           ondismiss: async () => {
-            // Clean up pending booking on cancel
             await supabaseUntyped
               .from("bookings")
               .update({ status: "cancelled" })
@@ -169,6 +165,7 @@ const MentorProfilePage = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-8 text-center sm:text-left">
           <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
+            <AvatarImage src={p?.avatar_url || undefined} alt={p?.name} />
             <AvatarFallback className="bg-primary/10 text-primary font-display text-xl sm:text-2xl">
               {p?.name?.charAt(0)?.toUpperCase() || "M"}
             </AvatarFallback>
@@ -179,13 +176,39 @@ const MentorProfilePage = () => {
             <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-3">
               {(mentor.subjects || []).map((s: string) => (<Badge key={s} variant="secondary">{s}</Badge>))}
             </div>
+            {mentor.optional_subject && (
+              <p className="text-sm text-muted-foreground mt-2">Optional: {mentor.optional_subject}</p>
+            )}
+            {(mentor.languages || []).length > 0 && (
+              <p className="text-sm text-muted-foreground mt-1">🗣 {mentor.languages.join(", ")}</p>
+            )}
           </div>
         </div>
 
         {mentor.bio && (
-          <Card className="mb-8">
+          <Card className="mb-6">
             <CardHeader><CardTitle className="font-display">About</CardTitle></CardHeader>
             <CardContent><p className="text-muted-foreground">{mentor.bio}</p></CardContent>
+          </Card>
+        )}
+
+        {(mentor.mains_written > 0 || mentor.interviews_appeared > 0) && (
+          <Card className="mb-6">
+            <CardHeader><CardTitle className="font-display">UPSC Experience</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {mentor.mains_written > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">Mains Written:</span> {mentor.mains_written} time{mentor.mains_written > 1 ? "s" : ""}
+                  {(mentor.mains_years || []).length > 0 && ` (${mentor.mains_years.join(", ")})`}
+                </p>
+              )}
+              {mentor.interviews_appeared > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">Interviews Appeared:</span> {mentor.interviews_appeared} time{mentor.interviews_appeared > 1 ? "s" : ""}
+                  {(mentor.interview_years || []).length > 0 && ` (${mentor.interview_years.join(", ")})`}
+                </p>
+              )}
+            </CardContent>
           </Card>
         )}
 
