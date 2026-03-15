@@ -172,7 +172,15 @@ const MentorProfilePage = () => {
           </Avatar>
           <div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{p?.name}</h1>
-            <p className="text-lg text-accent font-semibold mt-1">₹{mentor.price_per_session}/session</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-lg text-accent font-semibold">₹{mentor.price_per_session}/session</p>
+              {(mentor.total_reviews || 0) > 0 && (
+                <div className="flex items-center gap-1.5 ml-2">
+                  <StarRating rating={Math.round(mentor.average_rating || 0)} size="sm" />
+                  <span className="text-sm text-muted-foreground">{mentor.average_rating} ({mentor.total_reviews})</span>
+                </div>
+              )}
+            </div>
             <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 mt-3">
               {(mentor.subjects || []).map((s: string) => (<Badge key={s} variant="secondary">{s}</Badge>))}
             </div>
