@@ -65,6 +65,7 @@ export type Database = {
       }
       mentor_profiles: {
         Row: {
+          average_rating: number | null
           bio: string | null
           created_at: string | null
           id: string
@@ -77,9 +78,11 @@ export type Database = {
           optional_subject: string | null
           price_per_session: number | null
           subjects: string[] | null
+          total_reviews: number | null
           user_id: string
         }
         Insert: {
+          average_rating?: number | null
           bio?: string | null
           created_at?: string | null
           id?: string
@@ -92,9 +95,11 @@ export type Database = {
           optional_subject?: string | null
           price_per_session?: number | null
           subjects?: string[] | null
+          total_reviews?: number | null
           user_id: string
         }
         Update: {
+          average_rating?: number | null
           bio?: string | null
           created_at?: string | null
           id?: string
@@ -107,6 +112,7 @@ export type Database = {
           optional_subject?: string | null
           price_per_session?: number | null
           subjects?: string[] | null
+          total_reviews?: number | null
           user_id?: string
         }
         Relationships: [
@@ -114,6 +120,61 @@ export type Database = {
             foreignKeyName: "mentor_profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentor_reviews: {
+        Row: {
+          booking_id: string
+          created_at: string | null
+          id: string
+          mentee_id: string
+          mentor_id: string
+          rating: number
+          review_text: string
+          status: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string | null
+          id?: string
+          mentee_id: string
+          mentor_id: string
+          rating: number
+          review_text: string
+          status?: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string | null
+          id?: string
+          mentee_id?: string
+          mentor_id?: string
+          rating?: number
+          review_text?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentor_reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_reviews_mentee_id_fkey"
+            columns: ["mentee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_reviews_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
