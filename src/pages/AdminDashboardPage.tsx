@@ -21,6 +21,9 @@ const AdminDashboardPage = () => {
   const [approvedMentors, setApprovedMentors] = useState<any[]>([]);
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [reviewSearch, setReviewSearch] = useState("");
+  const [reviewMentorFilter, setReviewMentorFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
