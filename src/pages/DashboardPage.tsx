@@ -170,7 +170,21 @@ const DashboardPage = () => {
                       <p className="font-medium text-foreground">{profile.role === "mentee" ? `Mentor: ${b.mentor?.name}` : `Mentee: ${b.mentee?.name}`}</p>
                       {b.slots && <p className="text-sm text-muted-foreground">{format(new Date(b.slots.date), "MMM d, yyyy")} · {b.slots.start_time?.slice(0, 5)} – {b.slots.end_time?.slice(0, 5)}</p>}
                     </div>
-                    <Badge variant={b.status === "confirmed" ? "default" : b.status === "completed" ? "secondary" : "outline"}>{b.status}</Badge>
+                    <div className="flex items-center gap-2">
+                      {profile.role === "mentee" && b.status === "completed" && !reviewedBookingIds.has(b.id) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setReviewModal({ open: true, bookingId: b.id, mentorId: b.mentor_id, mentorName: b.mentor?.name || "Mentor" })}
+                        >
+                          <MessageSquare className="h-3.5 w-3.5 mr-1" /> Leave Review
+                        </Button>
+                      )}
+                      {profile.role === "mentee" && b.status === "completed" && reviewedBookingIds.has(b.id) && (
+                        <Badge variant="secondary" className="text-xs">Reviewed</Badge>
+                      )}
+                      <Badge variant={b.status === "confirmed" ? "default" : b.status === "completed" ? "secondary" : "outline"}>{b.status}</Badge>
+                    </div>
                   </div>
                 ))}
               </div>
