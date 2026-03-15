@@ -121,6 +121,30 @@ const AdminDashboardPage = () => {
     }
   };
 
+  const removeReview = async (reviewId: string) => {
+    const { error } = await supabaseUntyped
+      .from("mentor_reviews")
+      .update({ status: "removed" })
+      .eq("id", reviewId);
+    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
+    else {
+      setAllReviews(prev => prev.map(r => r.id === reviewId ? { ...r, status: "removed" } : r));
+      toast({ title: "Review removed" });
+    }
+  };
+
+  const restoreReview = async (reviewId: string) => {
+    const { error } = await supabaseUntyped
+      .from("mentor_reviews")
+      .update({ status: "active" })
+      .eq("id", reviewId);
+    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
+    else {
+      setAllReviews(prev => prev.map(r => r.id === reviewId ? { ...r, status: "active" } : r));
+      toast({ title: "Review restored" });
+    }
+  };
+
   if (authLoading || loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!isAdmin) return null;
 
