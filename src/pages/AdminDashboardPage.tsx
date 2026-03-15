@@ -133,6 +133,7 @@ const AdminDashboardPage = () => {
         <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <Badge>Admin</Badge>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/profile")} title="Admin Profile"><UserCog className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate("/"); }}><LogOut className="h-4 w-4" /></Button>
         </div>
       </nav>
