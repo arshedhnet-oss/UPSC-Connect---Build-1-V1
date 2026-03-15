@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, MessageSquare } from "lucide-react";
 import MentorProfileForm from "@/components/MentorProfileForm";
 import DeleteMentorAccount from "@/components/DeleteMentorAccount";
+import ReviewModal from "@/components/ReviewModal";
 import Navbar from "@/components/Navbar";
 
 const DashboardPage = () => {
@@ -28,6 +29,8 @@ const DashboardPage = () => {
   const [slotDate, setSlotDate] = useState("");
   const [slotStart, setSlotStart] = useState("");
   const [slotEnd, setSlotEnd] = useState("");
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
+  const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string; mentorId: string; mentorName: string } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -44,6 +47,14 @@ const DashboardPage = () => {
         .order("created_at", { ascending: false });
       if (bk) setBookings(bk);
 
+      // Fetch reviewed booking IDs for this mentee
+      if (profile.role === "mentee") {
+        const { data: reviews } = await supabaseUntyped
+          .from("mentor_reviews")
+          .select("booking_id")
+          .eq("mentee_id", user.id);
+        if (reviews) setReviewedBookingIds(new Set(reviews.map((r: any) => r.booking_id)));
+      }
       if (profile.role === "mentor") {
         const { data: mp } = await supabaseUntyped
           .from("mentor_profiles")
@@ -159,7 +170,21 @@ const DashboardPage = () => {
                       <p className="font-medium text-foreground">{profile.role === "mentee" ? `Mentor: ${b.mentor?.name}` : `Mentee: ${b.mentee?.name}`}</p>
                       {b.slots && <p className="text-sm text-muted-foreground">{format(new Date(b.slots.date), "MMM d, yyyy")} · {b.slots.start_time?.slice(0, 5)} – {b.slots.end_time?.slice(0, 5)}</p>}
                     </div>
-                    <Badge variant={b.status === "confirmed" ? "default" : b.status === "completed" ? "secondary" : "outline"}>{b.status}</Badge>
+                    <div className="flex items-center gap-2">
+                      {profile.role === "mentee" && b.status === "completed" && !reviewedBookingIds.has(b.id) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setReviewModal({ open: true, bookingId: b.id, mentorId: b.mentor_id, mentorName: b.mentor?.name || "Mentor" })}
+                        >
+                          <MessageSquare className="h-3.5 w-3.5 mr-1" /> Leave Review
+                        </Button>
+                      )}
+                      {profile.role === "mentee" && b.status === "completed" && reviewedBookingIds.has(b.id) && (
+                        <Badge variant="secondary" className="text-xs">Reviewed</Badge>
+                      )}
+                      <Badge variant={b.status === "confirmed" ? "default" : b.status === "completed" ? "secondary" : "outline"}>{b.status}</Badge>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -171,6 +196,21 @@ const DashboardPage = () => {
           <DeleteMentorAccount onDeleted={() => signOut()} />
         )}
       </div>
+
+      {reviewModal && (
+        <ReviewModal
+          open={reviewModal.open}
+          onOpenChange={(open) => { if (!open) setReviewModal(null); }}
+          bookingId={reviewModal.bookingId}
+          mentorId={reviewModal.mentorId}
+          menteeId={user!.id}
+          mentorName={reviewModal.mentorName}
+          onReviewSubmitted={() => {
+            setReviewedBookingIds(prev => new Set([...prev, reviewModal.bookingId]));
+            setReviewModal(null);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -7,8 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog } from "lucide-react";
+import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog, Star, RotateCcw, Trash2, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import StarRating from "@/components/StarRating";
 
 const AdminDashboardPage = () => {
   const { user, signOut, loading: authLoading } = useAuth();
@@ -19,6 +21,9 @@ const AdminDashboardPage = () => {
   const [approvedMentors, setApprovedMentors] = useState<any[]>([]);
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [reviewSearch, setReviewSearch] = useState("");
+  const [reviewMentorFilter, setReviewMentorFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -46,7 +51,7 @@ const AdminDashboardPage = () => {
   }, [user]);
 
   const fetchAdminData = async () => {
-    const [mentorsRes, approvedRes, bookingsRes, txRes] = await Promise.all([
+    const [mentorsRes, approvedRes, bookingsRes, txRes, reviewsRes] = await Promise.all([
       supabaseUntyped
         .from("mentor_profiles")
         .select("*, profiles!mentor_profiles_user_id_fkey(name, email, phone, avatar_url)")
@@ -63,12 +68,17 @@ const AdminDashboardPage = () => {
         .from("transactions")
         .select("*, bookings(*, mentor:profiles!bookings_mentor_id_fkey(name), mentee:profiles!bookings_mentee_id_fkey(name))")
         .order("created_at", { ascending: false }),
+      supabaseUntyped
+        .from("mentor_reviews")
+        .select("*, mentor:profiles!mentor_reviews_mentor_id_fkey(name), mentee:profiles!mentor_reviews_mentee_id_fkey(name)")
+        .order("created_at", { ascending: false }),
     ]);
 
     if (mentorsRes.data) setPendingMentors(mentorsRes.data);
     if (approvedRes.data) setApprovedMentors(approvedRes.data);
     if (bookingsRes.data) setAllBookings(bookingsRes.data);
     if (txRes.data) setTransactions(txRes.data);
+    if (reviewsRes.data) setAllReviews(reviewsRes.data);
   };
 
   const approveMentor = async (userId: string) => {
@@ -108,6 +118,30 @@ const AdminDashboardPage = () => {
     else {
       setAllBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: "completed" } : b));
       toast({ title: "Session marked as completed" });
+    }
+  };
+
+  const removeReview = async (reviewId: string) => {
+    const { error } = await supabaseUntyped
+      .from("mentor_reviews")
+      .update({ status: "removed" })
+      .eq("id", reviewId);
+    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
+    else {
+      setAllReviews(prev => prev.map(r => r.id === reviewId ? { ...r, status: "removed" } : r));
+      toast({ title: "Review removed" });
+    }
+  };
+
+  const restoreReview = async (reviewId: string) => {
+    const { error } = await supabaseUntyped
+      .from("mentor_reviews")
+      .update({ status: "active" })
+      .eq("id", reviewId);
+    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
+    else {
+      setAllReviews(prev => prev.map(r => r.id === reviewId ? { ...r, status: "active" } : r));
+      toast({ title: "Review restored" });
     }
   };
 
@@ -196,6 +230,10 @@ const AdminDashboardPage = () => {
             <TabsTrigger value="mentors" className="text-xs sm:text-sm">
               Mentors
               {pendingMentors.length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingMentors.length}</span>}
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="text-xs sm:text-sm">
+              Reviews
+              <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-xs">{allReviews.length}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -428,6 +466,83 @@ const AdminDashboardPage = () => {
                         </Button>
                       </div>
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Reviews Tab */}
+          <TabsContent value="reviews">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display flex items-center gap-2">
+                  <Star className="h-5 w-5 text-amber-400" /> Mentor Reviews
+                </CardTitle>
+                <div className="flex flex-col sm:flex-row gap-2 mt-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by mentee name..."
+                      value={reviewSearch}
+                      onChange={(e) => setReviewSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Filter by mentor name..."
+                      value={reviewMentorFilter}
+                      onChange={(e) => setReviewMentorFilter(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {allReviews.length === 0 ? (
+                  <p className="text-muted-foreground">No reviews yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {allReviews
+                      .filter(r => {
+                        const menteeMatch = !reviewSearch || (r.mentee?.name || "").toLowerCase().includes(reviewSearch.toLowerCase());
+                        const mentorMatch = !reviewMentorFilter || (r.mentor?.name || "").toLowerCase().includes(reviewMentorFilter.toLowerCase());
+                        return menteeMatch && mentorMatch;
+                      })
+                      .map((r: any) => (
+                        <div key={r.id} className={`rounded-lg border p-4 space-y-2 ${r.status === "removed" ? "border-destructive/30 bg-destructive/5" : "border-border"}`}>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <p className="text-sm font-medium text-foreground">
+                                  {r.mentee?.name || "Unknown"} → {r.mentor?.name || "Unknown"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {r.created_at ? format(new Date(r.created_at), "MMM d, yyyy HH:mm") : "—"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <StarRating rating={r.rating} size="sm" />
+                              <Badge variant={r.status === "active" ? "default" : "destructive"}>{r.status}</Badge>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{r.review_text}</p>
+                          <div className="flex gap-2">
+                            {r.status === "active" ? (
+                              <Button size="sm" variant="destructive" onClick={() => removeReview(r.id)}>
+                                <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
+                              </Button>
+                            ) : (
+                              <Button size="sm" variant="outline" onClick={() => restoreReview(r.id)}>
+                                <RotateCcw className="h-3.5 w-3.5 mr-1" /> Restore
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                   </div>
                 )}
               </CardContent>
