@@ -231,7 +231,10 @@ const AdminDashboardPage = () => {
               Mentors
               {pendingMentors.length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingMentors.length}</span>}
             </TabsTrigger>
-          </TabsList>
+            <TabsTrigger value="reviews" className="text-xs sm:text-sm">
+              Reviews
+              <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-xs">{allReviews.length}</span>
+            </TabsTrigger>
 
           {/* All Sessions Tab */}
           <TabsContent value="sessions">
