@@ -51,7 +51,7 @@ const AdminDashboardPage = () => {
   }, [user]);
 
   const fetchAdminData = async () => {
-    const [mentorsRes, approvedRes, bookingsRes, txRes] = await Promise.all([
+    const [mentorsRes, approvedRes, bookingsRes, txRes, reviewsRes] = await Promise.all([
       supabaseUntyped
         .from("mentor_profiles")
         .select("*, profiles!mentor_profiles_user_id_fkey(name, email, phone, avatar_url)")
@@ -68,12 +68,17 @@ const AdminDashboardPage = () => {
         .from("transactions")
         .select("*, bookings(*, mentor:profiles!bookings_mentor_id_fkey(name), mentee:profiles!bookings_mentee_id_fkey(name))")
         .order("created_at", { ascending: false }),
+      supabaseUntyped
+        .from("mentor_reviews")
+        .select("*, mentor:profiles!mentor_reviews_mentor_id_fkey(name), mentee:profiles!mentor_reviews_mentee_id_fkey(name)")
+        .order("created_at", { ascending: false }),
     ]);
 
     if (mentorsRes.data) setPendingMentors(mentorsRes.data);
     if (approvedRes.data) setApprovedMentors(approvedRes.data);
     if (bookingsRes.data) setAllBookings(bookingsRes.data);
     if (txRes.data) setTransactions(txRes.data);
+    if (reviewsRes.data) setAllReviews(reviewsRes.data);
   };
 
   const approveMentor = async (userId: string) => {
