@@ -196,6 +196,21 @@ const DashboardPage = () => {
           <DeleteMentorAccount onDeleted={() => signOut()} />
         )}
       </div>
+
+      {reviewModal && (
+        <ReviewModal
+          open={reviewModal.open}
+          onOpenChange={(open) => { if (!open) setReviewModal(null); }}
+          bookingId={reviewModal.bookingId}
+          mentorId={reviewModal.mentorId}
+          menteeId={user!.id}
+          mentorName={reviewModal.mentorName}
+          onReviewSubmitted={() => {
+            setReviewedBookingIds(prev => new Set([...prev, reviewModal.bookingId]));
+            setReviewModal(null);
+          }}
+        />
+      )}
     </div>
   );
 };
