@@ -29,6 +29,8 @@ const DashboardPage = () => {
   const [slotDate, setSlotDate] = useState("");
   const [slotStart, setSlotStart] = useState("");
   const [slotEnd, setSlotEnd] = useState("");
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
+  const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string; mentorId: string; mentorName: string } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
