@@ -47,6 +47,14 @@ const DashboardPage = () => {
         .order("created_at", { ascending: false });
       if (bk) setBookings(bk);
 
+      // Fetch reviewed booking IDs for this mentee
+      if (profile.role === "mentee") {
+        const { data: reviews } = await supabaseUntyped
+          .from("mentor_reviews")
+          .select("booking_id")
+          .eq("mentee_id", user.id);
+        if (reviews) setReviewedBookingIds(new Set(reviews.map((r: any) => r.booking_id)));
+      }
       if (profile.role === "mentor") {
         const { data: mp } = await supabaseUntyped
           .from("mentor_profiles")
