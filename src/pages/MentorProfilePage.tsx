@@ -242,6 +242,12 @@ const MentorProfilePage = () => {
             )}
           </CardContent>
         </Card>
+
+        <MentorReviews
+          mentorId={id!}
+          averageRating={mentor.average_rating || 0}
+          totalReviews={mentor.total_reviews || 0}
+        />
       </div>
     </div>
   );
