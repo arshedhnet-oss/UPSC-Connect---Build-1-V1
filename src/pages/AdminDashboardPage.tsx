@@ -471,6 +471,83 @@ const AdminDashboardPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Reviews Tab */}
+          <TabsContent value="reviews">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display flex items-center gap-2">
+                  <Star className="h-5 w-5 text-amber-400" /> Mentor Reviews
+                </CardTitle>
+                <div className="flex flex-col sm:flex-row gap-2 mt-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by mentee name..."
+                      value={reviewSearch}
+                      onChange={(e) => setReviewSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Filter by mentor name..."
+                      value={reviewMentorFilter}
+                      onChange={(e) => setReviewMentorFilter(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {allReviews.length === 0 ? (
+                  <p className="text-muted-foreground">No reviews yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {allReviews
+                      .filter(r => {
+                        const menteeMatch = !reviewSearch || (r.mentee?.name || "").toLowerCase().includes(reviewSearch.toLowerCase());
+                        const mentorMatch = !reviewMentorFilter || (r.mentor?.name || "").toLowerCase().includes(reviewMentorFilter.toLowerCase());
+                        return menteeMatch && mentorMatch;
+                      })
+                      .map((r: any) => (
+                        <div key={r.id} className={`rounded-lg border p-4 space-y-2 ${r.status === "removed" ? "border-destructive/30 bg-destructive/5" : "border-border"}`}>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <p className="text-sm font-medium text-foreground">
+                                  {r.mentee?.name || "Unknown"} → {r.mentor?.name || "Unknown"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {r.created_at ? format(new Date(r.created_at), "MMM d, yyyy HH:mm") : "—"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <StarRating rating={r.rating} size="sm" />
+                              <Badge variant={r.status === "active" ? "default" : "destructive"}>{r.status}</Badge>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{r.review_text}</p>
+                          <div className="flex gap-2">
+                            {r.status === "active" ? (
+                              <Button size="sm" variant="destructive" onClick={() => removeReview(r.id)}>
+                                <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
+                              </Button>
+                            ) : (
+                              <Button size="sm" variant="outline" onClick={() => restoreReview(r.id)}>
+                                <RotateCcw className="h-3.5 w-3.5 mr-1" /> Restore
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
