@@ -241,6 +241,9 @@ const AdminDashboardPage = () => {
                                   </>
                                 ) : <span className="text-muted-foreground">—</span>}
                               </td>
+                              <td className="py-3 pr-4 text-foreground text-xs">
+                                {b.created_at ? format(new Date(b.created_at), "MMM d, yyyy HH:mm") : "—"}
+                              </td>
                               <td className="py-3 pr-4">
                                 <Badge variant={statusColor(b.status)}>{b.status}</Badge>
                               </td>
