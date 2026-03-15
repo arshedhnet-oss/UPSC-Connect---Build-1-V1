@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import Navbar from "@/components/Navbar";
+import MentorReviews from "@/components/MentorReviews";
+import StarRating from "@/components/StarRating";
 
 declare global {
   interface Window {
