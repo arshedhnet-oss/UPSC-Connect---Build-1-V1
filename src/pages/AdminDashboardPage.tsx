@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle } from "lucide-react";
+import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDashboardPage = () => {
@@ -133,6 +133,7 @@ const AdminDashboardPage = () => {
         <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">UPSC Connect</Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <Badge>Admin</Badge>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/profile")} title="Admin Profile"><UserCog className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate("/"); }}><LogOut className="h-4 w-4" /></Button>
         </div>
       </nav>
@@ -209,10 +210,11 @@ const AdminDashboardPage = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-border text-left text-muted-foreground">
+                         <tr className="border-b border-border text-left text-muted-foreground">
                           <th className="pb-3 pr-4">Mentor</th>
                           <th className="pb-3 pr-4">Mentee</th>
                           <th className="pb-3 pr-4">Date & Time</th>
+                          <th className="pb-3 pr-4">Booking Time</th>
                           <th className="pb-3 pr-4">Status</th>
                           <th className="pb-3 pr-4">Payment</th>
                           <th className="pb-3">Actions</th>
@@ -238,6 +240,9 @@ const AdminDashboardPage = () => {
                                     <p className="text-xs text-muted-foreground">{b.slots.start_time?.slice(0, 5)} – {b.slots.end_time?.slice(0, 5)}</p>
                                   </>
                                 ) : <span className="text-muted-foreground">—</span>}
+                              </td>
+                              <td className="py-3 pr-4 text-foreground text-xs">
+                                {b.created_at ? format(new Date(b.created_at), "MMM d, yyyy HH:mm") : "—"}
                               </td>
                               <td className="py-3 pr-4">
                                 <Badge variant={statusColor(b.status)}>{b.status}</Badge>
