@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle } from "lucide-react";
+import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDashboardPage = () => {
