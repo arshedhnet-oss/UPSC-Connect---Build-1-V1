@@ -235,6 +235,7 @@ const AdminDashboardPage = () => {
               Reviews
               <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-xs">{allReviews.length}</span>
             </TabsTrigger>
+          </TabsList>
 
           {/* All Sessions Tab */}
           <TabsContent value="sessions">
