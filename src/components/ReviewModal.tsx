@@ -22,7 +22,7 @@ const ReviewModal = ({ open, onOpenChange, bookingId, mentorId, menteeId, mentor
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const isValid = rating >= 1 && text.trim().length >= 20 && text.trim().length <= 500;
+  const isValid = rating >= 1 && text.trim().length >= 10 && text.trim().length <= 500;
 
   const handleSubmit = async () => {
     if (!isValid) return;
