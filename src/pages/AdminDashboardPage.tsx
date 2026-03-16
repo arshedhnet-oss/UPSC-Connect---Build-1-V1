@@ -529,7 +529,9 @@ const AdminDashboardPage = () => {
                       .filter(r => {
                         const menteeMatch = !reviewSearch || (r.mentee?.name || "").toLowerCase().includes(reviewSearch.toLowerCase());
                         const mentorMatch = !reviewMentorFilter || (r.mentor?.name || "").toLowerCase().includes(reviewMentorFilter.toLowerCase());
-                        return menteeMatch && mentorMatch;
+                        const ratingMatch = !reviewRatingFilter || r.rating === parseInt(reviewRatingFilter);
+                        const dateMatch = !reviewDateFilter || (r.created_at && r.created_at.startsWith(reviewDateFilter));
+                        return menteeMatch && mentorMatch && ratingMatch && dateMatch;
                       })
                       .map((r: any) => (
                         <div key={r.id} className={`rounded-lg border p-4 space-y-2 ${r.status === "removed" ? "border-destructive/30 bg-destructive/5" : "border-border"}`}>
