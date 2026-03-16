@@ -37,6 +37,9 @@ const MentorProfilePage = () => {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [eligibleBookings, setEligibleBookings] = useState<any[]>([]);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
+  const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
