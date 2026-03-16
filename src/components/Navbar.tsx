@@ -122,17 +122,32 @@ export default function Navbar() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setMobileMenuOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    className={`justify-start gap-2 ${isActive("/dashboard") ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
+                    asChild
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <Link to="/dashboard">
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </Link>
                   </Button>
-                  <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setMobileMenuOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    className={`justify-start gap-2 ${location.hash === "#bookings" && location.pathname === "/dashboard" ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
+                    asChild
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <Link to="/dashboard#bookings">
                       <CalendarCheck className="h-4 w-4" /> My Bookings
                     </Link>
                   </Button>
-                  <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setMobileMenuOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    className={`justify-start gap-2 ${location.hash === "#profile" && location.pathname === "/dashboard" ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
+                    asChild
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <Link to="/dashboard#profile">
                       <User className="h-4 w-4" /> Profile
                     </Link>
