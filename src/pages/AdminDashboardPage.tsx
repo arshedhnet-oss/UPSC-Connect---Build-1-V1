@@ -24,6 +24,8 @@ const AdminDashboardPage = () => {
   const [allReviews, setAllReviews] = useState<any[]>([]);
   const [reviewSearch, setReviewSearch] = useState("");
   const [reviewMentorFilter, setReviewMentorFilter] = useState("");
+  const [reviewRatingFilter, setReviewRatingFilter] = useState("");
+  const [reviewDateFilter, setReviewDateFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
