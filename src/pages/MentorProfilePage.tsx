@@ -267,12 +267,42 @@ const MentorProfilePage = () => {
           </CardContent>
         </Card>
 
+        {/* Write a Review button for eligible mentees */}
+        {user && authProfile?.role === "mentee" && eligibleBookings.length > 0 && (() => {
+          const unreviewedBooking = eligibleBookings.find(b => !reviewedBookingIds.has(b.id));
+          if (!unreviewedBooking) return null;
+          return (
+            <div className="mt-6">
+              <Button onClick={() => setReviewModal({ open: true, bookingId: unreviewedBooking.id })}>
+                <MessageSquare className="h-4 w-4 mr-2" /> Write a Review
+              </Button>
+            </div>
+          );
+        })()}
+
         <MentorReviews
           mentorId={id!}
           averageRating={mentor.average_rating || 0}
           totalReviews={mentor.total_reviews || 0}
         />
       </div>
+
+      {reviewModal && (
+        <ReviewModal
+          open={reviewModal.open}
+          onOpenChange={(open) => { if (!open) setReviewModal(null); }}
+          bookingId={reviewModal.bookingId}
+          mentorId={id!}
+          menteeId={user!.id}
+          mentorName={p?.name || "Mentor"}
+          onReviewSubmitted={() => {
+            setReviewedBookingIds(prev => new Set([...prev, reviewModal.bookingId]));
+            setReviewModal(null);
+            // Refresh page data
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 };
