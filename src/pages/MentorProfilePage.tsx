@@ -58,10 +58,29 @@ const MentorProfilePage = () => {
         .gte("date", new Date().toISOString().split("T")[0])
         .order("date", { ascending: true });
       if (sl) setSlots(sl as Slot[]);
+
+      // Check eligible bookings for review (mentee only)
+      if (user && authProfile?.role === "mentee") {
+        const { data: completedBookings } = await supabaseUntyped
+          .from("bookings")
+          .select("id, mentor_id")
+          .eq("mentee_id", user.id)
+          .eq("mentor_id", id!)
+          .eq("status", "completed");
+        if (completedBookings) setEligibleBookings(completedBookings);
+
+        const { data: existingReviews } = await supabaseUntyped
+          .from("mentor_reviews")
+          .select("booking_id")
+          .eq("mentee_id", user.id)
+          .eq("mentor_id", id!);
+        if (existingReviews) setReviewedBookingIds(new Set(existingReviews.map((r: any) => r.booking_id)));
+      }
+
       setLoading(false);
     };
     if (id) fetchData();
-  }, [id]);
+  }, [id, user, authProfile]);
 
   const handleBook = async (slot: Slot) => {
     if (!user) { navigate("/login"); return; }
