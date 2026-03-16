@@ -8,8 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { MessageSquare } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MentorReviews from "@/components/MentorReviews";
+import ReviewModal from "@/components/ReviewModal";
 import StarRating from "@/components/StarRating";
 
 declare global {
