@@ -24,6 +24,8 @@ const AdminDashboardPage = () => {
   const [allReviews, setAllReviews] = useState<any[]>([]);
   const [reviewSearch, setReviewSearch] = useState("");
   const [reviewMentorFilter, setReviewMentorFilter] = useState("");
+  const [reviewRatingFilter, setReviewRatingFilter] = useState("");
+  const [reviewDateFilter, setReviewDateFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -497,8 +499,26 @@ const AdminDashboardPage = () => {
                       onChange={(e) => setReviewMentorFilter(e.target.value)}
                       className="pl-9"
                     />
-                  </div>
-                </div>
+                   </div>
+                   <select
+                     value={reviewRatingFilter}
+                     onChange={(e) => setReviewRatingFilter(e.target.value)}
+                     className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                   >
+                     <option value="">All Ratings</option>
+                     <option value="5">5 Stars</option>
+                     <option value="4">4 Stars</option>
+                     <option value="3">3 Stars</option>
+                     <option value="2">2 Stars</option>
+                     <option value="1">1 Star</option>
+                   </select>
+                   <Input
+                     type="date"
+                     value={reviewDateFilter}
+                     onChange={(e) => setReviewDateFilter(e.target.value)}
+                     className="w-auto"
+                   />
+                 </div>
               </CardHeader>
               <CardContent>
                 {allReviews.length === 0 ? (
@@ -509,7 +529,9 @@ const AdminDashboardPage = () => {
                       .filter(r => {
                         const menteeMatch = !reviewSearch || (r.mentee?.name || "").toLowerCase().includes(reviewSearch.toLowerCase());
                         const mentorMatch = !reviewMentorFilter || (r.mentor?.name || "").toLowerCase().includes(reviewMentorFilter.toLowerCase());
-                        return menteeMatch && mentorMatch;
+                        const ratingMatch = !reviewRatingFilter || r.rating === parseInt(reviewRatingFilter);
+                        const dateMatch = !reviewDateFilter || (r.created_at && r.created_at.startsWith(reviewDateFilter));
+                        return menteeMatch && mentorMatch && ratingMatch && dateMatch;
                       })
                       .map((r: any) => (
                         <div key={r.id} className={`rounded-lg border p-4 space-y-2 ${r.status === "removed" ? "border-destructive/30 bg-destructive/5" : "border-border"}`}>

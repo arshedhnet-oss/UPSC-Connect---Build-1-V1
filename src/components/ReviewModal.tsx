@@ -22,7 +22,7 @@ const ReviewModal = ({ open, onOpenChange, bookingId, mentorId, menteeId, mentor
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const isValid = rating >= 1 && text.trim().length >= 20 && text.trim().length <= 500;
+  const isValid = rating >= 1 && text.trim().length >= 10 && text.trim().length <= 500;
 
   const handleSubmit = async () => {
     if (!isValid) return;
@@ -65,15 +65,15 @@ const ReviewModal = ({ open, onOpenChange, bookingId, mentorId, menteeId, mentor
           <div>
             <p className="text-sm font-medium text-foreground mb-2">Your Review</p>
             <Textarea
-              placeholder="Share your experience (min 20 characters)..."
+              placeholder="Share your experience (min 10 characters)..."
               value={text}
               onChange={(e) => setText(e.target.value)}
               maxLength={500}
               className="resize-none"
               rows={4}
             />
-            <p className={`text-xs mt-1 ${text.trim().length < 20 ? "text-muted-foreground" : "text-green-600"}`}>
-              {text.trim().length}/500 characters {text.trim().length < 20 && `(${20 - text.trim().length} more needed)`}
+            <p className={`text-xs mt-1 ${text.trim().length < 10 ? "text-muted-foreground" : "text-green-600"}`}>
+              {text.trim().length}/500 characters {text.trim().length < 10 && "(Review must contain at least 10 characters.)"}
             </p>
           </div>
           <Button onClick={handleSubmit} disabled={!isValid || submitting} className="w-full">

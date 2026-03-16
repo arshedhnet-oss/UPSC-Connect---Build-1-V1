@@ -8,8 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { MessageSquare } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MentorReviews from "@/components/MentorReviews";
+import ReviewModal from "@/components/ReviewModal";
 import StarRating from "@/components/StarRating";
 
 declare global {
@@ -35,6 +37,9 @@ const MentorProfilePage = () => {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [eligibleBookings, setEligibleBookings] = useState<any[]>([]);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
+  const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,10 +58,29 @@ const MentorProfilePage = () => {
         .gte("date", new Date().toISOString().split("T")[0])
         .order("date", { ascending: true });
       if (sl) setSlots(sl as Slot[]);
+
+      // Check eligible bookings for review (mentee only)
+      if (user && authProfile?.role === "mentee") {
+        const { data: completedBookings } = await supabaseUntyped
+          .from("bookings")
+          .select("id, mentor_id")
+          .eq("mentee_id", user.id)
+          .eq("mentor_id", id!)
+          .eq("status", "completed");
+        if (completedBookings) setEligibleBookings(completedBookings);
+
+        const { data: existingReviews } = await supabaseUntyped
+          .from("mentor_reviews")
+          .select("booking_id")
+          .eq("mentee_id", user.id)
+          .eq("mentor_id", id!);
+        if (existingReviews) setReviewedBookingIds(new Set(existingReviews.map((r: any) => r.booking_id)));
+      }
+
       setLoading(false);
     };
     if (id) fetchData();
-  }, [id]);
+  }, [id, user, authProfile]);
 
   const handleBook = async (slot: Slot) => {
     if (!user) { navigate("/login"); return; }
@@ -243,12 +267,42 @@ const MentorProfilePage = () => {
           </CardContent>
         </Card>
 
+        {/* Write a Review button for eligible mentees */}
+        {user && authProfile?.role === "mentee" && eligibleBookings.length > 0 && (() => {
+          const unreviewedBooking = eligibleBookings.find(b => !reviewedBookingIds.has(b.id));
+          if (!unreviewedBooking) return null;
+          return (
+            <div className="mt-6">
+              <Button onClick={() => setReviewModal({ open: true, bookingId: unreviewedBooking.id })}>
+                <MessageSquare className="h-4 w-4 mr-2" /> Write a Review
+              </Button>
+            </div>
+          );
+        })()}
+
         <MentorReviews
           mentorId={id!}
           averageRating={mentor.average_rating || 0}
           totalReviews={mentor.total_reviews || 0}
         />
       </div>
+
+      {reviewModal && (
+        <ReviewModal
+          open={reviewModal.open}
+          onOpenChange={(open) => { if (!open) setReviewModal(null); }}
+          bookingId={reviewModal.bookingId}
+          mentorId={id!}
+          menteeId={user!.id}
+          mentorName={p?.name || "Mentor"}
+          onReviewSubmitted={() => {
+            setReviewedBookingIds(prev => new Set([...prev, reviewModal.bookingId]));
+            setReviewModal(null);
+            // Refresh page data
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 };
