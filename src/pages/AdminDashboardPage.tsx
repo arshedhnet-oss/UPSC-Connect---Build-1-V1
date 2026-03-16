@@ -499,8 +499,26 @@ const AdminDashboardPage = () => {
                       onChange={(e) => setReviewMentorFilter(e.target.value)}
                       className="pl-9"
                     />
-                  </div>
-                </div>
+                   </div>
+                   <select
+                     value={reviewRatingFilter}
+                     onChange={(e) => setReviewRatingFilter(e.target.value)}
+                     className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                   >
+                     <option value="">All Ratings</option>
+                     <option value="5">5 Stars</option>
+                     <option value="4">4 Stars</option>
+                     <option value="3">3 Stars</option>
+                     <option value="2">2 Stars</option>
+                     <option value="1">1 Star</option>
+                   </select>
+                   <Input
+                     type="date"
+                     value={reviewDateFilter}
+                     onChange={(e) => setReviewDateFilter(e.target.value)}
+                     className="w-auto"
+                   />
+                 </div>
               </CardHeader>
               <CardContent>
                 {allReviews.length === 0 ? (
