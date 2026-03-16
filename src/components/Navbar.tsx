@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, LayoutDashboard, CalendarCheck, User } from "lucide-react";
+import { LogOut, LayoutDashboard, CalendarCheck, User, Menu } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,15 +11,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useState } from "react";
 
 export default function Navbar() {
   const { user, profile, signOut } = useAuth();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-6xl mx-auto border-b border-border">
+    <nav className="flex items-center justify-between px-4 sm:px-6 py-3 max-w-6xl mx-auto border-b border-border">
       <div className="flex items-center gap-4 sm:gap-6">
         <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">
           UPSC Connect
@@ -35,55 +43,118 @@ export default function Navbar() {
         </div>
       </div>
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Find Mentors - always visible on mobile */}
+        <Button
+          variant={isActive("/mentors") ? "secondary" : "default"}
+          size="sm"
+          asChild
+          className="sm:hidden text-xs px-3"
+        >
+          <Link to="/mentors">Find Mentors</Link>
+        </Button>
+
         {user && profile ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 px-2">
-                <Avatar className="h-8 w-8 border border-border">
-                  <AvatarImage src={profile.avatar_url || undefined} alt={profile.name} />
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary font-display">
-                    {profile.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-foreground hidden sm:inline">{profile.name}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel className="font-normal">
-                <p className="text-sm font-medium text-foreground">{profile.name}</p>
-                <p className="text-xs text-muted-foreground">{profile.email}</p>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard" className="flex items-center gap-2 cursor-pointer">
-                  <LayoutDashboard className="h-4 w-4" /> Dashboard
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard#bookings" className="flex items-center gap-2 cursor-pointer">
-                  <CalendarCheck className="h-4 w-4" /> My Bookings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard#profile" className="flex items-center gap-2 cursor-pointer">
-                  <User className="h-4 w-4" /> Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
-                <LogOut className="h-4 w-4" /> Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <>
+            {/* Desktop dropdown */}
+            <div className="hidden sm:block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 px-2">
+                    <Avatar className="h-8 w-8 border border-border">
+                      <AvatarImage src={profile.avatar_url || undefined} alt={profile.name} />
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary font-display">
+                        {profile.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm text-foreground">{profile.name}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel className="font-normal">
+                    <p className="text-sm font-medium text-foreground">{profile.name}</p>
+                    <p className="text-xs text-muted-foreground">{profile.email}</p>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="flex items-center gap-2 cursor-pointer">
+                      <LayoutDashboard className="h-4 w-4" /> Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard#bookings" className="flex items-center gap-2 cursor-pointer">
+                      <CalendarCheck className="h-4 w-4" /> My Bookings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard#profile" className="flex items-center gap-2 cursor-pointer">
+                      <User className="h-4 w-4" /> Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="h-4 w-4" /> Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Mobile hamburger menu */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="sm:hidden">
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-64">
+                <SheetHeader className="text-left">
+                  <SheetTitle className="font-display">Menu</SheetTitle>
+                </SheetHeader>
+                <div className="flex items-center gap-3 mt-4 mb-6 px-1">
+                  <Avatar className="h-10 w-10 border border-border">
+                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.name} />
+                    <AvatarFallback className="text-sm bg-primary/10 text-primary font-display">
+                      {profile.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{profile.name}</p>
+                    <p className="text-xs text-muted-foreground">{profile.email}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setMobileMenuOpen(false)}>
+                    <Link to="/dashboard">
+                      <LayoutDashboard className="h-4 w-4" /> Dashboard
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setMobileMenuOpen(false)}>
+                    <Link to="/dashboard#bookings">
+                      <CalendarCheck className="h-4 w-4" /> My Bookings
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setMobileMenuOpen(false)}>
+                    <Link to="/dashboard#profile">
+                      <User className="h-4 w-4" /> Profile
+                    </Link>
+                  </Button>
+                  <div className="border-t border-border my-2" />
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-2 text-destructive hover:text-destructive"
+                    onClick={() => { signOut(); setMobileMenuOpen(false); }}
+                  >
+                    <LogOut className="h-4 w-4" /> Logout
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </>
         ) : (
           <>
-            <Button variant="ghost" size="sm" asChild className="sm:hidden">
-              <Link to="/mentors">Mentors</Link>
-            </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/login">Log in</Link>
             </Button>
-            <Button size="sm" asChild>
+            <Button size="sm" asChild className="hidden sm:inline-flex">
               <Link to="/signup">Sign Up</Link>
             </Button>
           </>
