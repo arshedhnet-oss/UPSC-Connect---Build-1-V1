@@ -57,6 +57,16 @@ const LoginPage = () => {
                   <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot Password?</Link>
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMeState(checked === true)}
+                />
+                <label htmlFor="rememberMe" className="text-xs text-muted-foreground cursor-pointer select-none">
+                  Remember me for 7 days
+                </label>
+              </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
