@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { Checkbox } from "@/components/ui/checkbox";
+import { setRememberMe } from "@/hooks/useSessionTimeout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +16,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMeState] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -22,6 +25,7 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      setRememberMe(rememberMe);
       await signIn(email, password);
       navigate("/dashboard");
     } catch (err: unknown) {
@@ -52,6 +56,16 @@ const LoginPage = () => {
                 <div className="text-right">
                   <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot Password?</Link>
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMeState(checked === true)}
+                />
+                <label htmlFor="rememberMe" className="text-xs text-muted-foreground cursor-pointer select-none">
+                  Remember me for 7 days
+                </label>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Signing in..." : "Sign In"}

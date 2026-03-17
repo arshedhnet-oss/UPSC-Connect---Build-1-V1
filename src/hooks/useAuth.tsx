@@ -1,7 +1,10 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseUntyped } from "@/lib/supabase";
+import { useNavigate } from "react-router-dom";
 import type { User, Session } from "@supabase/supabase-js";
+import { useSessionTimeout } from "@/hooks/useSessionTimeout";
+import SessionTimeoutWarning from "@/components/SessionTimeoutWarning";
 
 interface Profile {
   id: string;
@@ -29,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabaseUntyped
@@ -38,6 +42,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .single();
     if (data) setProfile(data as Profile);
   };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setProfile(null);
+    localStorage.removeItem("session_last_activity");
+    localStorage.removeItem("session_critical_flow");
+    navigate("/login");
+  };
+
+  const { showWarning, stayLoggedIn, logoutNow } = useSessionTimeout({
+    onLogout: signOut,
+    enabled: !!user,
+  });
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -77,14 +94,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
-  };
-
   return (
     <AuthContext.Provider value={{ user, session, profile, loading, signUp, signIn, signOut }}>
       {children}
+      <SessionTimeoutWarning
+        open={showWarning}
+        onStayLoggedIn={stayLoggedIn}
+        onLogout={logoutNow}
+      />
     </AuthContext.Provider>
   );
 }
