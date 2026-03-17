@@ -2,3 +2,6 @@ project_id = "hgmoqmslpvimgunnyddc"
 
 [functions.create-razorpay-order]
 verify_jwt = false
+
+[functions.process-email-queue]
+verify_jwt = true
