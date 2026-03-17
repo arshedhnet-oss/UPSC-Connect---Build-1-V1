@@ -25,6 +25,7 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      setRememberMe(rememberMe);
       await signIn(email, password);
       navigate("/dashboard");
     } catch (err: unknown) {
