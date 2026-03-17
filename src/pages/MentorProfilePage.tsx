@@ -143,10 +143,28 @@ const MentorProfilePage = () => {
               status: "success",
             });
 
+            // Send booking confirmation emails
+            try {
+              const emailSession = (await supabaseUntyped.auth.getSession()).data.session;
+              await fetch(
+                `https://${projectId}.supabase.co/functions/v1/send-booking-emails`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${emailSession?.access_token}`,
+                  },
+                  body: JSON.stringify({ booking_id: bookingData.id }),
+                }
+              );
+            } catch (emailErr) {
+              console.error("Failed to send booking emails:", emailErr);
+            }
+
             setSlots(prev => prev.filter(s => s.id !== slot.id));
             toast({
               title: "Payment successful!",
-              description: `Your session on ${format(new Date(slot.date), "MMM d, yyyy")} is confirmed.`,
+              description: `Your session on ${format(new Date(slot.date), "MMM d, yyyy")} is confirmed. Confirmation emails sent!`,
             });
           } catch {
             toast({ title: "Payment recorded but booking update failed", description: "Please contact support.", variant: "destructive" });
