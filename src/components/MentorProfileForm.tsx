@@ -106,6 +106,11 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
         )}
 
         <div className="space-y-2">
+          <Label>Name</Label>
+          <Input value={name} onChange={e => setName(e.target.value)} placeholder="Your full name" />
+        </div>
+
+        <div className="space-y-2">
           <Label>Bio</Label>
           <Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell aspirants about your experience..." />
         </div>
