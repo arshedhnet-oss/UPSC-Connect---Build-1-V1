@@ -27,6 +27,7 @@ interface MentorProfileFormProps {
 
 export default function MentorProfileForm({ userId, profile, mentorProfile, onProfileUpdate }: MentorProfileFormProps) {
   const { toast } = useToast();
+  const [name, setName] = useState(profile.name || "");
   const [bio, setBio] = useState(mentorProfile.bio || "");
   const [subjects, setSubjects] = useState((mentorProfile.subjects || []).join(", "));
   const [price, setPrice] = useState(mentorProfile.price_per_session || 500);
