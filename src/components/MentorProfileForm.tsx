@@ -59,6 +59,17 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
 
     const finalOptional = optionalSubject === "Others" ? customOptional.trim() || "Others" : optionalSubject;
 
+    // Update profile name
+    const { error: nameError } = await supabaseUntyped
+      .from("profiles")
+      .update({ name })
+      .eq("id", userId);
+
+    if (nameError) {
+      toast({ title: "Name update failed", description: nameError.message, variant: "destructive" });
+      return;
+    }
+
     const { error } = await supabaseUntyped
       .from("mentor_profiles")
       .update({
