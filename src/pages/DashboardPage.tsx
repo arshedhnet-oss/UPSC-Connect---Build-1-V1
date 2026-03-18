@@ -25,6 +25,7 @@ const DashboardPage = () => {
   const [slots, setSlots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [editingProfile, setEditingProfile] = useState(false);
 
   const [slotDate, setSlotDate] = useState("");
   const [slotStart, setSlotStart] = useState("");
