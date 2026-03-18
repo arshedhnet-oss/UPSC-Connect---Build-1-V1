@@ -121,13 +121,47 @@ const DashboardPage = () => {
           )}
         </div>
 
-        {profile.role === "mentor" && mentorProfile && (
-          <MentorProfileForm
-            userId={user!.id}
-            profile={{ ...profile, avatar_url: avatarUrl }}
-            mentorProfile={mentorProfile}
-            onProfileUpdate={(url) => setAvatarUrl(url)}
-          />
+        {profile.role === "mentor" && mentorProfile && !editingProfile && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="font-display">Profile</CardTitle>
+              <Button variant="outline" size="sm" onClick={() => setEditingProfile(true)}>
+                <Pencil className="h-4 w-4 mr-1" /> Edit Profile
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-3">
+                {avatarUrl && <img src={avatarUrl} alt={profile.name} className="h-12 w-12 rounded-full object-cover" />}
+                <div>
+                  <p className="font-medium text-foreground">{profile.name}</p>
+                  <p className="text-sm text-muted-foreground">{profile.email}</p>
+                </div>
+              </div>
+              {mentorProfile.bio && <p className="text-sm text-muted-foreground">{mentorProfile.bio}</p>}
+              <div className="flex flex-wrap gap-2">
+                {mentorProfile.optional_subject && <Badge variant="secondary">{mentorProfile.optional_subject}</Badge>}
+                {(mentorProfile.languages || []).map((l: string) => <Badge key={l} variant="outline">{l}</Badge>)}
+              </div>
+              <p className="text-sm text-muted-foreground">₹{mentorProfile.price_per_session} per session</p>
+              {!mentorProfile.is_approved && (
+                <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 text-sm text-accent">
+                  Your profile is pending admin approval.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {profile.role === "mentor" && mentorProfile && editingProfile && (
+          <div className="space-y-3">
+            <MentorProfileForm
+              userId={user!.id}
+              profile={{ ...profile, avatar_url: avatarUrl }}
+              mentorProfile={mentorProfile}
+              onProfileUpdate={(url) => setAvatarUrl(url)}
+            />
+            <Button variant="outline" onClick={() => setEditingProfile(false)}>Cancel</Button>
+          </div>
         )}
 
         {profile.role === "mentor" && (
