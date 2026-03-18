@@ -27,6 +27,7 @@ interface MentorProfileFormProps {
 
 export default function MentorProfileForm({ userId, profile, mentorProfile, onProfileUpdate }: MentorProfileFormProps) {
   const { toast } = useToast();
+  const [name, setName] = useState(profile.name || "");
   const [bio, setBio] = useState(mentorProfile.bio || "");
   const [subjects, setSubjects] = useState((mentorProfile.subjects || []).join(", "));
   const [price, setPrice] = useState(mentorProfile.price_per_session || 500);
@@ -57,6 +58,17 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
     const interviewYearArr = interviewYears.split(",").map(s => s.trim()).filter(Boolean);
 
     const finalOptional = optionalSubject === "Others" ? customOptional.trim() || "Others" : optionalSubject;
+
+    // Update profile name
+    const { error: nameError } = await supabaseUntyped
+      .from("profiles")
+      .update({ name })
+      .eq("id", userId);
+
+    if (nameError) {
+      toast({ title: "Name update failed", description: nameError.message, variant: "destructive" });
+      return;
+    }
 
     const { error } = await supabaseUntyped
       .from("mentor_profiles")
@@ -92,6 +104,11 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
             Your profile is pending admin approval.
           </div>
         )}
+
+        <div className="space-y-2">
+          <Label>Name</Label>
+          <Input value={name} onChange={e => setName(e.target.value)} placeholder="Your full name" />
+        </div>
 
         <div className="space-y-2">
           <Label>Bio</Label>
