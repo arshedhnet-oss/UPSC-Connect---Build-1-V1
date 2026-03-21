@@ -162,45 +162,78 @@ Deno.serve(async (req) => {
     // Enqueue mentee email
     const menteeMessageId = `booking-mentee-${booking_id}`;
     await supabase.rpc("enqueue_email", {
-      p_queue_name: "transactional_emails",
-      p_message_id: menteeMessageId,
-      p_template_name: "booking-mentee",
-      p_recipient_email: menteeProfile.email,
-      p_subject: "Your Mentorship Session is Confirmed — UPSC Connect",
-      p_html: buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, transaction.amount),
-      p_metadata: JSON.stringify({ booking_id, mentee_id: booking.mentee_id }),
+      queue_name: "transactional_emails",
+      payload: {
+        to: menteeProfile.email,
+        subject: "Your Mentorship Session is Confirmed — UPSC Connect",
+        html: buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, transaction.amount),
+        message_id: menteeMessageId,
+        label: "booking-mentee",
+        purpose: "transactional",
+        sender_domain: "notify.www.upscconnect.in",
+        queued_at: new Date().toISOString(),
+      },
+    });
+    await supabase.from("email_send_log").insert({
+      message_id: menteeMessageId,
+      template_name: "booking-mentee",
+      recipient_email: menteeProfile.email,
+      status: "pending",
+      metadata: { booking_id, mentee_id: booking.mentee_id },
     });
 
     // Enqueue mentor email
     const mentorMessageId = `booking-mentor-${booking_id}`;
     await supabase.rpc("enqueue_email", {
-      p_queue_name: "transactional_emails",
-      p_message_id: mentorMessageId,
-      p_template_name: "booking-mentor",
-      p_recipient_email: mentorProfile.email,
-      p_subject: "New Session Booked — UPSC Connect",
-      p_html: buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink),
-      p_metadata: JSON.stringify({ booking_id, mentor_id: booking.mentor_id }),
+      queue_name: "transactional_emails",
+      payload: {
+        to: mentorProfile.email,
+        subject: "New Session Booked — UPSC Connect",
+        html: buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink),
+        message_id: mentorMessageId,
+        label: "booking-mentor",
+        purpose: "transactional",
+        sender_domain: "notify.www.upscconnect.in",
+        queued_at: new Date().toISOString(),
+      },
+    });
+    await supabase.from("email_send_log").insert({
+      message_id: mentorMessageId,
+      template_name: "booking-mentor",
+      recipient_email: mentorProfile.email,
+      status: "pending",
+      metadata: { booking_id, mentor_id: booking.mentor_id },
     });
 
     // Enqueue admin email
     const adminMessageId = `booking-admin-${booking_id}`;
     await supabase.rpc("enqueue_email", {
-      p_queue_name: "transactional_emails",
-      p_message_id: adminMessageId,
-      p_template_name: "booking-admin",
-      p_recipient_email: "admin@upscconnect.in",
-      p_subject: "New Booking on UPSC Connect",
-      p_html: buildAdminEmail(
-        mentorProfile.name,
-        menteeProfile.name,
-        sessionDate,
-        sessionTime,
-        transaction.amount,
-        transaction.razorpay_payment_id || "N/A",
-        booking_id
-      ),
-      p_metadata: JSON.stringify({ booking_id }),
+      queue_name: "transactional_emails",
+      payload: {
+        to: "admin@upscconnect.in",
+        subject: "New Booking on UPSC Connect",
+        html: buildAdminEmail(
+          mentorProfile.name,
+          menteeProfile.name,
+          sessionDate,
+          sessionTime,
+          transaction.amount,
+          transaction.razorpay_payment_id || "N/A",
+          booking_id
+        ),
+        message_id: adminMessageId,
+        label: "booking-admin",
+        purpose: "transactional",
+        sender_domain: "notify.www.upscconnect.in",
+        queued_at: new Date().toISOString(),
+      },
+    });
+    await supabase.from("email_send_log").insert({
+      message_id: adminMessageId,
+      template_name: "booking-admin",
+      recipient_email: "admin@upscconnect.in",
+      status: "pending",
+      metadata: { booking_id },
     });
 
     console.log(`Booking emails enqueued for booking ${booking_id}`);
