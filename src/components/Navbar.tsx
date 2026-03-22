@@ -32,8 +32,8 @@ export default function Navbar() {
   return (
     <nav className="flex items-center justify-between px-4 sm:px-6 py-3 max-w-6xl mx-auto border-b border-border">
       <div className="flex items-center gap-4 sm:gap-6">
-        <Link to="/" className="font-display text-lg sm:text-xl font-bold text-foreground">
-          UPSC Connect
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logo} alt="UPSC Connect" className="h-8 sm:h-9" />
         </Link>
         <div className="hidden sm:flex items-center gap-1">
           <Button variant={isActive("/mentors") ? "secondary" : "ghost"} size="sm" asChild>
