@@ -191,7 +191,7 @@ const MentorProfilePage = () => {
     } catch (err: unknown) {
       toast({ title: "Booking failed", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
     } finally {
-      setBooking(false);
+      setBooking(null);
     }
   };
 
