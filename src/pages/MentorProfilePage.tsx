@@ -36,7 +36,7 @@ const MentorProfilePage = () => {
   const [mentor, setMentor] = useState<any>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
-  const [booking, setBooking] = useState(false);
+  const [booking, setBooking] = useState<string | null>(null);
   const [eligibleBookings, setEligibleBookings] = useState<any[]>([]);
   const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
   const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string } | null>(null);
@@ -88,7 +88,7 @@ const MentorProfilePage = () => {
       toast({ title: "Only mentees can book sessions", variant: "destructive" });
       return;
     }
-    setBooking(true);
+    setBooking(slot.id);
     try {
       const { data: bookingData, error: bookingErr } = await supabaseUntyped
         .from("bookings")
@@ -191,7 +191,7 @@ const MentorProfilePage = () => {
     } catch (err: unknown) {
       toast({ title: "Booking failed", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
     } finally {
-      setBooking(false);
+      setBooking(null);
     }
   };
 
@@ -275,8 +275,8 @@ const MentorProfilePage = () => {
                       <p className="font-medium text-foreground">{format(new Date(slot.date), "EEE, MMM d, yyyy")}</p>
                       <p className="text-sm text-muted-foreground">{slot.start_time.slice(0, 5)} – {slot.end_time.slice(0, 5)}</p>
                     </div>
-                    <Button size="sm" onClick={() => handleBook(slot)} disabled={booking}>
-                      {booking ? "Booking..." : "Book"}
+                    <Button size="sm" onClick={() => handleBook(slot)} disabled={booking === slot.id}>
+                      {booking === slot.id ? "Booking..." : "Book"}
                     </Button>
                   </div>
                 ))}

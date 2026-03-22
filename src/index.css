@@ -85,8 +85,17 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground font-sans;
+  }
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
+    color: hsl(var(--foreground));
+  }
+  button, a, [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
   }
 }
