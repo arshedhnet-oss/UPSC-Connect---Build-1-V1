@@ -88,7 +88,7 @@ const MentorProfilePage = () => {
       toast({ title: "Only mentees can book sessions", variant: "destructive" });
       return;
     }
-    setBooking(true);
+    setBooking(slot.id);
     try {
       const { data: bookingData, error: bookingErr } = await supabaseUntyped
         .from("bookings")
