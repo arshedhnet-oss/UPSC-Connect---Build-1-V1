@@ -275,8 +275,8 @@ const MentorProfilePage = () => {
                       <p className="font-medium text-foreground">{format(new Date(slot.date), "EEE, MMM d, yyyy")}</p>
                       <p className="text-sm text-muted-foreground">{slot.start_time.slice(0, 5)} – {slot.end_time.slice(0, 5)}</p>
                     </div>
-                    <Button size="sm" onClick={() => handleBook(slot)} disabled={booking}>
-                      {booking ? "Booking..." : "Book"}
+                    <Button size="sm" onClick={() => handleBook(slot)} disabled={booking === slot.id}>
+                      {booking === slot.id ? "Booking..." : "Book"}
                     </Button>
                   </div>
                 ))}
