@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, LayoutDashboard, CalendarCheck, User, Menu } from "lucide-react";
+import logo from "@/assets/logo.png";
+import { LogOut, LayoutDashboard, CalendarCheck, User, Menu } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
