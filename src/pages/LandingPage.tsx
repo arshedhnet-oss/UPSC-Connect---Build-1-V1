@@ -50,6 +50,14 @@ const LandingPage = () => {
           ))}
         </div>
       </section>
+      {/* Contact */}
+      <section className="px-4 sm:px-6 py-12 sm:py-16 max-w-4xl mx-auto text-center">
+        <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">Contact Us</h2>
+        <p className="text-muted-foreground mb-2">Get in touch with us</p>
+        <a href="mailto:admin@upscconnect.in" className="text-primary font-medium hover:underline">
+          admin@upscconnect.in
+        </a>
+      </section>
 
       {/* Footer */}
       <footer className="border-t border-border px-6 py-8 text-center text-sm text-muted-foreground">
