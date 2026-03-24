@@ -323,6 +323,10 @@ const AdminDashboardPage = () => {
               Reviews
               <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-xs">{allReviews.length}</span>
             </TabsTrigger>
+            <TabsTrigger value="organisations" className="text-xs sm:text-sm">
+              <Building2 className="h-4 w-4 mr-1" /> Organisations
+              {allOrgs.filter(o => !o.is_approved).length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{allOrgs.filter(o => !o.is_approved).length}</span>}
+            </TabsTrigger>
           </TabsList>
 
           {/* All Sessions Tab */}
