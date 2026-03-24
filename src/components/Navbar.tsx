@@ -37,6 +37,9 @@ export default function Navbar() {
           <Button variant={isActive("/mentors") ? "secondary" : "ghost"} size="sm" asChild>
             <Link to="/mentors">Find Mentors</Link>
           </Button>
+          <Button variant={isActive("/organisations") ? "secondary" : "ghost"} size="sm" asChild>
+            <Link to="/organisations">Organisations</Link>
+          </Button>
           <Button variant={isActive("/#how-it-works") ? "secondary" : "ghost"} size="sm" asChild>
             <Link to="/#how-it-works">How It Works</Link>
           </Button>
