@@ -37,6 +37,9 @@ export default function Navbar() {
           <Button variant={isActive("/mentors") ? "secondary" : "ghost"} size="sm" asChild>
             <Link to="/mentors">Find Mentors</Link>
           </Button>
+          <Button variant={isActive("/organisations") ? "secondary" : "ghost"} size="sm" asChild>
+            <Link to="/organisations">Organisations</Link>
+          </Button>
           <Button variant={isActive("/#how-it-works") ? "secondary" : "ghost"} size="sm" asChild>
             <Link to="/#how-it-works">How It Works</Link>
           </Button>
@@ -76,20 +79,24 @@ export default function Navbar() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="flex items-center gap-2 cursor-pointer">
+                    <Link to={profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"} className="flex items-center gap-2 cursor-pointer">
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard#bookings" className="flex items-center gap-2 cursor-pointer">
-                      <CalendarCheck className="h-4 w-4" /> My Bookings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard#profile" className="flex items-center gap-2 cursor-pointer">
-                      <User className="h-4 w-4" /> Profile
-                    </Link>
-                  </DropdownMenuItem>
+                  {profile.role !== "institute_admin" && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard#bookings" className="flex items-center gap-2 cursor-pointer">
+                          <CalendarCheck className="h-4 w-4" /> My Bookings
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard#profile" className="flex items-center gap-2 cursor-pointer">
+                          <User className="h-4 w-4" /> Profile
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="h-4 w-4" /> Logout
@@ -124,11 +131,11 @@ export default function Navbar() {
                 <div className="flex flex-col gap-1">
                   <Button
                     variant="ghost"
-                    className={`justify-start gap-2 ${isActive("/dashboard") ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
+                    className={`justify-start gap-2 ${isActive(profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard") ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
                     asChild
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Link to="/dashboard">
+                    <Link to={profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"}>
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </Link>
                   </Button>

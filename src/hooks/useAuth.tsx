@@ -11,7 +11,7 @@ interface Profile {
   name: string;
   phone: string | null;
   email: string;
-  role: "mentor" | "mentee" | "admin";
+  role: "mentor" | "mentee" | "admin" | "institute_admin";
   avatar_url: string | null;
 }
 

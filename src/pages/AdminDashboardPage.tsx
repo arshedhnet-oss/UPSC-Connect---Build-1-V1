@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabaseUntyped } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog, Star, RotateCcw, Trash2, Search } from "lucide-react";
+import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog, Star, RotateCcw, Trash2, Search, Building2, Ban, ShieldAlert } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import StarRating from "@/components/StarRating";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const AdminDashboardPage = () => {
   const { user, signOut, loading: authLoading } = useAuth();
@@ -22,12 +33,18 @@ const AdminDashboardPage = () => {
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [allOrgs, setAllOrgs] = useState<any[]>([]);
   const [reviewSearch, setReviewSearch] = useState("");
   const [reviewMentorFilter, setReviewMentorFilter] = useState("");
   const [reviewRatingFilter, setReviewRatingFilter] = useState("");
   const [reviewDateFilter, setReviewDateFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // Secure deletion state
+  const [deleteDialog, setDeleteDialog] = useState<{ type: string; id: string; name: string } | null>(null);
+  const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
+  const [deletePassword, setDeletePassword] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -53,7 +70,7 @@ const AdminDashboardPage = () => {
   }, [user]);
 
   const fetchAdminData = async () => {
-    const [mentorsRes, approvedRes, bookingsRes, txRes, reviewsRes] = await Promise.all([
+    const [mentorsRes, approvedRes, bookingsRes, txRes, reviewsRes, orgsRes] = await Promise.all([
       supabaseUntyped
         .from("mentor_profiles")
         .select("*, profiles!mentor_profiles_user_id_fkey(name, email, phone, avatar_url)")
@@ -74,6 +91,10 @@ const AdminDashboardPage = () => {
         .from("mentor_reviews")
         .select("*, mentor:profiles!mentor_reviews_mentor_id_fkey(name), mentee:profiles!mentor_reviews_mentee_id_fkey(name)")
         .order("created_at", { ascending: false }),
+      supabaseUntyped
+        .from("organisations")
+        .select("*, profiles!organisations_created_by_fkey(name, email)")
+        .order("created_at", { ascending: false }),
     ]);
 
     if (mentorsRes.data) setPendingMentors(mentorsRes.data);
@@ -81,6 +102,7 @@ const AdminDashboardPage = () => {
     if (bookingsRes.data) setAllBookings(bookingsRes.data);
     if (txRes.data) setTransactions(txRes.data);
     if (reviewsRes.data) setAllReviews(reviewsRes.data);
+    if (orgsRes.data) setAllOrgs(orgsRes.data);
   };
 
   const approveMentor = async (userId: string) => {
@@ -145,6 +167,70 @@ const AdminDashboardPage = () => {
       setAllReviews(prev => prev.map(r => r.id === reviewId ? { ...r, status: "active" } : r));
       toast({ title: "Review restored" });
     }
+  };
+
+  // Organisation management
+  const approveOrg = async (orgId: string) => {
+    const { error } = await supabaseUntyped.from("organisations").update({ is_approved: true }).eq("id", orgId);
+    if (error) toast({ title: "Failed", variant: "destructive" });
+    else { setAllOrgs(prev => prev.map(o => o.id === orgId ? { ...o, is_approved: true } : o)); toast({ title: "Organisation approved!" }); }
+  };
+
+  const suspendOrg = async (orgId: string) => {
+    const org = allOrgs.find(o => o.id === orgId);
+    const newSuspended = !org?.is_suspended;
+    const { error } = await supabaseUntyped.from("organisations").update({ is_suspended: newSuspended }).eq("id", orgId);
+    if (error) toast({ title: "Failed", variant: "destructive" });
+    else { setAllOrgs(prev => prev.map(o => o.id === orgId ? { ...o, is_suspended: newSuspended } : o)); toast({ title: newSuspended ? "Organisation suspended" : "Organisation unsuspended" }); }
+  };
+
+  // Secure 2-step deletion
+  const initiateDelete = (type: string, id: string, name: string) => {
+    setDeleteDialog({ type, id, name });
+    setDeleteStep(1);
+    setDeletePassword("");
+  };
+
+  const confirmDelete = async () => {
+    if (deleteStep === 1) {
+      setDeleteStep(2);
+      return;
+    }
+    // Step 2: Re-authenticate with password
+    if (!deletePassword) { toast({ title: "Enter your password", variant: "destructive" }); return; }
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: user!.email!,
+      password: deletePassword,
+    });
+    if (authError) { toast({ title: "Authentication failed", description: "Incorrect password", variant: "destructive" }); return; }
+
+    if (!deleteDialog) return;
+    try {
+      if (deleteDialog.type === "organisation") {
+        // Delete org mentors first, then org
+        await supabaseUntyped.from("organisation_mentors").delete().eq("organisation_id", deleteDialog.id);
+        const { error } = await supabaseUntyped.from("organisations").delete().eq("id", deleteDialog.id);
+        if (error) throw error;
+        setAllOrgs(prev => prev.filter(o => o.id !== deleteDialog.id));
+      } else if (deleteDialog.type === "mentor") {
+        // Use the existing delete edge function
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const session = (await supabaseUntyped.auth.getSession()).data.session;
+        const res = await fetch(`https://${projectId}.supabase.co/functions/v1/delete-mentor-account`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ mentor_id: deleteDialog.id }),
+        });
+        if (!res.ok) throw new Error("Delete failed");
+        setApprovedMentors(prev => prev.filter(m => m.user_id !== deleteDialog.id));
+        setPendingMentors(prev => prev.filter(m => m.user_id !== deleteDialog.id));
+      }
+      toast({ title: `${deleteDialog.type === "organisation" ? "Organisation" : "Mentor"} permanently deleted` });
+    } catch (err: any) {
+      toast({ title: "Deletion failed", description: err.message, variant: "destructive" });
+    }
+    setDeleteDialog(null);
+    setDeletePassword("");
   };
 
   if (authLoading || loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
@@ -236,6 +322,10 @@ const AdminDashboardPage = () => {
             <TabsTrigger value="reviews" className="text-xs sm:text-sm">
               Reviews
               <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-xs">{allReviews.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="organisations" className="text-xs sm:text-sm">
+              <Building2 className="h-4 w-4 mr-1" /> Organisations
+              {allOrgs.filter(o => !o.is_approved).length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{allOrgs.filter(o => !o.is_approved).length}</span>}
             </TabsTrigger>
           </TabsList>
 
@@ -463,9 +553,14 @@ const AdminDashboardPage = () => {
                           )}
                           <p className="text-sm text-muted-foreground mt-1">₹{m.price_per_session}/session</p>
                         </div>
-                        <Button size="sm" variant="destructive" onClick={() => disableMentor(m.user_id)}>
-                          <X className="h-4 w-4 mr-1" /> Disable
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="destructive" onClick={() => disableMentor(m.user_id)}>
+                            <X className="h-4 w-4 mr-1" /> Disable
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-destructive" onClick={() => initiateDelete("mentor", m.user_id, m.profiles?.name || "Mentor")}>
+                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -570,8 +665,106 @@ const AdminDashboardPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Organisations Tab */}
+          <TabsContent value="organisations">
+            <div className="space-y-6">
+              {/* Pending Orgs */}
+              <Card>
+                <CardHeader><CardTitle className="font-display">Pending Organisation Approvals</CardTitle></CardHeader>
+                <CardContent>
+                  {allOrgs.filter(o => !o.is_approved).length === 0 ? (
+                    <p className="text-muted-foreground">No pending approvals.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {allOrgs.filter(o => !o.is_approved).map((org: any) => (
+                        <div key={org.id} className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border border-accent/30 bg-accent/5 p-4 gap-3">
+                          <div>
+                            <p className="font-medium text-foreground">{org.name}</p>
+                            <p className="text-sm text-muted-foreground">{org.contact_email || org.profiles?.email}</p>
+                            {org.location && <p className="text-xs text-muted-foreground">📍 {org.location}</p>}
+                            {org.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{org.description}</p>}
+                          </div>
+                          <Button size="sm" onClick={() => approveOrg(org.id)}>
+                            <Check className="h-4 w-4 mr-1" /> Approve
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* All Organisations */}
+              <Card>
+                <CardHeader><CardTitle className="font-display">All Organisations</CardTitle></CardHeader>
+                <CardContent>
+                  {allOrgs.filter(o => o.is_approved).length === 0 ? (
+                    <p className="text-muted-foreground">No approved organisations.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {allOrgs.filter(o => o.is_approved).map((org: any) => (
+                        <div key={org.id} className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border border-border p-4 gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-foreground">{org.name}</p>
+                              {org.is_suspended && <Badge variant="destructive" className="text-xs">Suspended</Badge>}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{org.contact_email || org.profiles?.email}</p>
+                            {org.location && <p className="text-xs text-muted-foreground">📍 {org.location}</p>}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => suspendOrg(org.id)}>
+                              <Ban className="h-3.5 w-3.5 mr-1" /> {org.is_suspended ? "Unsuspend" : "Suspend"}
+                            </Button>
+                            <Button size="sm" variant="destructive" onClick={() => initiateDelete("organisation", org.id, org.name)}>
+                              <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
+
+      {/* Secure 2-Step Deletion Dialog */}
+      <AlertDialog open={!!deleteDialog} onOpenChange={(open) => { if (!open) { setDeleteDialog(null); setDeletePassword(""); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-destructive" />
+              {deleteStep === 1 ? "Confirm Deletion" : "Re-authenticate to Delete"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteStep === 1 ? (
+                <>Are you sure you want to permanently delete <strong>{deleteDialog?.name}</strong>? This action cannot be undone.</>
+              ) : (
+                <>Enter your admin password to confirm permanent deletion of <strong>{deleteDialog?.name}</strong>.</>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteStep === 2 && (
+            <Input
+              type="password"
+              placeholder="Enter your password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              className="mt-2"
+            />
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setDeleteDialog(null); setDeletePassword(""); }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleteStep === 1 ? "Continue" : "Delete Permanently"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
