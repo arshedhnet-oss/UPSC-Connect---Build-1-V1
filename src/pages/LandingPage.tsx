@@ -53,6 +53,40 @@ const LandingPage = () => {
           ))}
         </div>
       </section>
+
+      {/* Organisations */}
+      <section className="px-4 sm:px-6 py-12 sm:py-16 bg-card">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">For Coaching Institutes</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+            Register your organisation, list your mentors, and manage sessions — all in one platform.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-6 mb-8">
+            {[
+              { icon: Building2, title: "Dedicated Profile", desc: "Get a branded page for your institute with mentor listings and contact info." },
+              { icon: Users, title: "Mentor Management", desc: "Add, approve, and manage mentors under your organisation seamlessly." },
+              { icon: Calendar, title: "Session Control", desc: "Set pricing, manage bookings, and track all sessions from your dashboard." },
+            ].map((f, i) => (
+              <div key={i} className="rounded-lg border border-border bg-background p-5 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10">
+                  <f.icon className="h-6 w-6 text-accent" />
+                </div>
+                <h3 className="font-display text-lg font-semibold text-foreground">{f.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button size="lg" asChild>
+              <Link to="/organisations">Browse Organisations</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/organisations/register">Register Your Institute</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Contact */}
       <section className="px-4 sm:px-6 py-12 sm:py-16 max-w-4xl mx-auto text-center">
         <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">Contact Us</h2>
