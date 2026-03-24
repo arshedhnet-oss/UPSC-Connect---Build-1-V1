@@ -169,6 +169,70 @@ const AdminDashboardPage = () => {
     }
   };
 
+  // Organisation management
+  const approveOrg = async (orgId: string) => {
+    const { error } = await supabaseUntyped.from("organisations").update({ is_approved: true }).eq("id", orgId);
+    if (error) toast({ title: "Failed", variant: "destructive" });
+    else { setAllOrgs(prev => prev.map(o => o.id === orgId ? { ...o, is_approved: true } : o)); toast({ title: "Organisation approved!" }); }
+  };
+
+  const suspendOrg = async (orgId: string) => {
+    const org = allOrgs.find(o => o.id === orgId);
+    const newSuspended = !org?.is_suspended;
+    const { error } = await supabaseUntyped.from("organisations").update({ is_suspended: newSuspended }).eq("id", orgId);
+    if (error) toast({ title: "Failed", variant: "destructive" });
+    else { setAllOrgs(prev => prev.map(o => o.id === orgId ? { ...o, is_suspended: newSuspended } : o)); toast({ title: newSuspended ? "Organisation suspended" : "Organisation unsuspended" }); }
+  };
+
+  // Secure 2-step deletion
+  const initiateDelete = (type: string, id: string, name: string) => {
+    setDeleteDialog({ type, id, name });
+    setDeleteStep(1);
+    setDeletePassword("");
+  };
+
+  const confirmDelete = async () => {
+    if (deleteStep === 1) {
+      setDeleteStep(2);
+      return;
+    }
+    // Step 2: Re-authenticate with password
+    if (!deletePassword) { toast({ title: "Enter your password", variant: "destructive" }); return; }
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: user!.email!,
+      password: deletePassword,
+    });
+    if (authError) { toast({ title: "Authentication failed", description: "Incorrect password", variant: "destructive" }); return; }
+
+    if (!deleteDialog) return;
+    try {
+      if (deleteDialog.type === "organisation") {
+        // Delete org mentors first, then org
+        await supabaseUntyped.from("organisation_mentors").delete().eq("organisation_id", deleteDialog.id);
+        const { error } = await supabaseUntyped.from("organisations").delete().eq("id", deleteDialog.id);
+        if (error) throw error;
+        setAllOrgs(prev => prev.filter(o => o.id !== deleteDialog.id));
+      } else if (deleteDialog.type === "mentor") {
+        // Use the existing delete edge function
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const session = (await supabaseUntyped.auth.getSession()).data.session;
+        const res = await fetch(`https://${projectId}.supabase.co/functions/v1/delete-mentor-account`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ mentor_id: deleteDialog.id }),
+        });
+        if (!res.ok) throw new Error("Delete failed");
+        setApprovedMentors(prev => prev.filter(m => m.user_id !== deleteDialog.id));
+        setPendingMentors(prev => prev.filter(m => m.user_id !== deleteDialog.id));
+      }
+      toast({ title: `${deleteDialog.type === "organisation" ? "Organisation" : "Mentor"} permanently deleted` });
+    } catch (err: any) {
+      toast({ title: "Deletion failed", description: err.message, variant: "destructive" });
+    }
+    setDeleteDialog(null);
+    setDeletePassword("");
+  };
+
   if (authLoading || loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!isAdmin) return null;
 
