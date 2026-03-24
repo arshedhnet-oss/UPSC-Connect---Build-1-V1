@@ -660,8 +660,106 @@ const AdminDashboardPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Organisations Tab */}
+          <TabsContent value="organisations">
+            <div className="space-y-6">
+              {/* Pending Orgs */}
+              <Card>
+                <CardHeader><CardTitle className="font-display">Pending Organisation Approvals</CardTitle></CardHeader>
+                <CardContent>
+                  {allOrgs.filter(o => !o.is_approved).length === 0 ? (
+                    <p className="text-muted-foreground">No pending approvals.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {allOrgs.filter(o => !o.is_approved).map((org: any) => (
+                        <div key={org.id} className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border border-accent/30 bg-accent/5 p-4 gap-3">
+                          <div>
+                            <p className="font-medium text-foreground">{org.name}</p>
+                            <p className="text-sm text-muted-foreground">{org.contact_email || org.profiles?.email}</p>
+                            {org.location && <p className="text-xs text-muted-foreground">📍 {org.location}</p>}
+                            {org.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{org.description}</p>}
+                          </div>
+                          <Button size="sm" onClick={() => approveOrg(org.id)}>
+                            <Check className="h-4 w-4 mr-1" /> Approve
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* All Organisations */}
+              <Card>
+                <CardHeader><CardTitle className="font-display">All Organisations</CardTitle></CardHeader>
+                <CardContent>
+                  {allOrgs.filter(o => o.is_approved).length === 0 ? (
+                    <p className="text-muted-foreground">No approved organisations.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {allOrgs.filter(o => o.is_approved).map((org: any) => (
+                        <div key={org.id} className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border border-border p-4 gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-foreground">{org.name}</p>
+                              {org.is_suspended && <Badge variant="destructive" className="text-xs">Suspended</Badge>}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{org.contact_email || org.profiles?.email}</p>
+                            {org.location && <p className="text-xs text-muted-foreground">📍 {org.location}</p>}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => suspendOrg(org.id)}>
+                              <Ban className="h-3.5 w-3.5 mr-1" /> {org.is_suspended ? "Unsuspend" : "Suspend"}
+                            </Button>
+                            <Button size="sm" variant="destructive" onClick={() => initiateDelete("organisation", org.id, org.name)}>
+                              <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
+
+      {/* Secure 2-Step Deletion Dialog */}
+      <AlertDialog open={!!deleteDialog} onOpenChange={(open) => { if (!open) { setDeleteDialog(null); setDeletePassword(""); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-destructive" />
+              {deleteStep === 1 ? "Confirm Deletion" : "Re-authenticate to Delete"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteStep === 1 ? (
+                <>Are you sure you want to permanently delete <strong>{deleteDialog?.name}</strong>? This action cannot be undone.</>
+              ) : (
+                <>Enter your admin password to confirm permanent deletion of <strong>{deleteDialog?.name}</strong>.</>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteStep === 2 && (
+            <Input
+              type="password"
+              placeholder="Enter your password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              className="mt-2"
+            />
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setDeleteDialog(null); setDeletePassword(""); }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleteStep === 1 ? "Continue" : "Delete Permanently"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
