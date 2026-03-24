@@ -79,20 +79,24 @@ export default function Navbar() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="flex items-center gap-2 cursor-pointer">
+                    <Link to={profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"} className="flex items-center gap-2 cursor-pointer">
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard#bookings" className="flex items-center gap-2 cursor-pointer">
-                      <CalendarCheck className="h-4 w-4" /> My Bookings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard#profile" className="flex items-center gap-2 cursor-pointer">
-                      <User className="h-4 w-4" /> Profile
-                    </Link>
-                  </DropdownMenuItem>
+                  {profile.role !== "institute_admin" && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard#bookings" className="flex items-center gap-2 cursor-pointer">
+                          <CalendarCheck className="h-4 w-4" /> My Bookings
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard#profile" className="flex items-center gap-2 cursor-pointer">
+                          <User className="h-4 w-4" /> Profile
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="h-4 w-4" /> Logout
