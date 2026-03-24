@@ -37,6 +37,10 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/mentors" element={<MentorListingPage />} />
             <Route path="/mentors/:id" element={<MentorProfilePage />} />
+            <Route path="/organisations" element={<OrganisationListingPage />} />
+            <Route path="/organisations/register" element={<OrganisationSignupPage />} />
+            <Route path="/organisations/:slug" element={<OrganisationProfilePage />} />
+            <Route path="/institute/dashboard" element={<InstituteDashboardPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/profile" element={<AdminProfilePage />} />
