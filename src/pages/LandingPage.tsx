@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, Calendar, ArrowRight } from "lucide-react";
+import { BookOpen, Users, Calendar, ArrowRight, Building2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 const LandingPage = () => {
