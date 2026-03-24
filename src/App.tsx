@@ -14,6 +14,10 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminProfilePage from "./pages/AdminProfilePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import OrganisationListingPage from "./pages/OrganisationListingPage";
+import OrganisationProfilePage from "./pages/OrganisationProfilePage";
+import OrganisationSignupPage from "./pages/OrganisationSignupPage";
+import InstituteDashboardPage from "./pages/InstituteDashboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
