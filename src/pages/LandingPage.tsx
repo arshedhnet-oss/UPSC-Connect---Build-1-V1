@@ -24,9 +24,12 @@ const LandingPage = () => {
             <Link to="/signup">Become a Mentor</Link>
           </Button>
         </div>
-        <div className="mt-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+        <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
           <Button size="lg" variant="secondary" className="rounded-full px-8 shadow-md" asChild>
             <Link to="/mentors">🧭 Feeling Lost? Talk to a Mentor</Link>
+          </Button>
+          <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
+            <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
           </Button>
         </div>
       </section>
