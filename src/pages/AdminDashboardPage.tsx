@@ -35,12 +35,18 @@ const AdminDashboardPage = () => {
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [allOrgs, setAllOrgs] = useState<any[]>([]);
   const [reviewSearch, setReviewSearch] = useState("");
   const [reviewMentorFilter, setReviewMentorFilter] = useState("");
   const [reviewRatingFilter, setReviewRatingFilter] = useState("");
   const [reviewDateFilter, setReviewDateFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // Secure deletion state
+  const [deleteDialog, setDeleteDialog] = useState<{ type: string; id: string; name: string } | null>(null);
+  const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
+  const [deletePassword, setDeletePassword] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
