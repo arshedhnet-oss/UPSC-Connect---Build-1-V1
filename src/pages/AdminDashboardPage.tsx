@@ -22,8 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import StarRating from "@/components/StarRating";
 
 const AdminDashboardPage = () => {
   const { user, signOut, loading: authLoading } = useAuth();
