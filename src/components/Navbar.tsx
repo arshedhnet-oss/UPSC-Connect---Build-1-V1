@@ -131,11 +131,11 @@ export default function Navbar() {
                 <div className="flex flex-col gap-1">
                   <Button
                     variant="ghost"
-                    className={`justify-start gap-2 ${isActive("/dashboard") ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
+                    className={`justify-start gap-2 ${isActive(profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard") ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
                     asChild
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Link to="/dashboard">
+                    <Link to={profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"}>
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </Link>
                   </Button>
