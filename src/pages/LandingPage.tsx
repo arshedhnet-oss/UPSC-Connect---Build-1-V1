@@ -21,7 +21,7 @@ const LandingPage = () => {
             <Link to="/mentors">Browse Mentors <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
           <Button size="lg" variant="outline" asChild>
-            <Link to="/organisations"><Building2 className="mr-2 h-4 w-4" /> Browse Institutes</Link>
+            <Link to="/organisations"><Building2 className="mr-2 h-4 w-4" /> Browse Organisations</Link>
           </Button>
         </div>
         <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
