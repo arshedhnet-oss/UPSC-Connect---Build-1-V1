@@ -46,14 +46,22 @@ export default function Navbar() {
         </div>
       </div>
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Find Mentors - always visible on mobile */}
+        {/* Mobile nav links */}
         <Button
           variant={isActive("/mentors") ? "secondary" : "default"}
           size="sm"
           asChild
-          className="sm:hidden text-xs px-3"
+          className="sm:hidden text-xs px-2"
         >
-          <Link to="/mentors">Find Mentors</Link>
+          <Link to="/mentors">Mentors</Link>
+        </Button>
+        <Button
+          variant={isActive("/organisations") ? "secondary" : "outline"}
+          size="sm"
+          asChild
+          className="sm:hidden text-xs px-2"
+        >
+          <Link to="/organisations">Orgs</Link>
         </Button>
 
         {user && profile ? (
