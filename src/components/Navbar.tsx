@@ -34,13 +34,13 @@ export default function Navbar() {
           UPSC Connect
         </Link>
         <div className="hidden sm:flex items-center gap-1">
-          <Button variant={isActive("/mentors") ? "secondary" : "ghost"} size="sm" asChild>
+          <Button variant="ghost" size="sm" asChild className={isActive("/mentors") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}>
             <Link to="/mentors">Find Mentors</Link>
           </Button>
-          <Button variant={isActive("/organisations") ? "secondary" : "ghost"} size="sm" asChild>
+          <Button variant="ghost" size="sm" asChild className={isActive("/organisations") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}>
             <Link to="/organisations">Organisations</Link>
           </Button>
-          <Button variant={isActive("/#how-it-works") ? "secondary" : "ghost"} size="sm" asChild>
+          <Button variant="ghost" size="sm" asChild>
             <Link to="/#how-it-works">How It Works</Link>
           </Button>
         </div>
