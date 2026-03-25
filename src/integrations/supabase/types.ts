@@ -270,6 +270,101 @@ export type Database = {
           },
         ]
       }
+      organisation_mentors: {
+        Row: {
+          created_at: string | null
+          id: string
+          mentor_id: string
+          organisation_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mentor_id: string
+          organisation_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mentor_id?: string
+          organisation_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organisation_mentors_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organisation_mentors_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organisations: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          is_approved: boolean | null
+          is_suspended: boolean | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          slug: string
+          website: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_suspended?: boolean | null
+          location?: string | null
+          logo_url?: string | null
+          name: string
+          slug: string
+          website?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_suspended?: boolean | null
+          location?: string | null
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organisations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -454,7 +549,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "mentor" | "mentee" | "admin"
+      app_role: "mentor" | "mentee" | "admin" | "institute_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -582,7 +677,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["mentor", "mentee", "admin"],
+      app_role: ["mentor", "mentee", "admin", "institute_admin"],
     },
   },
 } as const
