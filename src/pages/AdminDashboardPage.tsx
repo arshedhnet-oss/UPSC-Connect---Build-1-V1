@@ -523,9 +523,14 @@ const AdminDashboardPage = () => {
                             </div>
                           )}
                         </div>
-                        <Button size="sm" onClick={() => approveMentor(m.user_id)}>
-                          <Check className="h-4 w-4 mr-1" /> Approve
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => approveMentor(m.user_id)}>
+                            <Check className="h-4 w-4 mr-1" /> Approve
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-destructive" onClick={() => initiateDelete("mentor", m.user_id, m.profiles?.name || "Mentor")}>
+                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -685,9 +690,14 @@ const AdminDashboardPage = () => {
                             {org.location && <p className="text-xs text-muted-foreground">📍 {org.location}</p>}
                             {org.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{org.description}</p>}
                           </div>
-                          <Button size="sm" onClick={() => approveOrg(org.id)}>
-                            <Check className="h-4 w-4 mr-1" /> Approve
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={() => approveOrg(org.id)}>
+                              <Check className="h-4 w-4 mr-1" /> Approve
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-destructive" onClick={() => initiateDelete("organisation", org.id, org.name)}>
+                              <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
