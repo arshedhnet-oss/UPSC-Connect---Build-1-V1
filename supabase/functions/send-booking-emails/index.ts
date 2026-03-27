@@ -7,9 +7,32 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function generateMeetingLink(bookingId: string): string {
-  const roomName = `upsc-connect-${bookingId.slice(0, 8)}`;
-  return `https://meet.jit.si/${roomName}`;
+function generatePasscode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  let code = "";
+  const arr = new Uint8Array(8);
+  crypto.getRandomValues(arr);
+  for (const b of arr) code += chars[b % chars.length];
+  return code;
+}
+
+function generateMeetingLink(bookingId: string): { roomName: string; url: string } {
+  const ts = Date.now();
+  const roomName = `upscconnect-${bookingId.replace(/-/g, "").slice(0, 12)}-${ts}`;
+  return { roomName, url: `https://meet.jit.si/${roomName}` };
+}
+
+function buildCalendarLink(title: string, date: string, startTime: string, endTime: string, meetingUrl: string, description: string): string {
+  const start = `${date.replace(/-/g, "")}T${startTime.replace(/:/g, "")}00`;
+  const end = `${date.replace(/-/g, "")}T${endTime.replace(/:/g, "")}00`;
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${start}/${end}`,
+    details: description,
+    location: meetingUrl,
+  });
+  return `https://www.google.com/calendar/render?${params.toString()}`;
 }
 
 Deno.serve(async (req) => {
@@ -38,7 +61,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify authenticated user
     const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -58,13 +80,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role for full access
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Get booking with related data
     const { data: booking, error: bookingErr } = await supabase
       .from("bookings")
-      .select("id, status, mentee_id, mentor_id, slot_id, meeting_link")
+      .select("id, status, mentee_id, mentor_id, slot_id, meeting_link, meeting_passcode")
       .eq("id", booking_id)
       .single();
 
@@ -76,7 +96,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify the caller is the mentee
     if (booking.mentee_id !== user.id) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 403,
@@ -91,7 +110,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check if emails already sent (idempotency via meeting_link presence)
+    // Idempotency check
     if (booking.meeting_link) {
       return new Response(JSON.stringify({ success: true, already_sent: true }), {
         status: 200,
@@ -99,7 +118,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get transaction to verify payment
     const { data: transaction } = await supabase
       .from("transactions")
       .select("amount, razorpay_payment_id, status")
@@ -114,14 +132,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get slot details
     const { data: slot } = await supabase
       .from("slots")
       .select("date, start_time, end_time")
       .eq("id", booking.slot_id)
       .single();
 
-    // Get mentee and mentor profiles
     const { data: menteeProfile } = await supabase
       .from("profiles")
       .select("name, email")
@@ -142,13 +158,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Generate meeting link
-    const meetingLink = generateMeetingLink(booking_id);
+    // Generate meeting link and passcode
+    const { url: meetingLink } = generateMeetingLink(booking_id);
+    const passcode = generatePasscode();
 
-    // Store meeting link in booking
+    // Store in booking
     await supabase
       .from("bookings")
-      .update({ meeting_link: meetingLink })
+      .update({ meeting_link: meetingLink, meeting_passcode: passcode })
       .eq("id", booking_id);
 
     const sessionDate = new Date(slot.date).toLocaleDateString("en-IN", {
@@ -157,7 +174,16 @@ Deno.serve(async (req) => {
       month: "long",
       day: "numeric",
     });
-    const sessionTime = `${slot.start_time.slice(0, 5)} - ${slot.end_time.slice(0, 5)}`;
+    const sessionTime = `${slot.start_time.slice(0, 5)} – ${slot.end_time.slice(0, 5)}`;
+
+    const calendarLink = buildCalendarLink(
+      `UPSC Connect Session`,
+      slot.date,
+      slot.start_time.slice(0, 5),
+      slot.end_time.slice(0, 5),
+      meetingLink,
+      `Mentorship session on UPSC Connect.\nMeeting passcode: ${passcode}\nJoin: ${meetingLink}`
+    );
 
     // Enqueue mentee email
     const menteeMessageId = `booking-mentee-${booking_id}`;
@@ -166,7 +192,7 @@ Deno.serve(async (req) => {
       payload: {
         to: menteeProfile.email,
         subject: "Your Mentorship Session is Confirmed — UPSC Connect",
-        html: buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, transaction.amount),
+        html: buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, passcode, transaction.amount, calendarLink),
         message_id: menteeMessageId,
         label: "booking-mentee",
         purpose: "transactional",
@@ -179,7 +205,7 @@ Deno.serve(async (req) => {
       template_name: "booking-mentee",
       recipient_email: menteeProfile.email,
       status: "pending",
-      metadata: { booking_id, mentee_id: booking.mentee_id },
+      metadata: { booking_id, mentee_id: booking.mentee_id, meeting_created: true },
     });
 
     // Enqueue mentor email
@@ -188,8 +214,8 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: mentorProfile.email,
-        subject: "New Session Booked — UPSC Connect",
-        html: buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink),
+        subject: "New Mentorship Session Booked — UPSC Connect",
+        html: buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode, calendarLink),
         message_id: mentorMessageId,
         label: "booking-mentor",
         purpose: "transactional",
@@ -211,7 +237,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: "admin@upscconnect.in",
-        subject: "New Booking on UPSC Connect",
+        subject: "New Booking Confirmed – UPSC Connect",
         html: buildAdminEmail(
           mentorProfile.name,
           menteeProfile.name,
@@ -219,7 +245,8 @@ Deno.serve(async (req) => {
           sessionTime,
           transaction.amount,
           transaction.razorpay_payment_id || "N/A",
-          booking_id
+          booking_id,
+          meetingLink
         ),
         message_id: adminMessageId,
         label: "booking-admin",
@@ -236,7 +263,7 @@ Deno.serve(async (req) => {
       metadata: { booking_id },
     });
 
-    console.log(`Booking emails enqueued for booking ${booking_id}`);
+    console.log(`Booking emails enqueued for booking ${booking_id} | meeting_created: true`);
 
     return new Response(
       JSON.stringify({ success: true, meeting_link: meetingLink }),
@@ -264,14 +291,18 @@ const baseStyles = `
   .detail-label { font-size: 13px; color: #94a3b8; }
   .detail-value { font-size: 14px; color: #1a1f2e; font-weight: 500; }
   .btn { display: inline-block; padding: 12px 28px; background: #2556b9; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600; margin-top: 20px; }
+  .btn-secondary { display: inline-block; padding: 10px 20px; background: #f0f4ff; color: #2556b9; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 8px; border: 1px solid #d0daf0; }
+  .passcode-box { background: #f8fafc; border: 2px dashed #2556b9; border-radius: 10px; padding: 16px; text-align: center; margin: 16px 0; }
+  .passcode-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 6px; }
+  .passcode-value { font-size: 24px; font-weight: 700; color: #2556b9; font-family: 'Courier New', monospace; letter-spacing: 3px; margin: 0; }
   .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #94a3b8; }
 `;
 
 function emailWrapper(content: string): string {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>${baseStyles}</style></head><body><div class="container"><div class="card"><div class="logo">UPSC Connect</div>${content}</div><div class="footer"><p>Need help? Email us at <a href="mailto:support@upscconnect.in" style="color:#2556b9;">support@upscconnect.in</a></p><p>© ${new Date().getFullYear()} UPSC Connect. All rights reserved.</p></div></div></body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>${baseStyles}</style></head><body><div class="container"><div class="card"><div class="logo">UPSC Connect</div>${content}</div><div class="footer"><p>Need help? Email us at <a href="mailto:admin@upscconnect.in" style="color:#2556b9;">admin@upscconnect.in</a></p><p>© ${new Date().getFullYear()} UPSC Connect. All rights reserved.</p></div></div></body></html>`;
 }
 
-function buildMenteeEmail(mentorName: string, date: string, time: string, meetingLink: string, amount: number): string {
+function buildMenteeEmail(mentorName: string, date: string, time: string, meetingLink: string, passcode: string, amount: number, calendarLink: string): string {
   return emailWrapper(`
     <h1>Your Mentorship Session is Confirmed! 🎉</h1>
     <p>Great news! Your session has been successfully booked and payment confirmed.</p>
@@ -281,31 +312,43 @@ function buildMenteeEmail(mentorName: string, date: string, time: string, meetin
       <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${time}</span></div>
       <div class="detail-row"><span class="detail-label">Amount Paid</span><span class="detail-value">₹${amount}</span></div>
     </div>
-    <a href="${meetingLink}" class="btn">Join Session</a>
+    <div class="passcode-box">
+      <p class="passcode-label">Meeting Passcode</p>
+      <p class="passcode-value">${passcode}</p>
+    </div>
+    <a href="${meetingLink}" class="btn">Join Meeting</a>
+    <br/>
+    <a href="${calendarLink}" class="btn-secondary">📅 Add to Calendar</a>
     <p style="margin-top: 16px; font-size: 13px; color: #94a3b8;">💡 Please join 5 minutes early to ensure a smooth start.</p>
   `);
 }
 
-function buildMentorEmail(menteeName: string, date: string, time: string, meetingLink: string): string {
+function buildMentorEmail(menteeName: string, date: string, time: string, meetingLink: string, passcode: string, calendarLink: string): string {
   return emailWrapper(`
-    <h1>New Session Booked 📅</h1>
+    <h1>New Mentorship Session Booked 📅</h1>
     <p>A mentee has booked a session with you. Here are the details:</p>
     <div style="margin: 20px 0;">
       <div class="detail-row"><span class="detail-label">Mentee</span><span class="detail-value">${menteeName}</span></div>
       <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${date}</span></div>
       <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${time}</span></div>
     </div>
-    <a href="${meetingLink}" class="btn">Join Session</a>
+    <div class="passcode-box">
+      <p class="passcode-label">Meeting Passcode</p>
+      <p class="passcode-value">${passcode}</p>
+    </div>
+    <a href="${meetingLink}" class="btn">Join Meeting</a>
+    <br/>
+    <a href="${calendarLink}" class="btn-secondary">📅 Add to Calendar</a>
     <p style="margin-top: 16px; font-size: 13px; color: #94a3b8;">Please be available at the scheduled time.</p>
   `);
 }
 
 function buildAdminEmail(
   mentorName: string, menteeName: string, date: string, time: string,
-  amount: number, paymentId: string, bookingId: string
+  amount: number, paymentId: string, bookingId: string, meetingLink: string
 ): string {
   return emailWrapper(`
-    <h1>New Booking on UPSC Connect</h1>
+    <h1>New Booking Confirmed – UPSC Connect</h1>
     <p>A new session has been booked on the platform.</p>
     <div style="margin: 20px 0;">
       <div class="detail-row"><span class="detail-label">Mentor</span><span class="detail-value">${mentorName}</span></div>
@@ -316,5 +359,6 @@ function buildAdminEmail(
       <div class="detail-row"><span class="detail-label">Payment ID</span><span class="detail-value" style="font-family:monospace;font-size:12px;">${paymentId}</span></div>
       <div class="detail-row"><span class="detail-label">Booking ID</span><span class="detail-value" style="font-family:monospace;font-size:12px;">${bookingId}</span></div>
     </div>
+    <a href="${meetingLink}" class="btn">View Meeting Link</a>
   `);
 }
