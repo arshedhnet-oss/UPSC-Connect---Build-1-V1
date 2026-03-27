@@ -19,6 +19,7 @@ export type Database = {
           created_at: string | null
           id: string
           meeting_link: string | null
+          meeting_passcode: string | null
           mentee_id: string
           mentor_id: string
           slot_id: string
@@ -28,6 +29,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           meeting_link?: string | null
+          meeting_passcode?: string | null
           mentee_id: string
           mentor_id: string
           slot_id: string
@@ -37,6 +39,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           meeting_link?: string | null
+          meeting_passcode?: string | null
           mentee_id?: string
           mentor_id?: string
           slot_id?: string
