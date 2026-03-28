@@ -124,43 +124,10 @@ const MentorProfilePage = () => {
         name: "UPSC Connect",
         description: `Session with ${p?.name} on ${format(new Date(slot.date), "MMM d, yyyy")}`,
         order_id: orderData.order_id,
-        handler: async (response: any) => {
+        handler: async (_response: any) => {
           try {
-            await supabaseUntyped
-              .from("bookings")
-              .update({ status: "confirmed" })
-              .eq("id", bookingData.id);
-
-            await supabaseUntyped
-              .from("slots")
-              .update({ is_booked: true })
-              .eq("id", slot.id);
-
-            await supabaseUntyped.from("transactions").insert({
-              booking_id: bookingData.id,
-              amount: mentor.price_per_session,
-              razorpay_payment_id: response.razorpay_payment_id,
-              status: "success",
-            });
-
-            // Send booking confirmation emails
-            try {
-              const emailSession = (await supabaseUntyped.auth.getSession()).data.session;
-              await fetch(
-                `https://${projectId}.supabase.co/functions/v1/send-booking-emails`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${emailSession?.access_token}`,
-                  },
-                  body: JSON.stringify({ booking_id: bookingData.id }),
-                }
-              );
-            } catch (emailErr) {
-              console.error("Failed to send booking emails:", emailErr);
-            }
-
+            // Webhook handles: booking confirmation, slot update, transaction update,
+            // meeting creation, and email dispatch. Frontend just shows success.
             setSlots(prev => prev.filter(s => s.id !== slot.id));
             toast({
               title: "Payment successful!",
