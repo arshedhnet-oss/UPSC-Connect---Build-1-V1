@@ -104,6 +104,18 @@ Deno.serve(async (req) => {
 
     const order = await razorpayRes.json();
 
+    // Create a pending transaction with razorpay_order_id for webhook lookup
+    const adminClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    await adminClient.from("transactions").insert({
+      booking_id,
+      amount,
+      razorpay_order_id: order.id,
+      status: "pending",
+    });
+
     return new Response(
       JSON.stringify({
         order_id: order.id,
