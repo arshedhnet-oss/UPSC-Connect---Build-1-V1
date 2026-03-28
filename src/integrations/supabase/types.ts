@@ -466,6 +466,7 @@ export type Database = {
           booking_id: string
           created_at: string | null
           id: string
+          razorpay_order_id: string | null
           razorpay_payment_id: string | null
           status: string | null
         }
@@ -474,6 +475,7 @@ export type Database = {
           booking_id: string
           created_at?: string | null
           id?: string
+          razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           status?: string | null
         }
@@ -482,6 +484,7 @@ export type Database = {
           booking_id?: string
           created_at?: string | null
           id?: string
+          razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           status?: string | null
         }
