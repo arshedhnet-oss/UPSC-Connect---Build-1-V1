@@ -53,10 +53,10 @@ const LandingPage = () => {
             <p className="text-muted-foreground mb-3">
               Browse through a curated list of mentors, including UPSC aspirants, interview candidates, and subject experts.
             </p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>✅ View detailed mentor profiles</li>
-              <li>✅ Check subject expertise (Polity, GS, Optional subjects, etc.)</li>
-              <li>✅ Compare experience, pricing, and session formats</li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> View detailed mentor profiles</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Check subject expertise (Polity, GS, Optional subjects, etc.)</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Compare experience, pricing, and session formats</li>
             </ul>
             <p className="mt-3 text-sm font-medium text-foreground">
               Choose a mentor based on your preparation stage and specific needs.
