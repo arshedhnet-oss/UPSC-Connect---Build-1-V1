@@ -124,11 +124,11 @@ const LandingPage = () => {
         {/* Why UPSC Connect */}
         <div className="mt-12 sm:mt-16 rounded-xl border border-primary/20 bg-primary/5 p-6 sm:p-8 text-center">
           <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-4">Why UPSC Connect?</h3>
-          <ul className="space-y-2 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto text-left">
-            <li>✅ Direct access to experienced UPSC mentors</li>
-            <li>✅ Affordable and flexible 1-on-1 sessions</li>
-            <li>✅ Personalized guidance tailored to your needs</li>
-            <li>✅ Built specifically for serious UPSC aspirants</li>
+          <ul className="space-y-3 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto text-left">
+            <li className="flex items-start gap-2"><CircleCheck className="h-5 w-5 mt-0.5 shrink-0 text-primary" /> Direct access to experienced UPSC mentors</li>
+            <li className="flex items-start gap-2"><CircleCheck className="h-5 w-5 mt-0.5 shrink-0 text-primary" /> Affordable and flexible 1-on-1 sessions</li>
+            <li className="flex items-start gap-2"><CircleCheck className="h-5 w-5 mt-0.5 shrink-0 text-primary" /> Personalized guidance tailored to your needs</li>
+            <li className="flex items-start gap-2"><CircleCheck className="h-5 w-5 mt-0.5 shrink-0 text-primary" /> Built specifically for serious UPSC aspirants</li>
           </ul>
         </div>
 
