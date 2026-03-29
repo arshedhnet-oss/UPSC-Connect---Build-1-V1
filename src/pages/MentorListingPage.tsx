@@ -64,7 +64,7 @@ const MentorListingPage = () => {
       setLoading(false);
     };
     fetchMentors();
-  }, []);
+  }, [featuredOnly]);
 
   // Fetch free slots for the selected date
   useEffect(() => {
