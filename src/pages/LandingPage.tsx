@@ -91,10 +91,10 @@ const LandingPage = () => {
             <p className="text-muted-foreground mb-3">
               Join your session through a secure online meeting link.
             </p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>✅ Discuss preparation strategy and study plans</li>
-              <li>✅ Get personalized feedback on your approach</li>
-              <li>✅ Clarify doubts in real time</li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Discuss preparation strategy and study plans</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Get personalized feedback on your approach</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Clarify doubts in real time</li>
             </ul>
             <p className="mt-3 text-sm font-medium text-foreground">
               Focus on targeted guidance instead of generic coaching.
