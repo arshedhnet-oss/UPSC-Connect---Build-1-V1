@@ -76,6 +76,14 @@ export default function Navbar() {
         >
           <Link to="/organisations">Orgs</Link>
         </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={scrollToHowItWorks}
+          className="sm:hidden text-xs px-2 border border-input"
+        >
+          How
+        </Button>
 
         {user && profile ? (
           <>
