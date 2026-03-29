@@ -35,22 +35,112 @@ const LandingPage = () => {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="px-4 sm:px-6 py-12 sm:py-16 max-w-5xl mx-auto">
-        <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground text-center mb-8 sm:mb-10">How It Works</h2>
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-          {[
-            { icon: Users, title: "Expert Mentors", desc: "Learn from IAS/IPS officers and experienced educators who've been through the journey." },
-            { icon: Calendar, title: "Flexible Scheduling", desc: "Book sessions at times that work for you. Choose from available mentor slots." },
-            { icon: BookOpen, title: "All Subjects", desc: "Get guidance on GS, Optional subjects, Essay, Ethics, and Interview preparation." },
-          ].map((f, i) => (
-            <div key={i} className="rounded-lg border border-border bg-card p-5 sm:p-6 text-center animate-fade-in" style={{ animationDelay: `${0.1 * (i + 3)}s` }}>
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                <f.icon className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-display text-lg font-semibold text-card-foreground">{f.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
+      <section id="how-it-works" className="px-4 sm:px-6 py-12 sm:py-20 max-w-4xl mx-auto">
+        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground text-center mb-4">
+          How UPSC Connect Works
+        </h2>
+        <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+          Preparing for the UPSC Civil Services Examination can be overwhelming. UPSC Connect simplifies your journey by giving you direct access to experienced mentors who have been through the process themselves.
+        </p>
+
+        <div className="space-y-8 sm:space-y-10">
+          {/* Step 1 */}
+          <div className="rounded-xl border border-border bg-card p-6 sm:p-8 animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">1</span>
+              <h3 className="font-display text-xl font-semibold text-card-foreground">Explore Verified UPSC Mentors</h3>
             </div>
-          ))}
+            <p className="text-muted-foreground mb-3">
+              Browse through a curated list of mentors, including UPSC aspirants, interview candidates, and subject experts.
+            </p>
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+              <li>✅ View detailed mentor profiles</li>
+              <li>✅ Check subject expertise (Polity, GS, Optional subjects, etc.)</li>
+              <li>✅ Compare experience, pricing, and session formats</li>
+            </ul>
+            <p className="mt-3 text-sm font-medium text-foreground">
+              Choose a mentor based on your preparation stage and specific needs.
+            </p>
+          </div>
+
+          {/* Step 2 */}
+          <div className="rounded-xl border border-border bg-card p-6 sm:p-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">2</span>
+              <h3 className="font-display text-xl font-semibold text-card-foreground">Book a 1-on-1 Session</h3>
+            </div>
+            <p className="text-muted-foreground mb-3">
+              Select a convenient time slot and book your session instantly.
+            </p>
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+              <li>✅ Flexible scheduling options</li>
+              <li>✅ Transparent pricing</li>
+              <li>✅ Secure online payment</li>
+            </ul>
+            <p className="mt-3 text-sm font-medium text-foreground">
+              Get direct access to mentors without any intermediaries.
+            </p>
+          </div>
+
+          {/* Step 3 */}
+          <div className="rounded-xl border border-border bg-card p-6 sm:p-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">3</span>
+              <h3 className="font-display text-xl font-semibold text-card-foreground">Attend Your Mentorship Session</h3>
+            </div>
+            <p className="text-muted-foreground mb-3">
+              Join your session through a secure online meeting link.
+            </p>
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+              <li>✅ Discuss preparation strategy and study plans</li>
+              <li>✅ Get personalized feedback on your approach</li>
+              <li>✅ Clarify doubts in real time</li>
+            </ul>
+            <p className="mt-3 text-sm font-medium text-foreground">
+              Focus on targeted guidance instead of generic coaching.
+            </p>
+          </div>
+
+          {/* Step 4 */}
+          <div className="rounded-xl border border-border bg-card p-6 sm:p-8 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">4</span>
+              <h3 className="font-display text-xl font-semibold text-card-foreground">Improve with Personalized Guidance</h3>
+            </div>
+            <p className="text-muted-foreground mb-3">
+              Apply the mentor's advice to strengthen your preparation.
+            </p>
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+              <li>✅ Refine your study strategy</li>
+              <li>✅ Improve answer writing and conceptual clarity</li>
+              <li>✅ Stay consistent and accountable</li>
+            </ul>
+            <p className="mt-3 text-sm font-medium text-foreground">
+              Small improvements over time lead to better performance in the exam.
+            </p>
+          </div>
+        </div>
+
+        {/* Why UPSC Connect */}
+        <div className="mt-12 sm:mt-16 rounded-xl border border-primary/20 bg-primary/5 p-6 sm:p-8 text-center">
+          <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-4">Why UPSC Connect?</h3>
+          <ul className="space-y-2 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto text-left">
+            <li>✅ Direct access to experienced UPSC mentors</li>
+            <li>✅ Affordable and flexible 1-on-1 sessions</li>
+            <li>✅ Personalized guidance tailored to your needs</li>
+            <li>✅ Built specifically for serious UPSC aspirants</li>
+          </ul>
+        </div>
+
+        {/* CTA */}
+        <div className="mt-10 sm:mt-14 text-center">
+          <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-3">Start Your UPSC Journey Today</h3>
+          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+            Whether you are preparing for Prelims, Mains, or Interview, the right mentorship can make a significant difference. Browse mentors and book your first session today.
+          </p>
+          <Button size="lg" asChild>
+            <Link to="/mentors">Browse Mentors <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          </Button>
         </div>
       </section>
 
