@@ -558,7 +558,15 @@ const AdminDashboardPage = () => {
                           )}
                           <p className="text-sm text-muted-foreground mt-1">₹{m.price_per_session}/session</p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
+                          <Button
+                            size="sm"
+                            variant={m.is_featured ? "default" : "outline"}
+                            onClick={() => toggleFeatured(m.user_id, !m.is_featured)}
+                          >
+                            <Star className={`h-4 w-4 mr-1 ${m.is_featured ? "fill-current" : ""}`} />
+                            {m.is_featured ? "Featured" : "Feature"}
+                          </Button>
                           <Button size="sm" variant="destructive" onClick={() => disableMentor(m.user_id)}>
                             <X className="h-4 w-4 mr-1" /> Disable
                           </Button>
