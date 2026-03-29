@@ -25,6 +25,8 @@ interface MentorListing {
 }
 
 const MentorListingPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const featuredOnly = searchParams.get("featured") === "true";
   const [mentors, setMentors] = useState<MentorListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [mentorsWithSlots, setMentorsWithSlots] = useState<Set<string>>(new Set());
