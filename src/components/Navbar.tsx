@@ -53,8 +53,8 @@ export default function Navbar() {
           <Button variant="ghost" size="sm" asChild className={isActive("/organisations") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}>
             <Link to="/organisations">Organisations</Link>
           </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/#how-it-works">How It Works</Link>
+          <Button variant="ghost" size="sm" onClick={scrollToHowItWorks}>
+            How It Works
           </Button>
         </div>
       </div>
