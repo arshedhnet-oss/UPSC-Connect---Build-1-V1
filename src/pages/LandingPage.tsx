@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, Calendar, ArrowRight, Building2 } from "lucide-react";
+import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 const LandingPage = () => {
@@ -53,10 +53,10 @@ const LandingPage = () => {
             <p className="text-muted-foreground mb-3">
               Browse through a curated list of mentors, including UPSC aspirants, interview candidates, and subject experts.
             </p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>✅ View detailed mentor profiles</li>
-              <li>✅ Check subject expertise (Polity, GS, Optional subjects, etc.)</li>
-              <li>✅ Compare experience, pricing, and session formats</li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> View detailed mentor profiles</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Check subject expertise (Polity, GS, Optional subjects, etc.)</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Compare experience, pricing, and session formats</li>
             </ul>
             <p className="mt-3 text-sm font-medium text-foreground">
               Choose a mentor based on your preparation stage and specific needs.
@@ -72,10 +72,10 @@ const LandingPage = () => {
             <p className="text-muted-foreground mb-3">
               Select a convenient time slot and book your session instantly.
             </p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>✅ Flexible scheduling options</li>
-              <li>✅ Transparent pricing</li>
-              <li>✅ Secure online payment</li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Flexible scheduling options</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Transparent pricing</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Secure online payment</li>
             </ul>
             <p className="mt-3 text-sm font-medium text-foreground">
               Get direct access to mentors without any intermediaries.
@@ -91,10 +91,10 @@ const LandingPage = () => {
             <p className="text-muted-foreground mb-3">
               Join your session through a secure online meeting link.
             </p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>✅ Discuss preparation strategy and study plans</li>
-              <li>✅ Get personalized feedback on your approach</li>
-              <li>✅ Clarify doubts in real time</li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Discuss preparation strategy and study plans</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Get personalized feedback on your approach</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Clarify doubts in real time</li>
             </ul>
             <p className="mt-3 text-sm font-medium text-foreground">
               Focus on targeted guidance instead of generic coaching.
@@ -110,10 +110,10 @@ const LandingPage = () => {
             <p className="text-muted-foreground mb-3">
               Apply the mentor's advice to strengthen your preparation.
             </p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>✅ Refine your study strategy</li>
-              <li>✅ Improve answer writing and conceptual clarity</li>
-              <li>✅ Stay consistent and accountable</li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Refine your study strategy</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Improve answer writing and conceptual clarity</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Stay consistent and accountable</li>
             </ul>
             <p className="mt-3 text-sm font-medium text-foreground">
               Small improvements over time lead to better performance in the exam.
@@ -124,11 +124,11 @@ const LandingPage = () => {
         {/* Why UPSC Connect */}
         <div className="mt-12 sm:mt-16 rounded-xl border border-primary/20 bg-primary/5 p-6 sm:p-8 text-center">
           <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-4">Why UPSC Connect?</h3>
-          <ul className="space-y-2 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto text-left">
-            <li>✅ Direct access to experienced UPSC mentors</li>
-            <li>✅ Affordable and flexible 1-on-1 sessions</li>
-            <li>✅ Personalized guidance tailored to your needs</li>
-            <li>✅ Built specifically for serious UPSC aspirants</li>
+          <ul className="space-y-3 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto text-left">
+            <li className="flex items-start gap-2"><CircleCheck className="h-5 w-5 mt-0.5 shrink-0 text-primary" /> Direct access to experienced UPSC mentors</li>
+            <li className="flex items-start gap-2"><CircleCheck className="h-5 w-5 mt-0.5 shrink-0 text-primary" /> Affordable and flexible 1-on-1 sessions</li>
+            <li className="flex items-start gap-2"><CircleCheck className="h-5 w-5 mt-0.5 shrink-0 text-primary" /> Personalized guidance tailored to your needs</li>
+            <li className="flex items-start gap-2"><CircleCheck className="h-5 w-5 mt-0.5 shrink-0 text-primary" /> Built specifically for serious UPSC aspirants</li>
           </ul>
         </div>
 
