@@ -25,8 +25,8 @@ const LandingPage = () => {
           </Button>
         </div>
         <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-          <Button size="lg" variant="secondary" className="rounded-full px-8 shadow-md" asChild>
-            <Link to="/mentors">🧭 Feeling Lost? Talk to a Mentor</Link>
+          <Button size="lg" asChild className="rounded-full px-8 bg-gradient-to-r from-primary to-primary/70 hover:from-primary/90 hover:to-primary/60 text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02]">
+            <Link to="/mentors?inhouse=true">🧭 Feeling Lost? Talk to a Mentor</Link>
           </Button>
           <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
             <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
