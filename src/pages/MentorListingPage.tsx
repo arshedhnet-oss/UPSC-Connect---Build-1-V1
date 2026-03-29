@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabaseUntyped } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ interface MentorListing {
 }
 
 const MentorListingPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const featuredOnly = searchParams.get("featured") === "true";
   const [mentors, setMentors] = useState<MentorListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [mentorsWithSlots, setMentorsWithSlots] = useState<Set<string>>(new Set());
@@ -36,10 +38,16 @@ const MentorListingPage = () => {
 
   useEffect(() => {
     const fetchMentors = async () => {
-      const { data } = await supabaseUntyped
+      let query = supabaseUntyped
         .from("mentor_profiles")
-        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
+        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
         .eq("is_approved", true);
+
+      if (featuredOnly) {
+        query = query.eq("is_featured", true);
+      }
+
+      const { data } = await query;
 
       if (data) {
         const mapped = data.map((m: any) => ({
@@ -56,7 +64,7 @@ const MentorListingPage = () => {
       setLoading(false);
     };
     fetchMentors();
-  }, []);
+  }, [featuredOnly]);
 
   // Fetch free slots for the selected date
   useEffect(() => {
@@ -114,8 +122,17 @@ const MentorListingPage = () => {
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">Find a Mentor</h1>
-        <p className="text-muted-foreground mb-6 sm:mb-8">Browse approved mentors and book a session</p>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">
+          {featuredOnly ? "Our Recommended Mentors" : "Find a Mentor"}
+        </h1>
+        <p className="text-muted-foreground mb-4">
+          {featuredOnly ? "Hand-picked mentors recommended by UPSC Connect for personalized guidance" : "Browse approved mentors and book a session"}
+        </p>
+        {featuredOnly && (
+          <Button variant="outline" size="sm" className="mb-4" onClick={() => setSearchParams({})}>
+            <X className="h-3.5 w-3.5 mr-1" /> Show all mentors
+          </Button>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
