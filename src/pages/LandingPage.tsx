@@ -27,7 +27,7 @@ const LandingPage = () => {
         <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
           <Button size="lg" asChild className="group relative overflow-hidden rounded-full px-8 border-0 bg-gradient-to-r from-primary via-primary/85 to-primary/70 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.03]">
             <Link to="/mentors?featured=true">
-              <span className="relative z-10 flex items-center gap-2">
+              <span className="relative z-10 flex items-center gap-2 text-muted">
                 <span className="inline-block transition-transform duration-300 group-hover:rotate-12">🧭</span>
                 Feeling Lost? Talk to a Mentor
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -159,18 +159,18 @@ const LandingPage = () => {
           </p>
           <div className="grid sm:grid-cols-3 gap-6 mb-8">
             {[
-              { icon: Building2, title: "Dedicated Profile", desc: "Get a branded page for your institute with mentor listings and contact info." },
-              { icon: Users, title: "Mentor Management", desc: "Add, approve, and manage mentors under your organisation seamlessly." },
-              { icon: Calendar, title: "Session Control", desc: "Set pricing, manage bookings, and track all sessions from your dashboard." },
-            ].map((f, i) => (
-              <div key={i} className="rounded-lg border border-border bg-background p-5 text-center">
+            { icon: Building2, title: "Dedicated Profile", desc: "Get a branded page for your institute with mentor listings and contact info." },
+            { icon: Users, title: "Mentor Management", desc: "Add, approve, and manage mentors under your organisation seamlessly." },
+            { icon: Calendar, title: "Session Control", desc: "Set pricing, manage bookings, and track all sessions from your dashboard." }].
+            map((f, i) =>
+            <div key={i} className="rounded-lg border border-border bg-background p-5 text-center">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10">
                   <f.icon className="h-6 w-6 text-accent" />
                 </div>
                 <h3 className="font-display text-lg font-semibold text-foreground">{f.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
               </div>
-            ))}
+            )}
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button size="lg" asChild>
@@ -196,8 +196,8 @@ const LandingPage = () => {
       <footer className="border-t border-border px-6 py-8 text-center text-sm text-muted-foreground">
         © 2026 UPSC Connect. All rights reserved.
       </footer>
-    </div>
-  );
+    </div>);
+
 };
 
 export default LandingPage;
