@@ -72,10 +72,10 @@ const LandingPage = () => {
             <p className="text-muted-foreground mb-3">
               Select a convenient time slot and book your session instantly.
             </p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>✅ Flexible scheduling options</li>
-              <li>✅ Transparent pricing</li>
-              <li>✅ Secure online payment</li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Flexible scheduling options</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Transparent pricing</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Secure online payment</li>
             </ul>
             <p className="mt-3 text-sm font-medium text-foreground">
               Get direct access to mentors without any intermediaries.
