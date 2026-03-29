@@ -110,10 +110,10 @@ const LandingPage = () => {
             <p className="text-muted-foreground mb-3">
               Apply the mentor's advice to strengthen your preparation.
             </p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>✅ Refine your study strategy</li>
-              <li>✅ Improve answer writing and conceptual clarity</li>
-              <li>✅ Stay consistent and accountable</li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Refine your study strategy</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Improve answer writing and conceptual clarity</li>
+              <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Stay consistent and accountable</li>
             </ul>
             <p className="mt-3 text-sm font-medium text-foreground">
               Small improvements over time lead to better performance in the exam.
