@@ -47,6 +47,8 @@ const MentorListingPage = () => {
         query = query.eq("is_featured", true);
       }
 
+      const { data } = await query;
+
       if (data) {
         const mapped = data.map((m: any) => ({
           user_id: m.user_id,
