@@ -122,8 +122,17 @@ const MentorListingPage = () => {
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">Find a Mentor</h1>
-        <p className="text-muted-foreground mb-6 sm:mb-8">Browse approved mentors and book a session</p>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">
+          {featuredOnly ? "Our Recommended Mentors" : "Find a Mentor"}
+        </h1>
+        <p className="text-muted-foreground mb-4">
+          {featuredOnly ? "Hand-picked mentors recommended by UPSC Connect for personalized guidance" : "Browse approved mentors and book a session"}
+        </p>
+        {featuredOnly && (
+          <Button variant="outline" size="sm" className="mb-4" onClick={() => setSearchParams({})}>
+            <X className="h-3.5 w-3.5 mr-1" /> Show all mentors
+          </Button>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
