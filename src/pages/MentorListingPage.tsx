@@ -38,10 +38,14 @@ const MentorListingPage = () => {
 
   useEffect(() => {
     const fetchMentors = async () => {
-      const { data } = await supabaseUntyped
+      let query = supabaseUntyped
         .from("mentor_profiles")
-        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
+        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
         .eq("is_approved", true);
+
+      if (featuredOnly) {
+        query = query.eq("is_featured", true);
+      }
 
       if (data) {
         const mapped = data.map((m: any) => ({
