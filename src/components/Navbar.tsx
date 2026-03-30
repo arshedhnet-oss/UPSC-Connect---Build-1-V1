@@ -175,6 +175,16 @@ export default function Navbar() {
                   </Button>
                   <Button
                     variant="ghost"
+                    className={`justify-start gap-2 ${isActive("/chat") ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
+                    asChild
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Link to="/chat">
+                      <MessageCircle className="h-4 w-4" /> Messages
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
                     className={`justify-start gap-2 ${location.hash === "#bookings" && location.pathname === "/dashboard" ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
                     asChild
                     onClick={() => setMobileMenuOpen(false)}

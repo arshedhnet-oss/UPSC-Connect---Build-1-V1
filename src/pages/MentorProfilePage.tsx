@@ -196,6 +196,26 @@ const MentorProfilePage = () => {
             {mentor.optional_subject && (
               <p className="text-sm text-muted-foreground mt-2">Optional: {mentor.optional_subject}</p>
             )}
+            {user && authProfile?.role === "mentee" && id !== user.id && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-3"
+                onClick={() => navigate(`/chat?mentor=${id}`)}
+              >
+                <Send className="h-4 w-4 mr-1.5" /> Message Mentor
+              </Button>
+            )}
+            {!user && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-3"
+                onClick={() => navigate("/login")}
+              >
+                <Send className="h-4 w-4 mr-1.5" /> Message Mentor
+              </Button>
+            )}
             {(mentor.languages || []).length > 0 && (
               <p className="text-sm text-muted-foreground mt-1">🗣 {mentor.languages.join(", ")}</p>
             )}
