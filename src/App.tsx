@@ -18,6 +18,7 @@ import OrganisationListingPage from "./pages/OrganisationListingPage";
 import OrganisationProfilePage from "./pages/OrganisationProfilePage";
 import OrganisationSignupPage from "./pages/OrganisationSignupPage";
 import InstituteDashboardPage from "./pages/InstituteDashboardPage";
+import ChatPage from "./pages/ChatPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
