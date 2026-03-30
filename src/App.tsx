@@ -18,6 +18,7 @@ import OrganisationListingPage from "./pages/OrganisationListingPage";
 import OrganisationProfilePage from "./pages/OrganisationProfilePage";
 import OrganisationSignupPage from "./pages/OrganisationSignupPage";
 import InstituteDashboardPage from "./pages/InstituteDashboardPage";
+import ChatPage from "./pages/ChatPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/organisations/:slug" element={<OrganisationProfilePage />} />
             <Route path="/institute/dashboard" element={<InstituteDashboardPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/chat" element={<ChatPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/profile" element={<AdminProfilePage />} />
             <Route path="*" element={<NotFound />} />

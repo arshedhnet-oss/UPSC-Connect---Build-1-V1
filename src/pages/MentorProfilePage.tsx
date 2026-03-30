@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Send } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MentorReviews from "@/components/MentorReviews";
 import ReviewModal from "@/components/ReviewModal";
@@ -195,6 +195,26 @@ const MentorProfilePage = () => {
             </div>
             {mentor.optional_subject && (
               <p className="text-sm text-muted-foreground mt-2">Optional: {mentor.optional_subject}</p>
+            )}
+            {user && authProfile?.role === "mentee" && id !== user.id && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-3"
+                onClick={() => navigate(`/chat?mentor=${id}`)}
+              >
+                <Send className="h-4 w-4 mr-1.5" /> Message Mentor
+              </Button>
+            )}
+            {!user && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-3"
+                onClick={() => navigate("/login")}
+              >
+                <Send className="h-4 w-4 mr-1.5" /> Message Mentor
+              </Button>
             )}
             {(mentor.languages || []).length > 0 && (
               <p className="text-sm text-muted-foreground mt-1">🗣 {mentor.languages.join(", ")}</p>

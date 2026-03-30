@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, LayoutDashboard, CalendarCheck, User, Menu } from "lucide-react";
+import { LogOut, LayoutDashboard, CalendarCheck, User, Menu, MessageCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -115,6 +115,11 @@ export default function Navbar() {
                   {profile.role !== "institute_admin" && (
                     <>
                       <DropdownMenuItem asChild>
+                        <Link to="/chat" className="flex items-center gap-2 cursor-pointer">
+                          <MessageCircle className="h-4 w-4" /> Messages
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link to="/dashboard#bookings" className="flex items-center gap-2 cursor-pointer">
                           <CalendarCheck className="h-4 w-4" /> My Bookings
                         </Link>
@@ -166,6 +171,16 @@ export default function Navbar() {
                   >
                     <Link to={profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"}>
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className={`justify-start gap-2 ${isActive("/chat") ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
+                    asChild
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Link to="/chat">
+                      <MessageCircle className="h-4 w-4" /> Messages
                     </Link>
                   </Button>
                   <Button

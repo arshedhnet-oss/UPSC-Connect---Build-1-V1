@@ -165,6 +165,7 @@ export type Database = {
           interview_years: string[] | null
           interviews_appeared: number | null
           is_approved: boolean | null
+          is_featured: boolean
           languages: string[] | null
           mains_written: number | null
           mains_years: string[] | null
@@ -182,6 +183,7 @@ export type Database = {
           interview_years?: string[] | null
           interviews_appeared?: number | null
           is_approved?: boolean | null
+          is_featured?: boolean
           languages?: string[] | null
           mains_written?: number | null
           mains_years?: string[] | null
@@ -199,6 +201,7 @@ export type Database = {
           interview_years?: string[] | null
           interviews_appeared?: number | null
           is_approved?: boolean | null
+          is_featured?: boolean
           languages?: string[] | null
           mains_written?: number | null
           mains_years?: string[] | null
