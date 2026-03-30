@@ -115,6 +115,11 @@ export default function Navbar() {
                   {profile.role !== "institute_admin" && (
                     <>
                       <DropdownMenuItem asChild>
+                        <Link to="/chat" className="flex items-center gap-2 cursor-pointer">
+                          <MessageCircle className="h-4 w-4" /> Messages
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link to="/dashboard#bookings" className="flex items-center gap-2 cursor-pointer">
                           <CalendarCheck className="h-4 w-4" /> My Bookings
                         </Link>
