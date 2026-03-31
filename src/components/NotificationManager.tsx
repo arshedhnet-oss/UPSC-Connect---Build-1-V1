@@ -11,18 +11,10 @@ import { usePushSubscription } from "@/hooks/usePushSubscription";
  */
 export default function NotificationManager() {
   const { user } = useAuth();
-  const { permission, requestPermission } = useNotifications();
+  const { permission } = useNotifications();
   const { subscribe } = usePushSubscription();
 
-  // Request permission once when user logs in
-  useEffect(() => {
-    if (user && permission === "default") {
-      const t = setTimeout(() => requestPermission(), 3000);
-      return () => clearTimeout(t);
-    }
-  }, [user, permission, requestPermission]);
-
-  // Register service worker and subscribe to push when permission granted
+  // Register service worker when user is logged in
   useEffect(() => {
     if (!user || !("serviceWorker" in navigator)) return;
 
@@ -39,8 +31,8 @@ export default function NotificationManager() {
 
     navigator.serviceWorker
       .register("/sw.js")
-      .then(() => {
-        console.log("[SW] Registered");
+      .then((reg) => {
+        console.log("[SW] Registered, scope:", reg.scope);
         if (Notification.permission === "granted") {
           subscribe();
         }
@@ -48,9 +40,10 @@ export default function NotificationManager() {
       .catch((err) => console.warn("[SW] Registration failed:", err));
   }, [user, subscribe]);
 
-  // Re-subscribe when permission changes to granted
+  // Subscribe to push when permission changes to granted
   useEffect(() => {
     if (permission === "granted" && user) {
+      console.log("[Notifications] Permission granted, subscribing to push...");
       subscribe();
     }
   }, [permission, user, subscribe]);

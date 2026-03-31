@@ -21,6 +21,7 @@ import InstituteDashboardPage from "./pages/InstituteDashboardPage";
 import ChatPage from "./pages/ChatPage";
 import NotFound from "./pages/NotFound";
 import NotificationManager from "./components/NotificationManager";
+import EnableNotificationsPrompt from "./components/EnableNotificationsPrompt";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <NotificationManager />
+          <EnableNotificationsPrompt />
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
