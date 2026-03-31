@@ -194,6 +194,7 @@ Deno.serve(async (req) => {
         subject: "Your Mentorship Session is Confirmed — UPSC Connect",
         html: buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, passcode, transaction.amount, calendarLink),
         message_id: menteeMessageId,
+        idempotency_key: menteeMessageId,
         label: "booking-mentee",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
