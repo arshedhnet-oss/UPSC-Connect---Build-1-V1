@@ -194,6 +194,7 @@ Deno.serve(async (req) => {
         subject: "Your Mentorship Session is Confirmed — UPSC Connect",
         html: buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, passcode, transaction.amount, calendarLink),
         message_id: menteeMessageId,
+        idempotency_key: menteeMessageId,
         label: "booking-mentee",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
@@ -217,6 +218,7 @@ Deno.serve(async (req) => {
         subject: "New Mentorship Session Booked — UPSC Connect",
         html: buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode, calendarLink),
         message_id: mentorMessageId,
+        idempotency_key: mentorMessageId,
         label: "booking-mentor",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
@@ -249,6 +251,7 @@ Deno.serve(async (req) => {
           meetingLink
         ),
         message_id: adminMessageId,
+        idempotency_key: adminMessageId,
         label: "booking-admin",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
