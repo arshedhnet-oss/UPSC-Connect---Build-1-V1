@@ -33,6 +33,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <NotificationManager />
+          <EnableNotificationsPrompt />
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
