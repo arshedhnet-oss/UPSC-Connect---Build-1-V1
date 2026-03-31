@@ -159,7 +159,11 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
     return (
       <div
         className="fixed inset-0 z-[9999] flex flex-col bg-background"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        style={{
+          height: "100dvh",
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
