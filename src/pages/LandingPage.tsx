@@ -6,9 +6,12 @@ import Navbar from "@/components/Navbar";
 import FreeChatModal from "@/components/chat/FreeChatModal";
 
 const LandingPage = () => {
+  const [chatOpen, setChatOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <FreeChatModal open={chatOpen} onOpenChange={setChatOpen} />
 
       {/* Hero */}
       <section className="px-4 sm:px-6 py-12 sm:py-20 max-w-4xl mx-auto text-center">
