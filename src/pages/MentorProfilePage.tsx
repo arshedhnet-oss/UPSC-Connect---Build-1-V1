@@ -126,12 +126,35 @@ const MentorProfilePage = () => {
         order_id: orderData.order_id,
         handler: async (_response: any) => {
           try {
-            // Webhook handles: booking confirmation, slot update, transaction update,
-            // meeting creation, and email dispatch. Frontend just shows success.
+            // Confirm booking and mark slot as booked
+            await supabaseUntyped
+              .from("bookings")
+              .update({ status: "confirmed" })
+              .eq("id", bookingData.id);
+            await supabaseUntyped
+              .from("slots")
+              .update({ is_booked: true })
+              .eq("id", slot.id);
+
+            // Trigger email sending + meeting creation
+            const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+            const sess = (await supabaseUntyped.auth.getSession()).data.session;
+            fetch(
+              `https://${projectId}.supabase.co/functions/v1/send-booking-emails`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${sess?.access_token}`,
+                },
+                body: JSON.stringify({ booking_id: bookingData.id }),
+              }
+            ).catch(console.error); // fire-and-forget
+
             setSlots(prev => prev.filter(s => s.id !== slot.id));
             toast({
               title: "Payment successful!",
-              description: `Your session on ${format(new Date(slot.date), "MMM d, yyyy")} is confirmed. Confirmation emails sent!`,
+              description: `Your session on ${format(new Date(slot.date), "MMM d, yyyy")} is confirmed. Confirmation emails will arrive shortly!`,
             });
           } catch {
             toast({ title: "Payment recorded but booking update failed", description: "Please contact support.", variant: "destructive" });
