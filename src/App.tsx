@@ -21,6 +21,7 @@ import InstituteDashboardPage from "./pages/InstituteDashboardPage";
 import ChatPage from "./pages/ChatPage";
 import NotFound from "./pages/NotFound";
 import NotificationManager from "./components/NotificationManager";
+import EnableNotificationsPrompt from "./components/EnableNotificationsPrompt";
 
 const queryClient = new QueryClient();
 
