@@ -21,7 +21,25 @@ const LandingPage = () => {
         <p className="mt-4 sm:mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.1s" }}>
           Connect with experienced mentors for personalized guidance on your UPSC preparation journey. Book sessions, get expert advice, and crack the exam.
         </p>
-        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-fade-in" style={{ animationDelay: "0.2s" }}>
+        {/* Primary CTA - Talk to Mentor */}
+        <div className="mt-6 sm:mt-8 flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.15s" }}>
+          <div className="relative">
+            <Button size="lg" onClick={() => setChatOpen(true)} className="group relative overflow-hidden rounded-full px-8 sm:px-10 py-6 text-base font-semibold border-0 bg-[hsl(28,100%,50%)] hover:bg-[hsl(28,100%,45%)] text-white shadow-lg shadow-[hsl(28,100%,50%)/0.3] transition-all duration-300 hover:shadow-xl hover:shadow-[hsl(28,100%,50%)/0.4] hover:scale-[1.05] animate-[pulse-glow-orange_2s_ease-in-out_infinite]">
+              <span className="relative z-10 flex items-center gap-2">
+                <span className="relative">
+                  💬
+                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-400 border border-white animate-pulse" />
+                </span>
+                Talk to a Mentor (Free)
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </span>
+            </Button>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">⚡ Get a reply in 10 minutes</p>
+        </div>
+
+        {/* Secondary CTAs */}
+        <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-fade-in" style={{ animationDelay: "0.25s" }}>
           <Button size="lg" asChild>
             <Link to="/mentors">Browse Mentors <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
@@ -29,17 +47,7 @@ const LandingPage = () => {
             <Link to="/organisations"><Building2 className="mr-2 h-4 w-4" /> Browse Organisations</Link>
           </Button>
         </div>
-        <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-          <div className="flex flex-col items-center gap-2">
-            <Button size="lg" onClick={() => setChatOpen(true)} className="group relative overflow-hidden rounded-full px-8 border-0 bg-gradient-to-r from-primary via-primary/85 to-primary/70 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.03] animate-[pulse-glow_2s_ease-in-out_infinite]">
-                <span className="relative z-10 flex items-center gap-2 text-muted">
-                  <span className="inline-block transition-transform duration-300 group-hover:rotate-12">🧭</span>
-                  Talk to a Mentor (Free)
-                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </span>
-            </Button>
-            <p className="text-xs text-muted-foreground">⚡ Replies within 10 minutes</p>
-          </div>
+        <div className="mt-3 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
           <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
             <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
           </Button>
