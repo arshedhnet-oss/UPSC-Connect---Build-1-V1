@@ -376,6 +376,7 @@ Deno.serve(async (req) => {
         subject: "New Booking Confirmed – UPSC Connect",
         html: buildAdminEmail(mentorProfile.name, menteeProfile.name, sessionDate, sessionTime, amount, paymentId, bookingId, meetingLink),
         message_id: adminMessageId,
+        idempotency_key: adminMessageId,
         label: "booking-admin",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
