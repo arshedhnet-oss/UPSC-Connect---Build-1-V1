@@ -393,6 +393,29 @@ Deno.serve(async (req) => {
 
     console.log(`email_sent_success: all 3 emails enqueued for booking ${bookingId}`);
 
+    // 12. Send push notifications to mentee and mentor
+    try {
+      const pushPayload = {
+        user_ids: [booking.mentee_id, booking.mentor_id],
+        title: "Session Confirmed! 🎉",
+        body: `Your mentorship session on ${sessionDate} at ${sessionTime} is confirmed. Tap to view details.`,
+        url: "/dashboard#bookings",
+        tag: `booking-${bookingId}`,
+      };
+      await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify(pushPayload),
+      });
+      console.log("push_notifications_sent");
+    } catch (pushErr) {
+      console.error("push_notification_error:", pushErr);
+      // Don't fail the webhook for push errors
+    }
+
     return new Response(
       JSON.stringify({ status: "ok", booking_id: bookingId, meeting_link: meetingLink }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
