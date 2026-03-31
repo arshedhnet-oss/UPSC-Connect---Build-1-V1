@@ -352,13 +352,14 @@ const AdminDashboardPage = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                         <tr className="border-b border-border text-left text-muted-foreground">
+                        <tr className="border-b border-border text-left text-muted-foreground">
                           <th className="pb-3 pr-4">Mentor</th>
                           <th className="pb-3 pr-4">Mentee</th>
                           <th className="pb-3 pr-4">Date & Time</th>
                           <th className="pb-3 pr-4">Booking Time</th>
                           <th className="pb-3 pr-4">Status</th>
                           <th className="pb-3 pr-4">Payment</th>
+                          <th className="pb-3 pr-4">Meeting</th>
                           <th className="pb-3">Actions</th>
                         </tr>
                       </thead>
