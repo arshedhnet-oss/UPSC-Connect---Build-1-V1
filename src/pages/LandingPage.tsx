@@ -30,13 +30,16 @@ const LandingPage = () => {
           </Button>
         </div>
         <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-          <Button size="lg" onClick={() => setChatOpen(true)} className="group relative overflow-hidden rounded-full px-8 border-0 bg-gradient-to-r from-primary via-primary/85 to-primary/70 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.03]">
-              <span className="relative z-10 flex items-center gap-2 text-muted">
-                <span className="inline-block transition-transform duration-300 group-hover:rotate-12">🧭</span>
-                Feeling Lost? Talk to a Mentor
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </span>
-          </Button>
+          <div className="flex flex-col items-center gap-2">
+            <Button size="lg" onClick={() => setChatOpen(true)} className="group relative overflow-hidden rounded-full px-8 border-0 bg-gradient-to-r from-primary via-primary/85 to-primary/70 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.03] animate-[pulse-glow_2s_ease-in-out_infinite]">
+                <span className="relative z-10 flex items-center gap-2 text-muted">
+                  <span className="inline-block transition-transform duration-300 group-hover:rotate-12">🧭</span>
+                  Talk to a Mentor (Free)
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+            </Button>
+            <p className="text-xs text-muted-foreground">⚡ Replies within 10 minutes</p>
+          </div>
           <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
             <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
           </Button>
