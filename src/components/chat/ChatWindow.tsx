@@ -178,7 +178,7 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/30 min-h-0"
-        style={{ WebkitOverflowScrolling: "touch" }}
+        style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", touchAction: "pan-y" }}
       >
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
