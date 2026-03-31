@@ -200,26 +200,89 @@ const DashboardPage = () => {
             ) : (
               <div className="space-y-3">
                 {bookings.map((b: any) => (
-                  <div key={b.id} className="flex items-center justify-between rounded-lg border border-border p-4">
-                    <div>
-                      <p className="font-medium text-foreground">{profile.role === "mentee" ? `Mentor: ${b.mentor?.name}` : `Mentee: ${b.mentee?.name}`}</p>
-                      {b.slots && <p className="text-sm text-muted-foreground">{format(new Date(b.slots.date), "MMM d, yyyy")} · {b.slots.start_time?.slice(0, 5)} – {b.slots.end_time?.slice(0, 5)}</p>}
+                  <div key={b.id} className="rounded-lg border border-border p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-foreground">{profile.role === "mentee" ? `Mentor: ${b.mentor?.name}` : `Mentee: ${b.mentee?.name}`}</p>
+                        {b.slots && <p className="text-sm text-muted-foreground">{format(new Date(b.slots.date), "MMM d, yyyy")} · {b.slots.start_time?.slice(0, 5)} – {b.slots.end_time?.slice(0, 5)}</p>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {profile.role === "mentee" && b.status === "completed" && !reviewedBookingIds.has(b.id) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setReviewModal({ open: true, bookingId: b.id, mentorId: b.mentor_id, mentorName: b.mentor?.name || "Mentor" })}
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 mr-1" /> Leave Review
+                          </Button>
+                        )}
+                        {profile.role === "mentee" && b.status === "completed" && reviewedBookingIds.has(b.id) && (
+                          <Badge variant="secondary" className="text-xs">Reviewed</Badge>
+                        )}
+                        <Badge variant={b.status === "confirmed" ? "default" : b.status === "completed" ? "secondary" : "outline"}>{b.status}</Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {profile.role === "mentee" && b.status === "completed" && !reviewedBookingIds.has(b.id) && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setReviewModal({ open: true, bookingId: b.id, mentorId: b.mentor_id, mentorName: b.mentor?.name || "Mentor" })}
-                        >
-                          <MessageSquare className="h-3.5 w-3.5 mr-1" /> Leave Review
-                        </Button>
-                      )}
-                      {profile.role === "mentee" && b.status === "completed" && reviewedBookingIds.has(b.id) && (
-                        <Badge variant="secondary" className="text-xs">Reviewed</Badge>
-                      )}
-                      <Badge variant={b.status === "confirmed" ? "default" : b.status === "completed" ? "secondary" : "outline"}>{b.status}</Badge>
-                    </div>
+
+                    {/* Meeting details for confirmed/completed bookings */}
+                    {(b.status === "confirmed" || b.status === "completed") && b.meeting_link && (
+                      <div className="rounded-lg bg-muted/50 border border-border p-3 space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                          <Video className="h-4 w-4 text-primary" />
+                          Meeting Details
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                          <a
+                            href={b.meeting_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline break-all"
+                          >
+                            {b.meeting_link}
+                          </a>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 shrink-0"
+                            onClick={() => {
+                              navigator.clipboard.writeText(b.meeting_link);
+                              toast({ title: "Link copied!" });
+                            }}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        {b.meeting_passcode && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">Passcode:</span>
+                            <code className="text-sm font-mono font-semibold text-foreground bg-background px-2 py-0.5 rounded border border-border">
+                              {b.meeting_passcode}
+                            </code>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2"
+                              onClick={() => {
+                                navigator.clipboard.writeText(b.meeting_passcode);
+                                toast({ title: "Passcode copied!" });
+                              }}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        )}
+                        {b.status === "confirmed" && (
+                          <a
+                            href={b.meeting_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Button size="sm" className="mt-1">
+                              <Video className="h-3.5 w-3.5 mr-1.5" /> Join Meeting
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
