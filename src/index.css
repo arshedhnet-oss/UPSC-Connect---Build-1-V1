@@ -86,17 +86,33 @@
   * {
     @apply border-border;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
   }
   body {
     @apply bg-background text-foreground font-sans;
+    touch-action: manipulation;
   }
   ::selection {
     background: hsl(var(--primary) / 0.2);
     color: hsl(var(--foreground));
   }
-  button, a, [role="button"] {
-    -webkit-user-select: none;
-    user-select: none;
+  button, a, [role="button"], [role="menuitem"], [role="tab"] {
+    cursor: pointer;
+    touch-action: manipulation;
+    outline: none;
+  }
+  button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+    @apply ring-2 ring-ring ring-offset-2 ring-offset-background;
+    outline: none;
   }
 }
 
