@@ -170,8 +170,11 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
         className="fixed inset-0 z-[9999] flex flex-col bg-background"
         style={{
           height: "100dvh",
+          minHeight: "100vh",
           paddingTop: "env(safe-area-inset-top)",
           paddingBottom: "env(safe-area-inset-bottom)",
+          overscrollBehavior: "contain",
+          touchAction: "none",
         }}
       >
         {/* Header */}
