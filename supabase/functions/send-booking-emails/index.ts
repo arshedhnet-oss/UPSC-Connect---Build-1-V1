@@ -251,6 +251,7 @@ Deno.serve(async (req) => {
           meetingLink
         ),
         message_id: adminMessageId,
+        idempotency_key: adminMessageId,
         label: "booking-admin",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
