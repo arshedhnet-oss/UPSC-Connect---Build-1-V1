@@ -50,7 +50,21 @@ export type Database = {
             foreignKeyName: "bookings_mentee_id_fkey"
             columns: ["mentee_id"]
             isOneToOne: false
+            referencedRelation: "mentor_public_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_mentee_id_fkey"
+            columns: ["mentee_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentor_public_profiles_view"
             referencedColumns: ["id"]
           },
           {
@@ -237,6 +251,13 @@ export type Database = {
             foreignKeyName: "mentor_profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "mentor_public_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -285,7 +306,21 @@ export type Database = {
             foreignKeyName: "mentor_reviews_mentee_id_fkey"
             columns: ["mentee_id"]
             isOneToOne: false
+            referencedRelation: "mentor_public_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_reviews_mentee_id_fkey"
+            columns: ["mentee_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_reviews_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentor_public_profiles_view"
             referencedColumns: ["id"]
           },
           {
@@ -362,6 +397,13 @@ export type Database = {
             foreignKeyName: "organisation_mentors_mentor_id_fkey"
             columns: ["mentor_id"]
             isOneToOne: false
+            referencedRelation: "mentor_public_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organisation_mentors_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -421,6 +463,13 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "organisations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "mentor_public_profiles_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "organisations_created_by_fkey"
             columns: ["created_by"]
@@ -523,6 +572,13 @@ export type Database = {
             foreignKeyName: "slots_mentor_id_fkey"
             columns: ["mentor_id"]
             isOneToOne: false
+            referencedRelation: "mentor_public_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slots_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -610,7 +666,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mentor_public_profiles_view: {
+        Row: {
+          avatar_url: string | null
+          id: string | null
+          name: string | null
+          role: Database["public"]["Enums"]["app_role"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {
