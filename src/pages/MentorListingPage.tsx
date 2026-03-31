@@ -40,7 +40,7 @@ const MentorListingPage = () => {
     const fetchMentors = async () => {
       let query = supabaseUntyped
         .from("mentor_profiles")
-        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
+        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured")
         .eq("is_approved", true);
 
       if (featuredOnly) {
@@ -50,6 +50,15 @@ const MentorListingPage = () => {
       const { data } = await query;
 
       if (data) {
+        // Fetch public profile data from the secure view
+        const userIds = data.map((m: any) => m.user_id);
+        const { data: publicProfiles } = await supabaseUntyped
+          .from("mentor_public_profiles_view")
+          .select("id, name, avatar_url")
+          .in("id", userIds);
+
+        const profileMap = new Map((publicProfiles || []).map((p: any) => [p.id, p]));
+
         const mapped = data.map((m: any) => ({
           user_id: m.user_id,
           bio: m.bio,
@@ -57,7 +66,10 @@ const MentorListingPage = () => {
           price_per_session: m.price_per_session,
           languages: m.languages || [],
           optional_subject: m.optional_subject,
-          profile: { name: m.profiles?.name || "Mentor", avatar_url: m.profiles?.avatar_url },
+          profile: {
+            name: profileMap.get(m.user_id)?.name || "Mentor",
+            avatar_url: profileMap.get(m.user_id)?.avatar_url,
+          },
         }));
         setMentors(mapped);
       }

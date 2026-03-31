@@ -45,10 +45,18 @@ const MentorProfilePage = () => {
     const fetchData = async () => {
       const { data: mp } = await supabaseUntyped
         .from("mentor_profiles")
-        .select("*, profiles!mentor_profiles_user_id_fkey(name, avatar_url)")
+        .select("*")
         .eq("user_id", id!)
         .single();
-      if (mp) setMentor(mp);
+      if (mp) {
+        // Fetch public profile data from the secure view (works for anon + auth)
+        const { data: pubProfile } = await supabaseUntyped
+          .from("mentor_public_profiles_view")
+          .select("name, avatar_url")
+          .eq("id", id!)
+          .single();
+        setMentor({ ...mp, profiles: pubProfile || { name: "Mentor", avatar_url: null } });
+      }
 
       const { data: sl } = await supabaseUntyped
         .from("slots")
