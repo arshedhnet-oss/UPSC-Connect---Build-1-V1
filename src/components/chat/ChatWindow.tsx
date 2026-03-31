@@ -24,6 +24,7 @@ interface ChatWindowProps {
   otherUser: { name: string; avatar_url: string | null };
   otherUserId: string;
   onBack?: () => void;
+  hideHeader?: boolean;
 }
 
 function formatMessageTime(dateStr: string) {
