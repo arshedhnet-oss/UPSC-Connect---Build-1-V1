@@ -111,13 +111,29 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
   const handleSend = async () => {
     if (!newMessage.trim() || !user || sending) return;
     setSending(true);
+    const msgText = newMessage.trim();
     const { error } = await supabaseUntyped.from("messages").insert({
       conversation_id: conversationId,
       sender_id: user.id,
       receiver_id: otherUserId,
-      message_text: newMessage.trim(),
+      message_text: msgText,
     });
-    if (!error) setNewMessage("");
+    if (!error) {
+      setNewMessage("");
+      // Fire-and-forget push notification
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      fetch(`https://${projectId}.supabase.co/functions/v1/send-push-notification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_ids: [otherUserId],
+          title: `New message from ${otherUser.name}`,
+          body: msgText.slice(0, 100),
+          url: `/chat?conversation=${conversationId}`,
+          tag: `chat-${conversationId}`,
+        }),
+      }).catch(() => {});
+    }
     setSending(false);
     inputRef.current?.focus();
   };

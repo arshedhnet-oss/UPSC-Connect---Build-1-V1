@@ -172,6 +172,23 @@ Deno.serve(async (req) => {
         });
         enqueued++;
       }
+      // Send push notifications for this booking
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${serviceKey}`,
+          },
+          body: JSON.stringify({
+            user_ids: [booking.mentee_id, booking.mentor_id],
+            title: "Session Starting Soon! ⏰",
+            body: `Your mentorship session starts in 1 hour at ${sessionTime}. Get ready!`,
+            url: "/dashboard#bookings",
+            tag: `reminder-${booking.id}`,
+          }),
+        });
+      } catch {}
     }
 
     console.log(`Session reminders: ${enqueued} emails enqueued`);
