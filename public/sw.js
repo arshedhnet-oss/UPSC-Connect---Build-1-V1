@@ -23,8 +23,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: data.body,
-    icon: "/android-chrome-192x192.png",
-    badge: "/android-chrome-192x192.png",
+    icon: "/apple-touch-icon.png",
+    badge: "/favicon-32x32.png",
     tag: data.tag || "upsc-connect-notification",
     data: { url: data.url || "/" },
     vibrate: [200, 100, 200],

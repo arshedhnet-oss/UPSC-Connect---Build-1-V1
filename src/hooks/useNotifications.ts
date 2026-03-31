@@ -23,8 +23,8 @@ export function useNotifications() {
       if (document.visibilityState === "visible") return;
       try {
         const n = new Notification(title, {
-          icon: "/placeholder.svg",
-          badge: "/placeholder.svg",
+          icon: "/apple-touch-icon.png",
+          badge: "/favicon-32x32.png",
           ...options,
         });
         n.onclick = () => {
