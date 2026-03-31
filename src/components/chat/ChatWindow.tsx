@@ -34,7 +34,7 @@ function formatMessageTime(dateStr: string) {
   return format(d, "MMM d, h:mm a");
 }
 
-export default function ChatWindow({ conversationId, otherUser, otherUserId, onBack }: ChatWindowProps) {
+export default function ChatWindow({ conversationId, otherUser, otherUserId, onBack, hideHeader }: ChatWindowProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
