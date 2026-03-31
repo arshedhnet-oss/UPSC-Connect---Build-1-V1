@@ -157,6 +157,7 @@ Deno.serve(async (req) => {
             subject: "Reminder: Mentorship Session Starts in 1 Hour — UPSC Connect",
             html: buildMentorReminderEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode),
             message_id: mentorMessageId,
+            idempotency_key: mentorMessageId,
             label: "session-reminder-mentor",
             purpose: "transactional",
             sender_domain: "notify.www.upscconnect.in",
