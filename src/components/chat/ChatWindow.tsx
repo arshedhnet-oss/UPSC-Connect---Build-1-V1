@@ -132,22 +132,24 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card">
-        {onBack && (
-          <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 md:hidden">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        )}
-        <Avatar className="h-9 w-9">
-          <AvatarImage src={otherUser.avatar_url || undefined} />
-          <AvatarFallback className="bg-primary/10 text-primary text-sm">
-            {otherUser.name?.charAt(0)?.toUpperCase() || "?"}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <p className="font-medium text-sm text-foreground">{otherUser.name}</p>
+      {!hideHeader && (
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card">
+          {onBack && (
+            <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 md:hidden">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={otherUser.avatar_url || undefined} />
+            <AvatarFallback className="bg-primary/10 text-primary text-sm">
+              {otherUser.name?.charAt(0)?.toUpperCase() || "?"}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-medium text-sm text-foreground">{otherUser.name}</p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/30">

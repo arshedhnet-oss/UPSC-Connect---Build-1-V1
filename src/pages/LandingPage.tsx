@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import FreeChatModal from "@/components/chat/FreeChatModal";
 
 const LandingPage = () => {
   return (
