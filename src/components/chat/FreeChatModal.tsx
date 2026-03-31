@@ -160,14 +160,12 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
     return (
       <div
         className="fixed inset-0 z-[9999] flex flex-col bg-background"
-        style={{
-          height: "100dvh",
-          minHeight: "100vh",
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "env(safe-area-inset-bottom)",
-          overscrollBehavior: "contain",
-          touchAction: "none",
-        }}
+      style={{
+        height: "100dvh",
+        minHeight: "-webkit-fill-available",
+        paddingTop: "env(safe-area-inset-top)",
+        overscrollBehavior: "contain",
+      }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
