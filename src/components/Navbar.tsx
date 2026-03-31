@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, LayoutDashboard, CalendarCheck, User, Menu, MessageCircle } from "lucide-react";
+import { LogOut, LayoutDashboard, CalendarCheck, User, Menu, MessageCircle, Bell } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const unreadCount = useUnreadCount();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -39,6 +41,19 @@ export default function Navbar() {
       }, 100);
     }
   };
+
+  const NotificationBell = () => (
+    <Link to="/chat" className="relative">
+      <Button variant="ghost" size="icon" className="h-9 w-9">
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </span>
+        )}
+      </Button>
+    </Link>
+  );
 
   return (
     <nav className="flex items-center justify-between px-4 sm:px-6 py-3 max-w-6xl mx-auto border-b border-border">
@@ -87,6 +102,9 @@ export default function Navbar() {
 
         {user && profile ? (
           <>
+            {/* Notification Bell */}
+            <NotificationBell />
+
             {/* Desktop dropdown */}
             <div className="hidden sm:block">
               <DropdownMenu>
@@ -117,6 +135,11 @@ export default function Navbar() {
                       <DropdownMenuItem asChild>
                         <Link to="/chat" className="flex items-center gap-2 cursor-pointer">
                           <MessageCircle className="h-4 w-4" /> Messages
+                          {unreadCount > 0 && (
+                            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                              {unreadCount > 99 ? "99+" : unreadCount}
+                            </span>
+                          )}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
@@ -181,6 +204,11 @@ export default function Navbar() {
                   >
                     <Link to="/chat">
                       <MessageCircle className="h-4 w-4" /> Messages
+                      {unreadCount > 0 && (
+                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      )}
                     </Link>
                   </Button>
                   <Button
