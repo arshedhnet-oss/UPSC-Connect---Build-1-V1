@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog, Star, RotateCcw, Trash2, Search, Building2, Ban, ShieldAlert } from "lucide-react";
+import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog, Star, RotateCcw, Trash2, Search, Building2, Ban, ShieldAlert, Video, Copy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import StarRating from "@/components/StarRating";
@@ -352,13 +352,14 @@ const AdminDashboardPage = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                         <tr className="border-b border-border text-left text-muted-foreground">
+                        <tr className="border-b border-border text-left text-muted-foreground">
                           <th className="pb-3 pr-4">Mentor</th>
                           <th className="pb-3 pr-4">Mentee</th>
                           <th className="pb-3 pr-4">Date & Time</th>
                           <th className="pb-3 pr-4">Booking Time</th>
                           <th className="pb-3 pr-4">Status</th>
                           <th className="pb-3 pr-4">Payment</th>
+                          <th className="pb-3 pr-4">Meeting</th>
                           <th className="pb-3">Actions</th>
                         </tr>
                       </thead>
@@ -399,6 +400,29 @@ const AdminDashboardPage = () => {
                                     <Badge variant={tx.status === "paid" ? "default" : "outline"} className="mt-1 text-xs">{tx.status}</Badge>
                                   </div>
                                 ) : <span className="text-muted-foreground text-xs">No payment</span>}
+                              </td>
+                              <td className="py-3 pr-4">
+                                {b.meeting_link ? (
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-1">
+                                      <Video className="h-3.5 w-3.5 text-primary shrink-0" />
+                                      <a href={b.meeting_link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[120px]">
+                                        Join Link
+                                      </a>
+                                      <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => { navigator.clipboard.writeText(b.meeting_link); toast({ title: "Link copied!" }); }}>
+                                        <Copy className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                    {b.meeting_passcode && (
+                                      <div className="flex items-center gap-1">
+                                        <code className="text-xs font-mono text-foreground bg-muted px-1 rounded">{b.meeting_passcode}</code>
+                                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => { navigator.clipboard.writeText(b.meeting_passcode); toast({ title: "Passcode copied!" }); }}>
+                                          <Copy className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : <span className="text-xs text-muted-foreground">—</span>}
                               </td>
                               <td className="py-3">
                                 {b.status === "confirmed" && (
