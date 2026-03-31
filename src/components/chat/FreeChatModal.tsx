@@ -8,14 +8,10 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-} from "@/components/ui/drawer";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { Badge } from "@/components/ui/badge";
-import { Star, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Star, Loader2, X } from "lucide-react";
 
 interface FreeChatModalProps {
   open: boolean;
@@ -34,9 +30,16 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Lock body scroll when open on mobile
+  useEffect(() => {
+    if (open && isMobile) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [open, isMobile]);
+
   useEffect(() => {
     if (!open) {
-      // Reset state when closed
       setConvId(null);
       setMentorProfile(null);
       setError(null);
@@ -60,7 +63,6 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
     setError(null);
 
     try {
-      // 1. Find a featured mentor
       const { data: featuredMentors, error: fmErr } = await supabaseUntyped
         .from("mentor_profiles")
         .select("user_id, profiles(id, name, avatar_url)")
@@ -79,7 +81,6 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
       const mp = featuredMentors.profiles as any;
       setMentorProfile({ id: mentorId, name: mp?.name || "Mentor", avatar_url: mp?.avatar_url || null });
 
-      // 2. Check existing conversation
       const { data: existing } = await supabaseUntyped
         .from("conversations")
         .select("id")
@@ -92,7 +93,6 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
       if (existing) {
         chatConvId = existing.id;
       } else {
-        // Create new conversation
         const { data: created, error: createErr } = await supabaseUntyped
           .from("conversations")
           .insert({ mentee_id: user.id, mentor_id: mentorId })
@@ -106,7 +106,6 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
         }
         chatConvId = created.id;
 
-        // Send automatic welcome message from mentor
         await supabaseUntyped.from("messages").insert({
           conversation_id: chatConvId,
           sender_id: mentorId,
@@ -136,46 +135,62 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
   );
 
   const content = loading ? (
-    <div className="flex flex-col items-center justify-center h-[60vh] gap-3 text-muted-foreground">
+    <div className="flex flex-col items-center justify-center flex-1 gap-3 text-muted-foreground">
       <Loader2 className="h-8 w-8 animate-spin" />
       <p className="text-sm">Connecting you to a mentor...</p>
     </div>
   ) : error ? (
-    <div className="flex flex-col items-center justify-center h-[60vh] gap-3 text-muted-foreground px-4 text-center">
+    <div className="flex flex-col items-center justify-center flex-1 gap-3 text-muted-foreground px-4 text-center">
       <p>{error}</p>
     </div>
   ) : convId && mentorProfile ? (
-    <div className="h-[60vh] md:h-[65vh] flex flex-col">
-      <ChatWindow
-        conversationId={convId}
-        otherUser={{ name: mentorProfile.name, avatar_url: mentorProfile.avatar_url }}
-        otherUserId={mentorProfile.id}
-        onBack={() => onOpenChange(false)}
-        hideHeader
-      />
-    </div>
+    <ChatWindow
+      conversationId={convId}
+      otherUser={{ name: mentorProfile.name, avatar_url: mentorProfile.avatar_url }}
+      otherUserId={mentorProfile.id}
+      onBack={() => onOpenChange(false)}
+      hideHeader
+    />
   ) : null;
 
+  // Full-screen mobile view
   if (isMobile) {
+    if (!open) return null;
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-[95vh] flex flex-col">
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between shrink-0">
-            <DrawerTitle asChild>{chatHeader}</DrawerTitle>
-          </div>
-          <div className="flex-1 overflow-hidden">{content}</div>
-        </DrawerContent>
-      </Drawer>
+      <div
+        className="fixed inset-0 z-[9999] flex flex-col bg-background"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
+          <div className="min-w-0 flex-1">{chatHeader}</div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            className="shrink-0 h-11 w-11"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        {/* Chat body */}
+        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+          {content}
+        </div>
+      </div>
     );
   }
 
+  // Desktop dialog
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
+      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden h-[70vh] flex flex-col">
+        <div className="px-4 py-3 border-b border-border shrink-0">
           <DialogTitle asChild>{chatHeader}</DialogTitle>
         </div>
-        {content}
+        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+          {content}
+        </div>
       </DialogContent>
     </Dialog>
   );
