@@ -1,12 +1,17 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import FreeChatModal from "@/components/chat/FreeChatModal";
 
 const LandingPage = () => {
+  const [chatOpen, setChatOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <FreeChatModal open={chatOpen} onOpenChange={setChatOpen} />
 
       {/* Hero */}
       <section className="px-4 sm:px-6 py-12 sm:py-20 max-w-4xl mx-auto text-center">
@@ -25,14 +30,12 @@ const LandingPage = () => {
           </Button>
         </div>
         <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-          <Button size="lg" asChild className="group relative overflow-hidden rounded-full px-8 border-0 bg-gradient-to-r from-primary via-primary/85 to-primary/70 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.03]">
-            <Link to="/mentors?featured=true">
+          <Button size="lg" onClick={() => setChatOpen(true)} className="group relative overflow-hidden rounded-full px-8 border-0 bg-gradient-to-r from-primary via-primary/85 to-primary/70 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.03]">
               <span className="relative z-10 flex items-center gap-2 text-muted">
                 <span className="inline-block transition-transform duration-300 group-hover:rotate-12">🧭</span>
                 Feeling Lost? Talk to a Mentor
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </span>
-            </Link>
           </Button>
           <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
             <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
