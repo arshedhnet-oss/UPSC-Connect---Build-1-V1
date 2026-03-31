@@ -108,3 +108,12 @@
     box-shadow: 0 0 20px hsl(var(--primary) / 0.5);
   }
 }
+
+@keyframes pulse-glow-orange {
+  0%, 100% {
+    box-shadow: 0 0 10px hsl(28 100% 50% / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 24px hsl(28 100% 50% / 0.5);
+  }
+}
