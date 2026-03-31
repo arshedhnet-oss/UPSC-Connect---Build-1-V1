@@ -401,6 +401,29 @@ const AdminDashboardPage = () => {
                                   </div>
                                 ) : <span className="text-muted-foreground text-xs">No payment</span>}
                               </td>
+                              <td className="py-3 pr-4">
+                                {b.meeting_link ? (
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-1">
+                                      <Video className="h-3.5 w-3.5 text-primary shrink-0" />
+                                      <a href={b.meeting_link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[120px]">
+                                        Join Link
+                                      </a>
+                                      <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => { navigator.clipboard.writeText(b.meeting_link); toast({ title: "Link copied!" }); }}>
+                                        <Copy className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                    {b.meeting_passcode && (
+                                      <div className="flex items-center gap-1">
+                                        <code className="text-xs font-mono text-foreground bg-muted px-1 rounded">{b.meeting_passcode}</code>
+                                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => { navigator.clipboard.writeText(b.meeting_passcode); toast({ title: "Passcode copied!" }); }}>
+                                          <Copy className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : <span className="text-xs text-muted-foreground">—</span>}
+                              </td>
                               <td className="py-3">
                                 {b.status === "confirmed" && (
                                   <Button size="sm" variant="outline" onClick={() => markCompleted(b.id)}>
