@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: "admin@upscconnect.in",
-        from: "UPSC Connect <noreply@upscconnect.in>",
+        from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "New Booking Confirmed – UPSC Connect",
         html: adminHtml,
         text: `New booking confirmed!\n\nMentor: ${mentorProfile.name}\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nAmount: ₹${transaction.amount}\nPayment ID: ${transaction.razorpay_payment_id || "N/A"}\nBooking ID: ${booking_id}\nMeeting: ${meetingLink}`,
