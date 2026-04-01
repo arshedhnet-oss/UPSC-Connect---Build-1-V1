@@ -143,6 +143,19 @@ Deno.serve(async (req) => {
         .eq("id", transaction.id);
     }
 
+    // Confirm booking and mark slot as booked (using service role, bypasses RLS)
+    if (booking.status !== "confirmed") {
+      await supabase
+        .from("bookings")
+        .update({ status: "confirmed" })
+        .eq("id", booking_id);
+      await supabase
+        .from("slots")
+        .update({ is_booked: true })
+        .eq("id", booking.slot_id);
+      console.log(`Booking ${booking_id} confirmed and slot marked as booked`);
+    }
+
     const { data: slot } = await supabase
       .from("slots")
       .select("date, start_time, end_time")
