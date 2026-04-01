@@ -238,13 +238,15 @@ Deno.serve(async (req) => {
 
     // Enqueue mentor email
     const mentorMessageId = `booking-mentor-${booking_id}`;
+    const mentorHtml = buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode, calendarLink);
     await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
         to: mentorProfile.email,
         from: "UPSC Connect <noreply@upscconnect.in>",
         subject: "New Mentorship Session Booked — UPSC Connect",
-        html: buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode, calendarLink),
+        html: mentorHtml,
+        text: `New session booked!\n\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\n\nPlease be available at the scheduled time.`,
         message_id: mentorMessageId,
         idempotency_key: mentorMessageId,
         label: "booking-mentor",
