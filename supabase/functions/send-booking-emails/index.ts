@@ -243,7 +243,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: mentorProfile.email,
-        from: "UPSC Connect <noreply@upscconnect.in>",
+        from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "New Mentorship Session Booked — UPSC Connect",
         html: mentorHtml,
         text: `New session booked!\n\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\n\nPlease be available at the scheduled time.`,
