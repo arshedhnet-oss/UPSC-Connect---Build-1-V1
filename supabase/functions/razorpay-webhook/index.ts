@@ -325,7 +325,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: menteeProfile.email,
-        from: "UPSC Connect <noreply@upscconnect.in>",
+        from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "Your Mentorship Session is Confirmed — UPSC Connect",
         html: buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, passcode, amount, calendarLink),
         text: `Your session is confirmed!\n\nMentor: ${mentorProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\nAmount Paid: ₹${amount}\n\nPlease join 5 minutes early.`,
@@ -351,7 +351,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: mentorProfile.email,
-        from: "UPSC Connect <noreply@upscconnect.in>",
+        from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "New Mentorship Session Booked — UPSC Connect",
         html: buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode, calendarLink),
         text: `New session booked!\n\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\n\nPlease be available at the scheduled time.`,
@@ -377,7 +377,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: "admin@upscconnect.in",
-        from: "UPSC Connect <noreply@upscconnect.in>",
+        from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "New Booking Confirmed – UPSC Connect",
         html: buildAdminEmail(mentorProfile.name, menteeProfile.name, sessionDate, sessionTime, amount, paymentId, bookingId, meetingLink),
         text: `New booking confirmed!\n\nMentor: ${mentorProfile.name}\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nAmount: ₹${amount}\nPayment ID: ${paymentId}\nBooking ID: ${bookingId}\nMeeting: ${meetingLink}`,
