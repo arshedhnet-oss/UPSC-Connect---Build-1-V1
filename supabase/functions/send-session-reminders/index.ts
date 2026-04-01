@@ -129,6 +129,7 @@ Deno.serve(async (req) => {
           queue_name: "transactional_emails",
           payload: {
             to: menteeProfile.email,
+            from: "UPSC Connect <noreply@upscconnect.in>",
             subject: "Reminder: Your Mentorship Session Starts in 1 Hour — UPSC Connect",
             html: buildMenteeReminderEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, passcode),
             message_id: menteeMessageId,
