@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useChatNotifications } from "@/hooks/useChatNotifications";
@@ -13,12 +13,12 @@ export default function NotificationManager() {
   const { user } = useAuth();
   const { permission } = useNotifications();
   const { subscribe } = usePushSubscription();
+  const swRegistered = useRef(false);
 
-  // Register service worker when user is logged in
+  // Register service worker once per mount when user is logged in
   useEffect(() => {
-    if (!user || !("serviceWorker" in navigator)) return;
+    if (!user || swRegistered.current || !("serviceWorker" in navigator)) return;
 
-    // Don't register SW in iframes or preview hosts
     try {
       if (window.self !== window.top) return;
     } catch {
@@ -29,6 +29,8 @@ export default function NotificationManager() {
       window.location.hostname.includes("lovableproject.com")
     ) return;
 
+    swRegistered.current = true;
+
     navigator.serviceWorker
       .register("/sw.js")
       .then((reg) => {
@@ -38,15 +40,14 @@ export default function NotificationManager() {
         }
       })
       .catch((err) => console.warn("[SW] Registration failed:", err));
-  }, [user, subscribe]);
+  }, [user]); // deliberately omit subscribe – it's stable via module guard
 
-  // Subscribe to push when permission changes to granted
+  // Subscribe to push once when permission changes to granted
   useEffect(() => {
     if (permission === "granted" && user) {
-      console.log("[Notifications] Permission granted, subscribing to push...");
       subscribe();
     }
-  }, [permission, user, subscribe]);
+  }, [permission, user]); // subscribe is guarded internally
 
   // Activate global listeners
   useChatNotifications();
