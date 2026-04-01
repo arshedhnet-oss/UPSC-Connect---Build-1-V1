@@ -325,6 +325,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: menteeProfile.email,
+        from: "UPSC Connect <noreply@upscconnect.in>",
         subject: "Your Mentorship Session is Confirmed — UPSC Connect",
         html: buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, passcode, amount, calendarLink),
         message_id: menteeMessageId,
@@ -349,6 +350,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: mentorProfile.email,
+        from: "UPSC Connect <noreply@upscconnect.in>",
         subject: "New Mentorship Session Booked — UPSC Connect",
         html: buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode, calendarLink),
         message_id: mentorMessageId,
@@ -373,6 +375,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: "admin@upscconnect.in",
+        from: "UPSC Connect <noreply@upscconnect.in>",
         subject: "New Booking Confirmed – UPSC Connect",
         html: buildAdminEmail(mentorProfile.name, menteeProfile.name, sessionDate, sessionTime, amount, paymentId, bookingId, meetingLink),
         message_id: adminMessageId,
