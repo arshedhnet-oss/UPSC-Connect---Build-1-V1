@@ -265,22 +265,18 @@ Deno.serve(async (req) => {
 
     // Enqueue admin email
     const adminMessageId = `booking-admin-${booking_id}`;
+    const adminHtml = buildAdminEmail(
+      mentorProfile.name, menteeProfile.name, sessionDate, sessionTime,
+      transaction.amount, transaction.razorpay_payment_id || "N/A", booking_id, meetingLink
+    );
     await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
         to: "admin@upscconnect.in",
         from: "UPSC Connect <noreply@upscconnect.in>",
         subject: "New Booking Confirmed – UPSC Connect",
-        html: buildAdminEmail(
-          mentorProfile.name,
-          menteeProfile.name,
-          sessionDate,
-          sessionTime,
-          transaction.amount,
-          transaction.razorpay_payment_id || "N/A",
-          booking_id,
-          meetingLink
-        ),
+        html: adminHtml,
+        text: `New booking confirmed!\n\nMentor: ${mentorProfile.name}\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nAmount: ₹${transaction.amount}\nPayment ID: ${transaction.razorpay_payment_id || "N/A"}\nBooking ID: ${booking_id}\nMeeting: ${meetingLink}`,
         message_id: adminMessageId,
         idempotency_key: adminMessageId,
         label: "booking-admin",
