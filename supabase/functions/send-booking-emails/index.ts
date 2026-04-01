@@ -103,8 +103,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (booking.status !== "confirmed") {
-      return new Response(JSON.stringify({ error: "Booking not confirmed" }), {
+    // Accept both pending_payment and confirmed statuses
+    if (booking.status !== "confirmed" && booking.status !== "pending_payment") {
+      return new Response(JSON.stringify({ error: "Booking not in valid state" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
