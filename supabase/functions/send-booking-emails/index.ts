@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: menteeProfile.email,
-        from: "UPSC Connect <noreply@upscconnect.in>",
+        from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "Your Mentorship Session is Confirmed — UPSC Connect",
         html: menteeHtml,
         text: `Your session is confirmed!\n\nMentor: ${mentorProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\nAmount Paid: ₹${transaction.amount}\n\nPlease join 5 minutes early.`,
