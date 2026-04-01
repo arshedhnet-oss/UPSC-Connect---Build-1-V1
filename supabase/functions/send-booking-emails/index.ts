@@ -103,8 +103,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (booking.status !== "confirmed") {
-      return new Response(JSON.stringify({ error: "Booking not confirmed" }), {
+    // Accept both pending_payment and confirmed statuses
+    if (booking.status !== "confirmed" && booking.status !== "pending_payment") {
+      return new Response(JSON.stringify({ error: "Booking not in valid state" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -140,6 +141,19 @@ Deno.serve(async (req) => {
         .from("transactions")
         .update({ status: "success" })
         .eq("id", transaction.id);
+    }
+
+    // Confirm booking and mark slot as booked (using service role, bypasses RLS)
+    if (booking.status !== "confirmed") {
+      await supabase
+        .from("bookings")
+        .update({ status: "confirmed" })
+        .eq("id", booking_id);
+      await supabase
+        .from("slots")
+        .update({ is_booked: true })
+        .eq("id", booking.slot_id);
+      console.log(`Booking ${booking_id} confirmed and slot marked as booked`);
     }
 
     const { data: slot } = await supabase

@@ -134,20 +134,11 @@ const MentorProfilePage = () => {
         order_id: orderData.order_id,
         handler: async (_response: any) => {
           try {
-            // Confirm booking and mark slot as booked
-            await supabaseUntyped
-              .from("bookings")
-              .update({ status: "confirmed" })
-              .eq("id", bookingData.id);
-            await supabaseUntyped
-              .from("slots")
-              .update({ is_booked: true })
-              .eq("id", slot.id);
-
-            // Trigger email sending + meeting creation
+            // Call server function to confirm booking, create meeting, and send emails
+            // (uses service role key to bypass RLS)
             const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
             const sess = (await supabaseUntyped.auth.getSession()).data.session;
-            fetch(
+            const res = await fetch(
               `https://${projectId}.supabase.co/functions/v1/send-booking-emails`,
               {
                 method: "POST",
@@ -157,7 +148,9 @@ const MentorProfilePage = () => {
                 },
                 body: JSON.stringify({ booking_id: bookingData.id }),
               }
-            ).catch(console.error); // fire-and-forget
+            );
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || "Failed to confirm booking");
 
             setSlots(prev => prev.filter(s => s.id !== slot.id));
             toast({
