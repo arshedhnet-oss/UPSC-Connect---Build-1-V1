@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
           queue_name: "transactional_emails",
           payload: {
             to: menteeProfile.email,
-            from: "UPSC Connect <noreply@upscconnect.in>",
+            from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
             subject: "Reminder: Your Mentorship Session Starts in 1 Hour — UPSC Connect",
             html: buildMenteeReminderEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, passcode),
             text: `Reminder: Your session starts in 1 hour!\n\nMentor: ${mentorProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\n\nPlease join 5 minutes early.`,
@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
           queue_name: "transactional_emails",
           payload: {
             to: mentorProfile.email,
-            from: "UPSC Connect <noreply@upscconnect.in>",
+            from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
             subject: "Reminder: Mentorship Session Starts in 1 Hour — UPSC Connect",
             html: buildMentorReminderEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode),
             text: `Reminder: Session starts in 1 hour!\n\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\n\nPlease be available at the scheduled time.`,

@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: menteeProfile.email,
-        from: "UPSC Connect <noreply@upscconnect.in>",
+        from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "Your Mentorship Session is Confirmed — UPSC Connect",
         html: menteeHtml,
         text: `Your session is confirmed!\n\nMentor: ${mentorProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\nAmount Paid: ₹${transaction.amount}\n\nPlease join 5 minutes early.`,
@@ -243,7 +243,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: mentorProfile.email,
-        from: "UPSC Connect <noreply@upscconnect.in>",
+        from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "New Mentorship Session Booked — UPSC Connect",
         html: mentorHtml,
         text: `New session booked!\n\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\n\nPlease be available at the scheduled time.`,
@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: "admin@upscconnect.in",
-        from: "UPSC Connect <noreply@upscconnect.in>",
+        from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "New Booking Confirmed – UPSC Connect",
         html: adminHtml,
         text: `New booking confirmed!\n\nMentor: ${mentorProfile.name}\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nAmount: ₹${transaction.amount}\nPayment ID: ${transaction.razorpay_payment_id || "N/A"}\nBooking ID: ${booking_id}\nMeeting: ${meetingLink}`,
