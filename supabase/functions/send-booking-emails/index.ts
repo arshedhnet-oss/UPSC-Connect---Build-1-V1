@@ -251,6 +251,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         to: "admin@upscconnect.in",
+        from: "UPSC Connect <noreply@upscconnect.in>",
         subject: "New Booking Confirmed – UPSC Connect",
         html: buildAdminEmail(
           mentorProfile.name,
