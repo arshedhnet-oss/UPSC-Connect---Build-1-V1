@@ -112,6 +112,10 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
             return [...prev, payload.new as Message];
           });
           scrollToBottom();
+          // If mentor replied, cancel any pending auto-response
+          if (payload.new.sender_id === otherUserId) {
+            cancelAutoResponse();
+          }
           if (payload.new.receiver_id === user?.id) {
             supabaseUntyped
               .from("messages")
