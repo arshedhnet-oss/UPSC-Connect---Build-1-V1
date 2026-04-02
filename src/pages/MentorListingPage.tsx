@@ -27,6 +27,7 @@ interface MentorListing {
   featured_tag: string | null;
   air_rank: number | null;
   rank_year: number | null;
+  display_priority: number;
   profile: { name: string; avatar_url: string | null };
 }
 
