@@ -598,6 +598,39 @@ const AdminDashboardPage = () => {
                             </Button>
                           </div>
                           <FeaturedMentorControls mentor={m} onUpdate={handleFeaturedUpdate} />
+                          {/* Priority Control */}
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">Priority:</span>
+                            <Input
+                              type="number"
+                              value={m.display_priority ?? 0}
+                              onChange={async (e) => {
+                                const val = parseInt(e.target.value) || 0;
+                                setApprovedMentors(prev => prev.map(mt => mt.user_id === m.user_id ? { ...mt, display_priority: val } : mt));
+                                await supabaseUntyped.from("mentor_profiles").update({ display_priority: val }).eq("user_id", m.user_id);
+                              }}
+                              className="h-7 w-16 text-xs"
+                              min={0}
+                            />
+                            {[
+                              { label: "High", value: 100 },
+                              { label: "Med", value: 50 },
+                              { label: "Normal", value: 0 },
+                            ].map(preset => (
+                              <Button
+                                key={preset.label}
+                                size="sm"
+                                variant={(m.display_priority ?? 0) === preset.value ? "default" : "outline"}
+                                className="h-7 text-xs px-2"
+                                onClick={async () => {
+                                  setApprovedMentors(prev => prev.map(mt => mt.user_id === m.user_id ? { ...mt, display_priority: preset.value } : mt));
+                                  await supabaseUntyped.from("mentor_profiles").update({ display_priority: preset.value }).eq("user_id", m.user_id);
+                                }}
+                              >
+                                {preset.label}
+                              </Button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     ))}

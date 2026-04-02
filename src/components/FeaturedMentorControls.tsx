@@ -55,11 +55,13 @@ const FeaturedMentorControls = ({ mentor, onUpdate }: FeaturedMentorControlsProp
 
   const handleSave = async () => {
     setSaving(true);
+    const currentPriority = mentor.display_priority || 0;
     const updates: any = {
       is_featured: isFeatured,
       featured_tag: featuredTag || null,
       air_rank: airRank ? parseInt(airRank) : null,
       rank_year: rankYear ? parseInt(rankYear) : null,
+      display_priority: isFeatured && currentPriority === 0 ? 100 : currentPriority,
     };
     const { error } = await supabaseUntyped
       .from("mentor_profiles")
