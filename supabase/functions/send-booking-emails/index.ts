@@ -334,85 +334,128 @@ Deno.serve(async (req) => {
 
 // ──────────── Email HTML Templates ────────────
 
+const LOGO_URL = "https://https-upscconnect-in.lovable.app/favicon.ico";
+
 const baseStyles = `
-  body { margin: 0; padding: 0; background-color: #f7f5f2; font-family: 'DM Sans', Arial, sans-serif; }
-  .container { max-width: 560px; margin: 0 auto; padding: 32px 20px; }
-  .card { background: #ffffff; border-radius: 12px; padding: 32px; }
-  .logo { font-size: 20px; font-weight: 700; color: #2556b9; margin-bottom: 24px; }
-  h1 { font-size: 22px; color: #1a1f2e; margin: 0 0 16px; }
-  p { font-size: 14px; color: #64748b; line-height: 1.6; margin: 0 0 12px; }
-  .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
-  .detail-label { font-size: 13px; color: #94a3b8; }
-  .detail-value { font-size: 14px; color: #1a1f2e; font-weight: 500; }
-  .btn { display: inline-block; padding: 12px 28px; background: #2556b9; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600; margin-top: 20px; }
-  .btn-secondary { display: inline-block; padding: 10px 20px; background: #f0f4ff; color: #2556b9; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 8px; border: 1px solid #d0daf0; }
-  .passcode-box { background: #f8fafc; border: 2px dashed #2556b9; border-radius: 10px; padding: 16px; text-align: center; margin: 16px 0; }
-  .passcode-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 6px; }
-  .passcode-value { font-size: 24px; font-weight: 700; color: #2556b9; font-family: 'Courier New', monospace; letter-spacing: 3px; margin: 0; }
-  .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #94a3b8; }
+  body { margin: 0; padding: 0; background-color: #f4f6f8; font-family: Arial, Helvetica, sans-serif; -webkit-text-size-adjust: 100%; }
+  .wrapper { max-width: 600px; margin: 0 auto; padding: 24px 16px; }
+  .card { background: #ffffff; border-radius: 10px; overflow: hidden; }
+  .card-header { padding: 28px 32px 20px; text-align: center; border-bottom: 1px solid #eef0f3; }
+  .logo { height: 40px; width: auto; margin-bottom: 16px; }
+  .card-body { padding: 28px 32px; }
+  .card-footer { padding: 20px 32px; background: #f9fafb; text-align: center; border-top: 1px solid #eef0f3; }
+  h1 { font-size: 20px; font-weight: 700; color: #1a1f2e; margin: 0 0 6px; line-height: 1.3; }
+  .subtitle { font-size: 14px; color: #64748b; margin: 0 0 0; line-height: 1.5; }
+  .section-title { font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin: 0 0 12px; }
+  .detail-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  .detail-table td { padding: 10px 0; border-bottom: 1px solid #f0f1f3; font-size: 14px; line-height: 1.5; vertical-align: top; }
+  .detail-table tr:last-child td { border-bottom: none; }
+  .detail-label { color: #94a3b8; width: 130px; font-weight: 500; }
+  .detail-value { color: #1a1f2e; font-weight: 500; }
+  .passcode-box { background: #f0f4ff; border: 1px solid #d0daf0; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 24px; }
+  .passcode-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1.2px; margin: 0 0 6px; font-weight: 600; }
+  .passcode-value { font-size: 26px; font-weight: 700; color: #2556b9; font-family: 'Courier New', monospace; letter-spacing: 4px; margin: 0; }
+  .btn-primary { display: inline-block; padding: 12px 32px; background: #2556b9; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600; text-align: center; }
+  .btn-secondary { display: inline-block; padding: 10px 24px; background: #ffffff; color: #2556b9 !important; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600; text-align: center; border: 1px solid #d0daf0; }
+  .btn-row { text-align: center; margin: 24px 0 8px; }
+  .tip { font-size: 13px; color: #94a3b8; margin: 16px 0 0; line-height: 1.5; text-align: center; }
+  .footer-text { font-size: 12px; color: #94a3b8; margin: 0 0 6px; line-height: 1.6; }
+  .footer-text a { color: #2556b9; text-decoration: none; }
+  .divider { border: none; border-top: 1px solid #eef0f3; margin: 24px 0; }
+  @media only screen and (max-width: 620px) {
+    .wrapper { padding: 12px 8px !important; }
+    .card-header, .card-body, .card-footer { padding-left: 20px !important; padding-right: 20px !important; }
+    .btn-primary, .btn-secondary { display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; }
+    .btn-secondary { margin-top: 10px !important; }
+    .detail-label { width: 100px !important; }
+  }
 `;
 
 function emailWrapper(content: string): string {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>${baseStyles}</style></head><body><div class="container"><div class="card"><div class="logo">UPSC Connect</div>${content}</div><div class="footer"><p>Need help? Email us at <a href="mailto:admin@upscconnect.in" style="color:#2556b9;">admin@upscconnect.in</a></p><p>© ${new Date().getFullYear()} UPSC Connect. All rights reserved.</p></div></div></body></html>`;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>${baseStyles}</style></head><body><div class="wrapper"><div class="card"><div class="card-header"><img src="${LOGO_URL}" alt="UPSC Connect" class="logo" />${content.split("<!--HEADER_END-->")[0]}</div><div class="card-body">${content.split("<!--HEADER_END-->")[1]?.split("<!--BODY_END-->")[0] || ""}</div><div class="card-footer"><p class="footer-text">Need help? Email us at <a href="mailto:admin@upscconnect.in">admin@upscconnect.in</a></p><p class="footer-text">&copy; ${new Date().getFullYear()} UPSC Connect. All rights reserved.</p></div></div></div></body></html>`;
+}
+
+function detailRow(label: string, value: string, mono = false): string {
+  const style = mono ? ' style="font-family:Courier New,monospace;font-size:12px;"' : '';
+  return `<tr><td class="detail-label">${label}</td><td class="detail-value"${style}>${value}</td></tr>`;
 }
 
 function buildMenteeEmail(mentorName: string, date: string, time: string, meetingLink: string, passcode: string, amount: number, calendarLink: string): string {
-  return emailWrapper(`
-    <h1>Your Mentorship Session is Confirmed! 🎉</h1>
-    <p>Great news! Your session has been successfully booked and payment confirmed.</p>
-    <div style="margin: 20px 0;">
-      <div class="detail-row"><span class="detail-label">Mentor</span><span class="detail-value">${mentorName}</span></div>
-      <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${date}</span></div>
-      <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${time}</span></div>
-      <div class="detail-row"><span class="detail-label">Amount Paid</span><span class="detail-value">₹${amount}</span></div>
-    </div>
+  const header = `<h1>Booking Confirmed</h1><p class="subtitle">Your mentorship session has been successfully booked.</p><!--HEADER_END-->`;
+  const details = `
+    <p class="section-title">Session Details</p>
+    <table class="detail-table">
+      ${detailRow("Mentor", mentorName)}
+      ${detailRow("Date", date)}
+      ${detailRow("Time", time)}
+      ${detailRow("Amount Paid", `&#8377;${amount}`)}
+    </table>
+    <hr class="divider" />
+    <p class="section-title">Meeting Details</p>
     <div class="passcode-box">
       <p class="passcode-label">Meeting Passcode</p>
       <p class="passcode-value">${passcode}</p>
     </div>
-    <a href="${meetingLink}" class="btn">Join Meeting</a>
-    <br/>
-    <a href="${calendarLink}" class="btn-secondary">📅 Add to Calendar</a>
-    <p style="margin-top: 16px; font-size: 13px; color: #94a3b8;">💡 Please join 5 minutes early to ensure a smooth start.</p>
-  `);
+    <div class="btn-row">
+      <a href="${meetingLink}" class="btn-primary">Join Meeting</a>
+    </div>
+    <div class="btn-row" style="margin-top:10px;">
+      <a href="${calendarLink}" class="btn-secondary">Add to Calendar</a>
+    </div>
+    <p class="tip">Please join 5 minutes early to ensure a smooth start.</p>
+  <!--BODY_END-->`;
+  return emailWrapper(header + details);
 }
 
 function buildMentorEmail(menteeName: string, date: string, time: string, meetingLink: string, passcode: string, calendarLink: string): string {
-  return emailWrapper(`
-    <h1>New Mentorship Session Booked 📅</h1>
-    <p>A mentee has booked a session with you. Here are the details:</p>
-    <div style="margin: 20px 0;">
-      <div class="detail-row"><span class="detail-label">Mentee</span><span class="detail-value">${menteeName}</span></div>
-      <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${date}</span></div>
-      <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${time}</span></div>
-    </div>
+  const header = `<h1>New Session Booked</h1><p class="subtitle">A mentee has booked a session with you.</p><!--HEADER_END-->`;
+  const details = `
+    <p class="section-title">Session Details</p>
+    <table class="detail-table">
+      ${detailRow("Mentee", menteeName)}
+      ${detailRow("Date", date)}
+      ${detailRow("Time", time)}
+    </table>
+    <hr class="divider" />
+    <p class="section-title">Meeting Details</p>
     <div class="passcode-box">
       <p class="passcode-label">Meeting Passcode</p>
       <p class="passcode-value">${passcode}</p>
     </div>
-    <a href="${meetingLink}" class="btn">Join Meeting</a>
-    <br/>
-    <a href="${calendarLink}" class="btn-secondary">📅 Add to Calendar</a>
-    <p style="margin-top: 16px; font-size: 13px; color: #94a3b8;">Please be available at the scheduled time.</p>
-  `);
+    <div class="btn-row">
+      <a href="${meetingLink}" class="btn-primary">Join Meeting</a>
+    </div>
+    <div class="btn-row" style="margin-top:10px;">
+      <a href="${calendarLink}" class="btn-secondary">Add to Calendar</a>
+    </div>
+    <p class="tip">Please be available at the scheduled time.</p>
+  <!--BODY_END-->`;
+  return emailWrapper(header + details);
 }
 
 function buildAdminEmail(
   mentorName: string, menteeName: string, date: string, time: string,
   amount: number, paymentId: string, bookingId: string, meetingLink: string
 ): string {
-  return emailWrapper(`
-    <h1>New Booking Confirmed – UPSC Connect</h1>
-    <p>A new session has been booked on the platform.</p>
-    <div style="margin: 20px 0;">
-      <div class="detail-row"><span class="detail-label">Mentor</span><span class="detail-value">${mentorName}</span></div>
-      <div class="detail-row"><span class="detail-label">Mentee</span><span class="detail-value">${menteeName}</span></div>
-      <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${date}</span></div>
-      <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${time}</span></div>
-      <div class="detail-row"><span class="detail-label">Amount</span><span class="detail-value">₹${amount}</span></div>
-      <div class="detail-row"><span class="detail-label">Payment ID</span><span class="detail-value" style="font-family:monospace;font-size:12px;">${paymentId}</span></div>
-      <div class="detail-row"><span class="detail-label">Booking ID</span><span class="detail-value" style="font-family:monospace;font-size:12px;">${bookingId}</span></div>
+  const header = `<h1>New Booking Confirmed</h1><p class="subtitle">A new session has been booked on the platform.</p><!--HEADER_END-->`;
+  const details = `
+    <p class="section-title">Session Details</p>
+    <table class="detail-table">
+      ${detailRow("Mentor", mentorName)}
+      ${detailRow("Mentee", menteeName)}
+      ${detailRow("Date", date)}
+      ${detailRow("Time", time)}
+      ${detailRow("Amount", `&#8377;${amount}`)}
+    </table>
+    <hr class="divider" />
+    <p class="section-title">Transaction Details</p>
+    <table class="detail-table">
+      ${detailRow("Payment ID", paymentId, true)}
+      ${detailRow("Booking ID", bookingId, true)}
+    </table>
+    <div class="btn-row">
+      <a href="${meetingLink}" class="btn-primary">View Meeting Link</a>
     </div>
-    <a href="${meetingLink}" class="btn">View Meeting Link</a>
-  `);
+  <!--BODY_END-->`;
+  return emailWrapper(header + details);
 }
