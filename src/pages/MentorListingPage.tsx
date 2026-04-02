@@ -13,6 +13,8 @@ import { CalendarIcon, X, Search } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
+import FeaturedMentorBadge from "@/components/FeaturedMentorBadge";
+import AirRankLabel from "@/components/AirRankLabel";
 
 interface MentorListing {
   user_id: string;
@@ -21,6 +23,10 @@ interface MentorListing {
   price_per_session: number;
   languages: string[];
   optional_subject: string | null;
+  is_featured: boolean;
+  featured_tag: string | null;
+  air_rank: number | null;
+  rank_year: number | null;
   profile: { name: string; avatar_url: string | null };
 }
 
