@@ -44,15 +44,19 @@ const LandingPage = () => {
           <Button size="lg" asChild>
             <Link to="/mentors">Browse Mentors <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link to="/organisations"><Building2 className="mr-2 h-4 w-4" /> Browse Organisations</Link>
-          </Button>
+          {ENABLE_ORGANISATIONS && (
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/organisations"><Building2 className="mr-2 h-4 w-4" /> Browse Organisations</Link>
+            </Button>
+          )}
         </div>
-        <div className="mt-3 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-          <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
-            <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
-          </Button>
-        </div>
+        {ENABLE_ORGANISATIONS && (
+          <div className="mt-3 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
+              <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* How It Works */}
