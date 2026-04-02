@@ -197,11 +197,13 @@ export type Database = {
           average_rating: number | null
           bio: string | null
           created_at: string | null
+          display_priority: number
           featured_tag: string | null
           id: string
           interview_years: string[] | null
           interviews_appeared: number | null
           is_approved: boolean | null
+          is_default_chat_mentor: boolean
           is_featured: boolean
           languages: string[] | null
           mains_written: number | null
@@ -218,11 +220,13 @@ export type Database = {
           average_rating?: number | null
           bio?: string | null
           created_at?: string | null
+          display_priority?: number
           featured_tag?: string | null
           id?: string
           interview_years?: string[] | null
           interviews_appeared?: number | null
           is_approved?: boolean | null
+          is_default_chat_mentor?: boolean
           is_featured?: boolean
           languages?: string[] | null
           mains_written?: number | null
@@ -239,11 +243,13 @@ export type Database = {
           average_rating?: number | null
           bio?: string | null
           created_at?: string | null
+          display_priority?: number
           featured_tag?: string | null
           id?: string
           interview_years?: string[] | null
           interviews_appeared?: number | null
           is_approved?: boolean | null
+          is_default_chat_mentor?: boolean
           is_featured?: boolean
           languages?: string[] | null
           mains_written?: number | null

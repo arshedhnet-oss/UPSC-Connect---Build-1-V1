@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, X, Search } from "lucide-react";
+import { CalendarIcon, X, Search, Star } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
@@ -28,6 +28,8 @@ interface MentorListing {
   air_rank: number | null;
   rank_year: number | null;
   display_priority: number;
+  average_rating: number | null;
+  total_reviews: number | null;
   profile: { name: string; avatar_url: string | null };
 }
 
@@ -47,7 +49,7 @@ const MentorListingPage = () => {
     const fetchMentors = async () => {
       let query = supabaseUntyped
         .from("mentor_profiles")
-        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, featured_tag, air_rank, rank_year, display_priority")
+        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, featured_tag, air_rank, rank_year, display_priority, average_rating, total_reviews")
         .eq("is_approved", true)
         .order("display_priority", { ascending: false });
 
@@ -79,6 +81,8 @@ const MentorListingPage = () => {
           air_rank: m.air_rank,
           rank_year: m.rank_year,
           display_priority: m.display_priority || 0,
+          average_rating: m.average_rating || null,
+          total_reviews: m.total_reviews || null,
           profile: {
             name: profileMap.get(m.user_id)?.name || "Mentor",
             avatar_url: profileMap.get(m.user_id)?.avatar_url,
@@ -259,6 +263,12 @@ const MentorListingPage = () => {
                     <div>
                       <h3 className="font-display font-semibold text-card-foreground">{m.profile.name}</h3>
                       <p className="text-sm text-muted-foreground">₹{m.price_per_session}/session</p>
+                      {m.average_rating != null && m.average_rating > 0 && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          {m.average_rating}{m.total_reviews ? ` (${m.total_reviews})` : ""}
+                        </p>
+                      )}
                     </div>
                   </div>
                   {m.bio && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{m.bio}</p>}
