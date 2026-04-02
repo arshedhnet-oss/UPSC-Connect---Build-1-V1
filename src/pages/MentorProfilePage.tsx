@@ -8,11 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Send, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MentorReviews from "@/components/MentorReviews";
 import ReviewModal from "@/components/ReviewModal";
 import StarRating from "@/components/StarRating";
+import FeaturedMentorBadge from "@/components/FeaturedMentorBadge";
+import AirRankLabel from "@/components/AirRankLabel";
 
 declare global {
   interface Window {
