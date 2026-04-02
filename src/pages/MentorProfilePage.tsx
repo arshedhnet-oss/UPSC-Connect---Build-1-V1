@@ -155,10 +155,7 @@ const MentorProfilePage = () => {
             if (!res.ok) throw new Error(result.error || "Failed to confirm booking");
 
             setSlots(prev => prev.filter(s => s.id !== slot.id));
-            toast({
-              title: "Payment successful!",
-              description: `Your session on ${format(new Date(slot.date), "MMM d, yyyy")} is confirmed. Confirmation emails will arrive shortly!`,
-            });
+            navigate(`/booking-confirmed/${bookingData.id}`, { replace: true });
           } catch {
             toast({ title: "Payment recorded but booking update failed", description: "Please contact support.", variant: "destructive" });
           }
