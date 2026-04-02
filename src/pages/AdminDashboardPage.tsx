@@ -12,6 +12,7 @@ import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle,
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import StarRating from "@/components/StarRating";
+import FeaturedMentorControls from "@/components/FeaturedMentorControls";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -133,16 +134,8 @@ const AdminDashboardPage = () => {
     }
   };
 
-  const toggleFeatured = async (userId: string, featured: boolean) => {
-    const { error } = await supabaseUntyped
-      .from("mentor_profiles")
-      .update({ is_featured: featured })
-      .eq("user_id", userId);
-    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
-    else {
-      setApprovedMentors(prev => prev.map(m => m.user_id === userId ? { ...m, is_featured: featured } : m));
-      toast({ title: featured ? "Mentor featured" : "Mentor unfeatured" });
-    }
+  const handleFeaturedUpdate = (userId: string, updates: any) => {
+    setApprovedMentors(prev => prev.map(m => m.user_id === userId ? { ...m, ...updates } : m));
   };
 
   const markCompleted = async (bookingId: string) => {
@@ -594,21 +587,16 @@ const AdminDashboardPage = () => {
                           )}
                           <p className="text-sm text-muted-foreground mt-1">₹{m.price_per_session}/session</p>
                         </div>
-                        <div className="flex gap-2 flex-wrap">
-                          <Button
-                            size="sm"
-                            variant={m.is_featured ? "default" : "outline"}
-                            onClick={() => toggleFeatured(m.user_id, !m.is_featured)}
-                          >
-                            <Star className={`h-4 w-4 mr-1 ${m.is_featured ? "fill-current" : ""}`} />
-                            {m.is_featured ? "Featured" : "Feature"}
-                          </Button>
-                          <Button size="sm" variant="destructive" onClick={() => disableMentor(m.user_id)}>
-                            <X className="h-4 w-4 mr-1" /> Disable
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-destructive" onClick={() => initiateDelete("mentor", m.user_id, m.profiles?.name || "Mentor")}>
-                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
-                          </Button>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex gap-2 flex-wrap">
+                            <Button size="sm" variant="destructive" onClick={() => disableMentor(m.user_id)}>
+                              <X className="h-4 w-4 mr-1" /> Disable
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-destructive" onClick={() => initiateDelete("mentor", m.user_id, m.profiles?.name || "Mentor")}>
+                              <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                            </Button>
+                          </div>
+                          <FeaturedMentorControls mentor={m} onUpdate={handleFeaturedUpdate} />
                         </div>
                       </div>
                     ))}
