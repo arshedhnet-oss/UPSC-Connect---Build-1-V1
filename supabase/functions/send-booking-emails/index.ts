@@ -223,6 +223,13 @@ Deno.serve(async (req) => {
       `Mentorship session on UPSC Connect.\nMeeting passcode: ${passcode}\nJoin: ${meetingLink}`
     );
 
+    // Generate unsubscribe tokens for all recipients
+    const [menteeUnsubToken, mentorUnsubToken, adminUnsubToken] = await Promise.all([
+      getOrCreateUnsubscribeToken(supabase, menteeProfile.email),
+      getOrCreateUnsubscribeToken(supabase, mentorProfile.email),
+      getOrCreateUnsubscribeToken(supabase, "admin@upscconnect.in"),
+    ]);
+
     // Enqueue mentee email
     const menteeMessageId = `booking-mentee-${booking_id}`;
     const menteeHtml = buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, passcode, transaction.amount, calendarLink);
@@ -239,6 +246,7 @@ Deno.serve(async (req) => {
         label: "booking-mentee",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
+        unsubscribe_token: menteeUnsubToken,
         queued_at: new Date().toISOString(),
       },
     });
