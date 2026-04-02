@@ -598,6 +598,27 @@ const AdminDashboardPage = () => {
                             </Button>
                           </div>
                           <FeaturedMentorControls mentor={m} onUpdate={handleFeaturedUpdate} />
+                          {/* Default Chat Mentor Toggle */}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant={m.is_default_chat_mentor ? "default" : "outline"}
+                              className="h-7 text-xs"
+                              onClick={async () => {
+                                if (!m.is_default_chat_mentor) {
+                                  // Unset any existing default chat mentor first
+                                  await supabaseUntyped.from("mentor_profiles").update({ is_default_chat_mentor: false }).eq("is_default_chat_mentor", true);
+                                  setApprovedMentors(prev => prev.map(mt => ({ ...mt, is_default_chat_mentor: false })));
+                                }
+                                const newVal = !m.is_default_chat_mentor;
+                                await supabaseUntyped.from("mentor_profiles").update({ is_default_chat_mentor: newVal }).eq("user_id", m.user_id);
+                                setApprovedMentors(prev => prev.map(mt => mt.user_id === m.user_id ? { ...mt, is_default_chat_mentor: newVal } : mt));
+                                toast({ title: newVal ? "Set as default chat mentor" : "Removed as default chat mentor" });
+                              }}
+                            >
+                              {m.is_default_chat_mentor ? "Default Chat Mentor" : "Set as Chat Mentor"}
+                            </Button>
+                          </div>
                           {/* Priority Control */}
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs text-muted-foreground whitespace-nowrap">Priority:</span>
