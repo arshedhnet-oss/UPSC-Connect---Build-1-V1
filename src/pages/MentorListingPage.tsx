@@ -226,15 +226,29 @@ const MentorListingPage = () => {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filtered.map(m => (
-              <Card key={m.user_id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={m.user_id}
+                className={cn(
+                  "hover:shadow-md transition-shadow",
+                  m.is_featured && "border-[#C9A646]/40 shadow-sm shadow-[#C9A646]/10"
+                )}
+              >
                 <CardContent className="p-6">
+                  {m.is_featured && m.featured_tag && (
+                    <div className="mb-3">
+                      <FeaturedMentorBadge featuredTag={m.featured_tag} />
+                    </div>
+                  )}
                   <div className="flex items-center gap-4 mb-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={m.profile.avatar_url || undefined} alt={m.profile.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-display">
-                        {m.profile.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={m.profile.avatar_url || undefined} alt={m.profile.name} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-display">
+                          {m.profile.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      {m.air_rank && <AirRankLabel airRank={m.air_rank} rankYear={m.rank_year} variant="overlay" />}
+                    </div>
                     <div>
                       <h3 className="font-display font-semibold text-card-foreground">{m.profile.name}</h3>
                       <p className="text-sm text-muted-foreground">₹{m.price_per_session}/session</p>
@@ -245,7 +259,7 @@ const MentorListingPage = () => {
                     {m.subjects.map(s => (<Badge key={s} variant="secondary" className="text-xs">{s}</Badge>))}
                   </div>
                   {m.languages.length > 0 && (
-                    <p className="text-xs text-muted-foreground mb-2">🗣 {m.languages.join(", ")}</p>
+                    <p className="text-xs text-muted-foreground mb-2">Languages: {m.languages.join(", ")}</p>
                   )}
                   {m.optional_subject && (
                     <p className="text-xs text-muted-foreground mb-3">Optional: {m.optional_subject}</p>
