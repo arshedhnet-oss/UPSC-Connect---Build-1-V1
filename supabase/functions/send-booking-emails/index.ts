@@ -16,6 +16,20 @@ function generatePasscode(): string {
   return code;
 }
 
+async function getOrCreateUnsubscribeToken(supabase: any, email: string): Promise<string> {
+  const { data: existing } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", email)
+    .is("used_at", null)
+    .maybeSingle();
+  if (existing?.token) return existing.token;
+
+  const token = crypto.randomUUID();
+  await supabase.from("email_unsubscribe_tokens").insert({ email, token });
+  return token;
+}
+
 function generateMeetingLink(bookingId: string): { roomName: string; url: string } {
   const ts = Date.now();
   const roomName = `upscconnect-${bookingId.replace(/-/g, "").slice(0, 12)}-${ts}`;
