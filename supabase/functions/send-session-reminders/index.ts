@@ -123,6 +123,10 @@ Deno.serve(async (req) => {
       const meetingLink = booking.meeting_link || "";
       const passcode = booking.meeting_passcode || "";
 
+      // Generate unsubscribe tokens
+      const menteeUnsubToken = await getOrCreateUnsubscribeToken(supabase, menteeProfile.email);
+      const mentorUnsubToken = await getOrCreateUnsubscribeToken(supabase, mentorProfile.email);
+
       // Enqueue mentee reminder
       if (!sentIds.has(menteeMessageId)) {
         await supabase.rpc("enqueue_email", {
@@ -138,6 +142,7 @@ Deno.serve(async (req) => {
             label: "session-reminder-mentee",
             purpose: "transactional",
             sender_domain: "notify.www.upscconnect.in",
+            unsubscribe_token: menteeUnsubToken,
             queued_at: new Date().toISOString(),
           },
         });
