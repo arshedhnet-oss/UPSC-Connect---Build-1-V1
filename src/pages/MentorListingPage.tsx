@@ -271,6 +271,7 @@ const MentorListingPage = () => {
                         </p>
                       )}
                     </div>
+                  </div>
                   {m.bio && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{m.bio}</p>}
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {m.subjects.map(s => (<Badge key={s} variant="secondary" className="text-xs">{s}</Badge>))}
