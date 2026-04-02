@@ -79,7 +79,8 @@ const AdminDashboardPage = () => {
       supabaseUntyped
         .from("mentor_profiles")
         .select("*, profiles!mentor_profiles_user_id_fkey(name, email, phone, avatar_url)")
-        .eq("is_approved", true),
+        .eq("is_approved", true)
+        .order("display_priority", { ascending: false }),
       supabaseUntyped
         .from("bookings")
         .select("*, slots(*), mentor:profiles!bookings_mentor_id_fkey(name, email, phone), mentee:profiles!bookings_mentee_id_fkey(name, email, phone)")
