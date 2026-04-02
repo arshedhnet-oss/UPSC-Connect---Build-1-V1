@@ -12,6 +12,7 @@ import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle,
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import StarRating from "@/components/StarRating";
+import FeaturedMentorControls from "@/components/FeaturedMentorControls";
 import {
   AlertDialog,
   AlertDialogAction,
