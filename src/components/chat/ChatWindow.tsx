@@ -35,13 +35,28 @@ function formatMessageTime(dateStr: string) {
 }
 
 export default function ChatWindow({ conversationId, otherUser, otherUserId, onBack, hideHeader }: ChatWindowProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [showTyping, setShowTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const sentMessageCountRef = useRef(0);
+
+  const isMentee = profile?.role === "mentee";
+
+  const { triggerAutoResponse, cancelAutoResponse } = useAutoResponse({
+    conversationId,
+    mentorId: otherUserId,
+    currentUserId: user?.id,
+    isMentee,
+    onTypingIndicator: (show) => {
+      setShowTyping(show);
+      if (show) scrollToBottom();
+    },
+  });
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
