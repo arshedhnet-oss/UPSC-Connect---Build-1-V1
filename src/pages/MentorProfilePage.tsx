@@ -199,14 +199,25 @@ const MentorProfilePage = () => {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-8 text-center sm:text-left">
-          <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
-            <AvatarImage src={p?.avatar_url || undefined} alt={p?.name} />
-            <AvatarFallback className="bg-primary/10 text-primary font-display text-xl sm:text-2xl">
-              {p?.name?.charAt(0)?.toUpperCase() || "M"}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative flex-shrink-0">
+            <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
+              <AvatarImage src={p?.avatar_url || undefined} alt={p?.name} />
+              <AvatarFallback className="bg-primary/10 text-primary font-display text-xl sm:text-2xl">
+                {p?.name?.charAt(0)?.toUpperCase() || "M"}
+              </AvatarFallback>
+            </Avatar>
+            {mentor.air_rank && <AirRankLabel airRank={mentor.air_rank} rankYear={mentor.rank_year} variant="overlay" />}
+          </div>
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{p?.name}</h1>
+            <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+              <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{p?.name}</h1>
+              {mentor.is_featured && <FeaturedMentorBadge featuredTag={mentor.featured_tag} />}
+            </div>
+            {mentor.air_rank && (
+              <p className="text-sm font-medium text-foreground mt-1">
+                All India Rank {mentor.air_rank} (UPSC CSE {mentor.rank_year || ""})
+              </p>
+            )}
             <div className="flex items-center gap-2 mt-1">
               <p className="text-lg text-accent font-semibold">₹{mentor.price_per_session}/session</p>
               {(mentor.total_reviews || 0) > 0 && (
@@ -221,6 +232,12 @@ const MentorProfilePage = () => {
             </div>
             {mentor.optional_subject && (
               <p className="text-sm text-muted-foreground mt-2">Optional: {mentor.optional_subject}</p>
+            )}
+            {mentor.is_featured && (
+              <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <span>Verified by UPSC Connect</span>
+              </div>
             )}
             {user && authProfile?.role === "mentee" && id !== user.id && (
               <Button
