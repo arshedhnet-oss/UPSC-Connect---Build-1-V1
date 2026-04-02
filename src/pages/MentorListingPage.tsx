@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from "react";
-import { Star } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabaseUntyped } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
