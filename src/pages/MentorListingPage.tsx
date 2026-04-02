@@ -251,17 +251,14 @@ const MentorListingPage = () => {
                     </div>
                   )}
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="relative flex-shrink-0">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={m.profile.avatar_url || undefined} alt={m.profile.name} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-display">
-                          {m.profile.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      {m.air_rank && <AirRankLabel airRank={m.air_rank} rankYear={m.rank_year} variant="overlay" />}
-                    </div>
-                    <div>
-                      <h3 className="font-display font-semibold text-card-foreground">{m.profile.name}</h3>
+                    <Avatar className="h-12 w-12 flex-shrink-0">
+                      <AvatarImage src={m.profile.avatar_url || undefined} alt={m.profile.name} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-display">
+                        {m.profile.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <h3 className="font-display font-semibold text-card-foreground truncate">{m.profile.name}</h3>
                       <p className="text-sm text-muted-foreground">₹{m.price_per_session}/session</p>
                       {m.average_rating != null && m.average_rating > 0 && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -269,6 +266,7 @@ const MentorListingPage = () => {
                           {m.average_rating}{m.total_reviews ? ` (${m.total_reviews})` : ""}
                         </p>
                       )}
+                      {m.air_rank && <AirRankLabel airRank={m.air_rank} rankYear={m.rank_year} variant="inline" />}
                     </div>
                   </div>
                   {m.bio && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{m.bio}</p>}
