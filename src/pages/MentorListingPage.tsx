@@ -240,11 +240,11 @@ const MentorListingPage = () => {
               <Card
                 key={m.user_id}
                 className={cn(
-                  "hover:shadow-md transition-shadow",
+                  "hover:shadow-md transition-shadow flex flex-col h-full",
                   m.is_featured && "border-[#C9A646]/40 shadow-sm shadow-[#C9A646]/10"
                 )}
               >
-                <CardContent className="p-6">
+                <CardContent className="p-6 flex flex-col flex-1">
                   {m.is_featured && m.featured_tag && (
                     <div className="mb-3">
                       <FeaturedMentorBadge featuredTag={m.featured_tag} />
@@ -269,17 +269,19 @@ const MentorListingPage = () => {
                       {m.air_rank && <AirRankLabel airRank={m.air_rank} rankYear={m.rank_year} variant="inline" />}
                     </div>
                   </div>
-                  {m.bio && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{m.bio}</p>}
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {m.subjects.map(s => (<Badge key={s} variant="secondary" className="text-xs">{s}</Badge>))}
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem]">{m.bio || "\u00A0"}</p>
+                    <div className="flex flex-wrap gap-1.5 mb-2 min-h-[1.75rem]">
+                      {m.subjects.map(s => (<Badge key={s} variant="secondary" className="text-xs">{s}</Badge>))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {m.languages.length > 0 ? `Languages: ${m.languages.join(", ")}` : "\u00A0"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      {m.optional_subject ? `Optional: ${m.optional_subject}` : "\u00A0"}
+                    </p>
                   </div>
-                  {m.languages.length > 0 && (
-                    <p className="text-xs text-muted-foreground mb-2">Languages: {m.languages.join(", ")}</p>
-                  )}
-                  {m.optional_subject && (
-                    <p className="text-xs text-muted-foreground mb-3">Optional: {m.optional_subject}</p>
-                  )}
-                  <Button asChild className="w-full"><Link to={`/mentors/${m.user_id}`}>View Profile</Link></Button>
+                  <Button asChild className="w-full mt-auto"><Link to={`/mentors/${m.user_id}`}>View Profile</Link></Button>
                 </CardContent>
               </Card>
             ))}
