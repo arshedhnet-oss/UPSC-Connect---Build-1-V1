@@ -170,6 +170,7 @@ Deno.serve(async (req) => {
             label: "session-reminder-mentor",
             purpose: "transactional",
             sender_domain: "notify.www.upscconnect.in",
+            unsubscribe_token: mentorUnsubToken,
             queued_at: new Date().toISOString(),
           },
         });
