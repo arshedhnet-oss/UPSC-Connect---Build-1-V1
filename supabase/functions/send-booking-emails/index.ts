@@ -274,6 +274,7 @@ Deno.serve(async (req) => {
         label: "booking-mentor",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
+        unsubscribe_token: mentorUnsubToken,
         queued_at: new Date().toISOString(),
       },
     });
