@@ -34,7 +34,7 @@ const FeaturedMentorControls = ({ mentor, onUpdate }: FeaturedMentorControlsProp
       setSaving(true);
       const { error } = await supabaseUntyped
         .from("mentor_profiles")
-        .update({ is_featured: false, featured_tag: null, air_rank: null, rank_year: null })
+        .update({ is_featured: false, featured_tag: null, air_rank: null, rank_year: null, display_priority: 0 })
         .eq("user_id", mentor.user_id);
       setSaving(false);
       if (error) {
@@ -45,7 +45,7 @@ const FeaturedMentorControls = ({ mentor, onUpdate }: FeaturedMentorControlsProp
         setAirRank("");
         setRankYear("");
         setExpanded(false);
-        onUpdate(mentor.user_id, { is_featured: false, featured_tag: null, air_rank: null, rank_year: null });
+        onUpdate(mentor.user_id, { is_featured: false, featured_tag: null, air_rank: null, rank_year: null, display_priority: 0 });
         toast({ title: "Mentor unfeatured" });
       }
     } else {
@@ -55,11 +55,13 @@ const FeaturedMentorControls = ({ mentor, onUpdate }: FeaturedMentorControlsProp
 
   const handleSave = async () => {
     setSaving(true);
+    const currentPriority = mentor.display_priority || 0;
     const updates: any = {
       is_featured: isFeatured,
       featured_tag: featuredTag || null,
       air_rank: airRank ? parseInt(airRank) : null,
       rank_year: rankYear ? parseInt(rankYear) : null,
+      display_priority: isFeatured && currentPriority === 0 ? 100 : currentPriority,
     };
     const { error } = await supabaseUntyped
       .from("mentor_profiles")

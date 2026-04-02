@@ -27,6 +27,7 @@ interface MentorListing {
   featured_tag: string | null;
   air_rank: number | null;
   rank_year: number | null;
+  display_priority: number;
   profile: { name: string; avatar_url: string | null };
 }
 
@@ -46,8 +47,9 @@ const MentorListingPage = () => {
     const fetchMentors = async () => {
       let query = supabaseUntyped
         .from("mentor_profiles")
-        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, featured_tag, air_rank, rank_year")
-        .eq("is_approved", true);
+        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, featured_tag, air_rank, rank_year, display_priority")
+        .eq("is_approved", true)
+        .order("display_priority", { ascending: false });
 
       if (featuredOnly) {
         query = query.eq("is_featured", true);
@@ -76,6 +78,7 @@ const MentorListingPage = () => {
           featured_tag: m.featured_tag,
           air_rank: m.air_rank,
           rank_year: m.rank_year,
+          display_priority: m.display_priority || 0,
           profile: {
             name: profileMap.get(m.user_id)?.name || "Mentor",
             avatar_url: profileMap.get(m.user_id)?.avatar_url,
@@ -129,8 +132,12 @@ const MentorListingPage = () => {
       if (selectedOptional && m.optional_subject !== selectedOptional) return false;
       return true;
     });
-    // Featured mentors first
-    return result.sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+    // Sort by display_priority (descending), then featured status
+    return result.sort((a, b) => {
+      const priorityDiff = (b.display_priority || 0) - (a.display_priority || 0);
+      if (priorityDiff !== 0) return priorityDiff;
+      return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
+    });
   }, [mentors, selectedDate, mentorsWithSlots, selectedLanguage, selectedOptional]);
 
   const hasFilters = !!selectedDate || !!selectedLanguage || !!selectedOptional;
