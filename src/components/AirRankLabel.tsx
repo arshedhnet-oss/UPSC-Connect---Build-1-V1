@@ -13,7 +13,7 @@ const AirRankLabel = ({ airRank, rankYear, variant = "inline", className = "" }:
   if (variant === "overlay") {
     return (
       <span
-        className={`absolute -bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold tracking-wide text-white z-10 ${className}`}
+        className={`whitespace-nowrap inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold tracking-wide text-white ${className}`}
         style={{ background: "rgba(24, 24, 27, 0.85)" }}
       >
         {text}
