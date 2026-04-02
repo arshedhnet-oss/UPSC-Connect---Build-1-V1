@@ -134,16 +134,8 @@ const AdminDashboardPage = () => {
     }
   };
 
-  const toggleFeatured = async (userId: string, featured: boolean) => {
-    const { error } = await supabaseUntyped
-      .from("mentor_profiles")
-      .update({ is_featured: featured })
-      .eq("user_id", userId);
-    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
-    else {
-      setApprovedMentors(prev => prev.map(m => m.user_id === userId ? { ...m, is_featured: featured } : m));
-      toast({ title: featured ? "Mentor featured" : "Mentor unfeatured" });
-    }
+  const handleFeaturedUpdate = (userId: string, updates: any) => {
+    setApprovedMentors(prev => prev.map(m => m.user_id === userId ? { ...m, ...updates } : m));
   };
 
   const markCompleted = async (bookingId: string) => {
