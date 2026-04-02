@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabaseUntyped } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useAutoResponse } from "@/hooks/useAutoResponse";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
