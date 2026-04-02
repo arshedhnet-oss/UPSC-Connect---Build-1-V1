@@ -264,7 +264,12 @@ const MentorListingPage = () => {
                     <div>
                       <h3 className="font-display font-semibold text-card-foreground">{m.profile.name}</h3>
                       <p className="text-sm text-muted-foreground">₹{m.price_per_session}/session</p>
-                    </div>
+                      {m.average_rating != null && m.average_rating > 0 && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          {m.average_rating}{m.total_reviews ? ` (${m.total_reviews})` : ""}
+                        </p>
+                      )}
                   </div>
                   {m.bio && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{m.bio}</p>}
                   <div className="flex flex-wrap gap-1.5 mb-2">
