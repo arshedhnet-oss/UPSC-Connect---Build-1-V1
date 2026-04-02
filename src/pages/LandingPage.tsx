@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck, MessageCircle } from "lucide-react";
+import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import Navbar from "@/components/Navbar";
 import FreeChatModal from "@/components/chat/FreeChatModal";
 
@@ -43,15 +44,19 @@ const LandingPage = () => {
           <Button size="lg" asChild>
             <Link to="/mentors">Browse Mentors <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link to="/organisations"><Building2 className="mr-2 h-4 w-4" /> Browse Organisations</Link>
-          </Button>
+          {ENABLE_ORGANISATIONS && (
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/organisations"><Building2 className="mr-2 h-4 w-4" /> Browse Organisations</Link>
+            </Button>
+          )}
         </div>
-        <div className="mt-3 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-          <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
-            <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
-          </Button>
-        </div>
+        {ENABLE_ORGANISATIONS && (
+          <div className="mt-3 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
+              <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* How It Works */}
@@ -164,38 +169,39 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Organisations */}
-      <section className="px-4 sm:px-6 py-12 sm:py-16 bg-card">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">For Coaching Institutes</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-            Register your organisation, list your mentors, and manage sessions — all in one platform.
-          </p>
-          <div className="grid sm:grid-cols-3 gap-6 mb-8">
-            {[
-            { icon: Building2, title: "Dedicated Profile", desc: "Get a branded page for your institute with mentor listings and contact info." },
-            { icon: Users, title: "Mentor Management", desc: "Add, approve, and manage mentors under your organisation seamlessly." },
-            { icon: Calendar, title: "Session Control", desc: "Set pricing, manage bookings, and track all sessions from your dashboard." }].
-            map((f, i) =>
-            <div key={i} className="rounded-lg border border-border bg-background p-5 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10">
-                  <f.icon className="h-6 w-6 text-accent" />
+      {ENABLE_ORGANISATIONS && (
+        <section className="px-4 sm:px-6 py-12 sm:py-16 bg-card">
+          <div className="max-w-5xl mx-auto text-center">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">For Coaching Institutes</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+              Register your organisation, list your mentors, and manage sessions — all in one platform.
+            </p>
+            <div className="grid sm:grid-cols-3 gap-6 mb-8">
+              {[
+              { icon: Building2, title: "Dedicated Profile", desc: "Get a branded page for your institute with mentor listings and contact info." },
+              { icon: Users, title: "Mentor Management", desc: "Add, approve, and manage mentors under your organisation seamlessly." },
+              { icon: Calendar, title: "Session Control", desc: "Set pricing, manage bookings, and track all sessions from your dashboard." }].
+              map((f, i) =>
+              <div key={i} className="rounded-lg border border-border bg-background p-5 text-center">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10">
+                    <f.icon className="h-6 w-6 text-accent" />
+                  </div>
+                  <h3 className="font-display text-lg font-semibold text-foreground">{f.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
                 </div>
-                <h3 className="font-display text-lg font-semibold text-foreground">{f.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
-              </div>
-            )}
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button size="lg" asChild>
+                <Link to="/organisations">Browse Organisations</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/organisations/register">Register Your Institute</Link>
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="lg" asChild>
-              <Link to="/organisations">Browse Organisations</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/organisations/register">Register Your Institute</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Contact */}
       <section className="px-4 sm:px-6 py-12 sm:py-16 max-w-4xl mx-auto text-center">

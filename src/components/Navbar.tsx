@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, LayoutDashboard, CalendarCheck, User, Menu, MessageCircle, Bell } from "lucide-react";
@@ -65,9 +66,11 @@ export default function Navbar() {
           <Button variant="ghost" size="sm" asChild className={isActive("/mentors") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}>
             <Link to="/mentors">Find Mentors</Link>
           </Button>
-          <Button variant="ghost" size="sm" asChild className={isActive("/organisations") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}>
-            <Link to="/organisations">Organisations</Link>
-          </Button>
+          {ENABLE_ORGANISATIONS && (
+            <Button variant="ghost" size="sm" asChild className={isActive("/organisations") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}>
+              <Link to="/organisations">Organisations</Link>
+            </Button>
+          )}
           <Button variant="ghost" size="sm" onClick={scrollToHowItWorks}>
             How It Works
           </Button>
@@ -83,14 +86,16 @@ export default function Navbar() {
         >
           <Link to="/mentors">Mentors</Link>
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className={`sm:hidden text-xs px-2 ${isActive("/organisations") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "border border-input"}`}
-        >
-          <Link to="/organisations">Orgs</Link>
-        </Button>
+        {ENABLE_ORGANISATIONS && (
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className={`sm:hidden text-xs px-2 ${isActive("/organisations") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "border border-input"}`}
+          >
+            <Link to="/organisations">Orgs</Link>
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"
@@ -126,7 +131,7 @@ export default function Navbar() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to={profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"} className="flex items-center gap-2 cursor-pointer">
+                    <Link to={ENABLE_ORGANISATIONS && profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"} className="flex items-center gap-2 cursor-pointer">
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </Link>
                   </DropdownMenuItem>
@@ -188,11 +193,11 @@ export default function Navbar() {
                 <div className="flex flex-col gap-1">
                   <Button
                     variant="ghost"
-                    className={`justify-start gap-2 ${isActive(profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard") ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
+                    className={`justify-start gap-2 ${isActive(ENABLE_ORGANISATIONS && profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard") ? "bg-accent text-accent-foreground font-semibold border-l-2 border-primary rounded-l-none" : ""}`}
                     asChild
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Link to={profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"}>
+                    <Link to={ENABLE_ORGANISATIONS && profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"}>
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </Link>
                   </Button>

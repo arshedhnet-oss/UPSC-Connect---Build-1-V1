@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -42,10 +43,20 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/mentors" element={<MentorListingPage />} />
             <Route path="/mentors/:id" element={<MentorProfilePage />} />
-            <Route path="/organisations" element={<OrganisationListingPage />} />
-            <Route path="/organisations/register" element={<OrganisationSignupPage />} />
-            <Route path="/organisations/:slug" element={<OrganisationProfilePage />} />
-            <Route path="/institute/dashboard" element={<InstituteDashboardPage />} />
+            {ENABLE_ORGANISATIONS ? (
+              <>
+                <Route path="/organisations" element={<OrganisationListingPage />} />
+                <Route path="/organisations/register" element={<OrganisationSignupPage />} />
+                <Route path="/organisations/:slug" element={<OrganisationProfilePage />} />
+                <Route path="/institute/dashboard" element={<InstituteDashboardPage />} />
+              </>
+            ) : (
+              <>
+                <Route path="/organisations" element={<Navigate to="/mentors" replace />} />
+                <Route path="/organisations/*" element={<Navigate to="/mentors" replace />} />
+                <Route path="/institute/*" element={<Navigate to="/mentors" replace />} />
+              </>
+            )}
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
