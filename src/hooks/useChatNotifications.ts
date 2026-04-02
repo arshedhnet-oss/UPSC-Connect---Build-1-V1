@@ -1,15 +1,19 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { supabaseUntyped } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
+import { toast } from "sonner";
 
 /**
  * Global listener for incoming chat messages.
- * Shows a browser notification when a message arrives and the tab is not focused.
+ * Shows a browser notification (when tab not focused) AND
+ * an in-app toast popup (when not on the chat page).
  */
 export function useChatNotifications() {
   const { user } = useAuth();
   const { showNotification } = useNotifications();
+  const location = useLocation();
 
   useEffect(() => {
     if (!user) return;
@@ -37,11 +41,27 @@ export function useChatNotifications() {
 
           const senderName = sender?.name || "Someone";
 
+          // Browser notification (when tab not focused)
           showNotification(`New message from ${senderName}`, {
             body: msg.message_text?.slice(0, 100) || "You have a new message",
             tag: `chat-${msg.conversation_id}`,
             data: { url: `/chat?conversation=${msg.conversation_id}` },
           });
+
+          // In-app toast popup — suppress when user is already on chat page
+          const isOnChatPage = window.location.pathname === "/chat";
+          if (!isOnChatPage) {
+            toast(`💬 ${senderName}`, {
+              description: msg.message_text?.slice(0, 80) || "Sent you a message",
+              action: {
+                label: "View",
+                onClick: () => {
+                  window.location.href = `/chat?conversation=${msg.conversation_id}`;
+                },
+              },
+              duration: 5000,
+            });
+          }
         }
       )
       .subscribe();
