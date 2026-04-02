@@ -193,9 +193,11 @@ export type Database = {
       }
       mentor_profiles: {
         Row: {
+          air_rank: number | null
           average_rating: number | null
           bio: string | null
           created_at: string | null
+          featured_tag: string | null
           id: string
           interview_years: string[] | null
           interviews_appeared: number | null
@@ -206,14 +208,17 @@ export type Database = {
           mains_years: string[] | null
           optional_subject: string | null
           price_per_session: number | null
+          rank_year: number | null
           subjects: string[] | null
           total_reviews: number | null
           user_id: string
         }
         Insert: {
+          air_rank?: number | null
           average_rating?: number | null
           bio?: string | null
           created_at?: string | null
+          featured_tag?: string | null
           id?: string
           interview_years?: string[] | null
           interviews_appeared?: number | null
@@ -224,14 +229,17 @@ export type Database = {
           mains_years?: string[] | null
           optional_subject?: string | null
           price_per_session?: number | null
+          rank_year?: number | null
           subjects?: string[] | null
           total_reviews?: number | null
           user_id: string
         }
         Update: {
+          air_rank?: number | null
           average_rating?: number | null
           bio?: string | null
           created_at?: string | null
+          featured_tag?: string | null
           id?: string
           interview_years?: string[] | null
           interviews_appeared?: number | null
@@ -242,6 +250,7 @@ export type Database = {
           mains_years?: string[] | null
           optional_subject?: string | null
           price_per_session?: number | null
+          rank_year?: number | null
           subjects?: string[] | null
           total_reviews?: number | null
           user_id?: string
