@@ -69,6 +69,7 @@ export default function FreeChatModal({ open, onOpenChange }: FreeChatModalProps
         .select("user_id, profiles(id, name, avatar_url)")
         .eq("is_featured", true)
         .eq("is_approved", true)
+        .order("display_priority", { ascending: false })
         .limit(1)
         .single();
 
