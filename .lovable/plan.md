@@ -1,30 +1,35 @@
 
 
-## Plan: Fix Slot Booking Visual Glitch and Ghost Selection
+# Admin-Controlled Mentor Positioning
 
-### Problem 1: All slots appear disabled during booking
-When a mentee clicks "Book" on one slot, the `booking` boolean state disables **every** slot's button and shows "Booking..." on all of them. This makes it look like all slots are being booked.
+## Overview
+Add a `display_priority` integer field to `mentor_profiles` so admins can control the order mentors appear in search results. Higher priority = shown first. Sorting happens at the database query level for performance.
 
-**Fix**: Track the specific slot ID being booked instead of a generic boolean. Only the clicked slot's button will show "Booking..." and be disabled; other slots remain interactive.
+## Changes
 
-**File**: `src/pages/MentorProfilePage.tsx`
-- Change `booking` state from `boolean` to `string | null` (stores the slot ID being booked)
-- Update `handleBook` to set `setBooking(slot.id)` and clear to `null` in `finally`
-- Update the button: `disabled={booking === slot.id}` and text `{booking === slot.id ? "Booking..." : "Book"}`
+### 1. Database Migration
+- Add column `display_priority integer NOT NULL DEFAULT 0` to `mentor_profiles`
+- Create an index on `(is_approved, display_priority DESC)` for fast sorted queries
 
-### Problem 2: Orange/yellow ghost selection highlight
-The accent color (`hsl(32 90% 55%)`) causes an orange tap-highlight and text-selection color on mobile and desktop interactions.
+### 2. Mentor Listing Page (`src/pages/MentorListingPage.tsx`)
+- Add `display_priority` to the SELECT query
+- Add `.order("display_priority", { ascending: false })` to the database query so sorting happens server-side
+- Update the client-side sort in the `filtered` useMemo to use `display_priority` as primary sort (descending), then `is_featured` as secondary
 
-**Fix**: Add CSS rules to suppress unwanted selection highlights.
+### 3. Admin Dashboard — Priority Controls (`src/pages/AdminDashboardPage.tsx`)
+- In the "Active Mentors" section, display the current priority value for each mentor
+- Add a priority control inline with each mentor: a number input plus quick-preset buttons (High: 100, Medium: 50, Normal: 0)
+- Save priority changes to `mentor_profiles.display_priority` via Supabase update
+- Sort the approved mentors list in admin view by priority descending so admins can see the current ordering
+- Include `display_priority` in the existing `approvedRes` SELECT query
 
-**File**: `src/index.css`
-- Add `-webkit-tap-highlight-color: transparent` to suppress mobile tap highlight
-- Add `::selection` styles with a neutral color instead of the browser default (which may pick up the accent)
-- Add `user-select: none` on interactive elements like buttons and cards if needed
+### 4. FeaturedMentorControls Update (`src/components/FeaturedMentorControls.tsx`)
+- When toggling "Feature" ON, auto-set `display_priority` to 100 if it's currently 0
+- When toggling "Feature" OFF, reset `display_priority` to 0
 
-### Summary of changes
-| File | Change |
-|---|---|
-| `src/pages/MentorProfilePage.tsx` | Track booking by slot ID instead of boolean |
-| `src/index.css` | Suppress tap highlight and fix selection color |
+### Technical Details
+- **Query-level sorting**: The `.order("display_priority", { ascending: false })` call ensures the database handles sorting, not the frontend
+- **Index**: `CREATE INDEX idx_mentor_priority ON mentor_profiles (is_approved, display_priority DESC)` for efficient retrieval
+- **No RLS changes needed**: Existing admin update policy on `mentor_profiles` already covers this field
+- **No frontend visibility**: Regular users see no priority indicator; mentors simply appear in the admin-controlled order
 
