@@ -28,6 +28,8 @@ interface MentorListing {
   air_rank: number | null;
   rank_year: number | null;
   display_priority: number;
+  average_rating: number | null;
+  total_reviews: number | null;
   profile: { name: string; avatar_url: string | null };
 }
 
