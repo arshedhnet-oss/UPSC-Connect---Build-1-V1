@@ -131,7 +131,7 @@ export default function Navbar() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to={profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"} className="flex items-center gap-2 cursor-pointer">
+                    <Link to={ENABLE_ORGANISATIONS && profile.role === "institute_admin" ? "/institute/dashboard" : "/dashboard"} className="flex items-center gap-2 cursor-pointer">
                       <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </Link>
                   </DropdownMenuItem>
