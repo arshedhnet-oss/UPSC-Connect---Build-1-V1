@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, LayoutDashboard, CalendarCheck, User, Menu, MessageCircle, Bell } from "lucide-react";
