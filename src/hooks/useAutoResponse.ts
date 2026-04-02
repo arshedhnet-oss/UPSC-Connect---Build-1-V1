@@ -34,10 +34,8 @@ export function useAutoResponse({
     };
   }, [conversationId]);
 
-  const triggerAutoResponse = useCallback(async (messageCount: number) => {
+  const triggerAutoResponse = useCallback(async () => {
     if (!currentUserId || !isMentee) return;
-    // Only trigger on first message
-    if (messageCount > 1) return;
 
     // Random delay between 25-40 seconds
     const delay = (25 + Math.random() * 15) * 1000;
