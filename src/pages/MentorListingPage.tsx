@@ -46,7 +46,7 @@ const MentorListingPage = () => {
     const fetchMentors = async () => {
       let query = supabaseUntyped
         .from("mentor_profiles")
-        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured")
+        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, featured_tag, air_rank, rank_year")
         .eq("is_approved", true);
 
       if (featuredOnly) {
