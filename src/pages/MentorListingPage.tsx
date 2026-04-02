@@ -130,8 +130,12 @@ const MentorListingPage = () => {
       if (selectedOptional && m.optional_subject !== selectedOptional) return false;
       return true;
     });
-    // Featured mentors first
-    return result.sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+    // Sort by display_priority (descending), then featured status
+    return result.sort((a, b) => {
+      const priorityDiff = (b.display_priority || 0) - (a.display_priority || 0);
+      if (priorityDiff !== 0) return priorityDiff;
+      return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
+    });
   }, [mentors, selectedDate, mentorsWithSlots, selectedLanguage, selectedOptional]);
 
   const hasFilters = !!selectedDate || !!selectedLanguage || !!selectedOptional;
