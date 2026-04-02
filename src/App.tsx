@@ -20,6 +20,7 @@ import OrganisationProfilePage from "./pages/OrganisationProfilePage";
 import OrganisationSignupPage from "./pages/OrganisationSignupPage";
 import InstituteDashboardPage from "./pages/InstituteDashboardPage";
 import ChatPage from "./pages/ChatPage";
+import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 import NotFound from "./pages/NotFound";
 import NotificationManager from "./components/NotificationManager";
 import EnableNotificationsPrompt from "./components/EnableNotificationsPrompt";
@@ -58,6 +59,7 @@ const App = () => (
               </>
             )}
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/booking-confirmed/:bookingId" element={<BookingConfirmationPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/profile" element={<AdminProfilePage />} />
