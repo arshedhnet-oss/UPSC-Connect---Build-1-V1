@@ -16,6 +16,20 @@ function generatePasscode(): string {
   return code;
 }
 
+async function getOrCreateUnsubscribeToken(supabase: any, email: string): Promise<string> {
+  const { data: existing } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", email)
+    .is("used_at", null)
+    .maybeSingle();
+  if (existing?.token) return existing.token;
+
+  const token = crypto.randomUUID();
+  await supabase.from("email_unsubscribe_tokens").insert({ email, token });
+  return token;
+}
+
 function generateMeetingLink(bookingId: string): { roomName: string; url: string } {
   const ts = Date.now();
   const roomName = `upscconnect-${bookingId.replace(/-/g, "").slice(0, 12)}-${ts}`;
@@ -209,6 +223,13 @@ Deno.serve(async (req) => {
       `Mentorship session on UPSC Connect.\nMeeting passcode: ${passcode}\nJoin: ${meetingLink}`
     );
 
+    // Generate unsubscribe tokens for all recipients
+    const [menteeUnsubToken, mentorUnsubToken, adminUnsubToken] = await Promise.all([
+      getOrCreateUnsubscribeToken(supabase, menteeProfile.email),
+      getOrCreateUnsubscribeToken(supabase, mentorProfile.email),
+      getOrCreateUnsubscribeToken(supabase, "admin@upscconnect.in"),
+    ]);
+
     // Enqueue mentee email
     const menteeMessageId = `booking-mentee-${booking_id}`;
     const menteeHtml = buildMenteeEmail(mentorProfile.name, sessionDate, sessionTime, meetingLink, passcode, transaction.amount, calendarLink);
@@ -225,6 +246,7 @@ Deno.serve(async (req) => {
         label: "booking-mentee",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
+        unsubscribe_token: menteeUnsubToken,
         queued_at: new Date().toISOString(),
       },
     });
@@ -252,6 +274,7 @@ Deno.serve(async (req) => {
         label: "booking-mentor",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
+        unsubscribe_token: mentorUnsubToken,
         queued_at: new Date().toISOString(),
       },
     });
@@ -282,6 +305,7 @@ Deno.serve(async (req) => {
         label: "booking-admin",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
+        unsubscribe_token: adminUnsubToken,
         queued_at: new Date().toISOString(),
       },
     });

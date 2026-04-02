@@ -7,6 +7,19 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+async function getOrCreateUnsubscribeToken(supabase: any, email: string): Promise<string> {
+  const { data: existing } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", email)
+    .is("used_at", null)
+    .maybeSingle();
+  if (existing?.token) return existing.token;
+  const token = crypto.randomUUID();
+  await supabase.from("email_unsubscribe_tokens").insert({ email, token });
+  return token;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
@@ -123,6 +136,10 @@ Deno.serve(async (req) => {
       const meetingLink = booking.meeting_link || "";
       const passcode = booking.meeting_passcode || "";
 
+      // Generate unsubscribe tokens
+      const menteeUnsubToken = await getOrCreateUnsubscribeToken(supabase, menteeProfile.email);
+      const mentorUnsubToken = await getOrCreateUnsubscribeToken(supabase, mentorProfile.email);
+
       // Enqueue mentee reminder
       if (!sentIds.has(menteeMessageId)) {
         await supabase.rpc("enqueue_email", {
@@ -138,6 +155,7 @@ Deno.serve(async (req) => {
             label: "session-reminder-mentee",
             purpose: "transactional",
             sender_domain: "notify.www.upscconnect.in",
+            unsubscribe_token: menteeUnsubToken,
             queued_at: new Date().toISOString(),
           },
         });
@@ -165,6 +183,7 @@ Deno.serve(async (req) => {
             label: "session-reminder-mentor",
             purpose: "transactional",
             sender_domain: "notify.www.upscconnect.in",
+            unsubscribe_token: mentorUnsubToken,
             queued_at: new Date().toISOString(),
           },
         });
