@@ -151,7 +151,7 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
       sentMessageCountRef.current += 1;
       // Trigger auto-response on first message from mentee
       if (isMentee && sentMessageCountRef.current === 1) {
-        triggerAutoResponse(sentMessageCountRef.current);
+        triggerAutoResponse();
       }
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       fetch(`https://${projectId}.supabase.co/functions/v1/send-push-notification`, {
