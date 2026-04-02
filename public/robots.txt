@@ -1,8 +1,12 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /organisations
+Disallow: /institute
 
 User-agent: Bingbot
 Allow: /
+Disallow: /organisations
+Disallow: /institute
 
 User-agent: Twitterbot
 Allow: /
@@ -12,3 +16,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /organisations
+Disallow: /institute
