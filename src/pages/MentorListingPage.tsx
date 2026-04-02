@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, X, Search } from "lucide-react";
+import { CalendarIcon, X, Search, Star } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
