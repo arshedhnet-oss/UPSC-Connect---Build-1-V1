@@ -587,21 +587,16 @@ const AdminDashboardPage = () => {
                           )}
                           <p className="text-sm text-muted-foreground mt-1">₹{m.price_per_session}/session</p>
                         </div>
-                        <div className="flex gap-2 flex-wrap">
-                          <Button
-                            size="sm"
-                            variant={m.is_featured ? "default" : "outline"}
-                            onClick={() => toggleFeatured(m.user_id, !m.is_featured)}
-                          >
-                            <Star className={`h-4 w-4 mr-1 ${m.is_featured ? "fill-current" : ""}`} />
-                            {m.is_featured ? "Featured" : "Feature"}
-                          </Button>
-                          <Button size="sm" variant="destructive" onClick={() => disableMentor(m.user_id)}>
-                            <X className="h-4 w-4 mr-1" /> Disable
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-destructive" onClick={() => initiateDelete("mentor", m.user_id, m.profiles?.name || "Mentor")}>
-                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
-                          </Button>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex gap-2 flex-wrap">
+                            <Button size="sm" variant="destructive" onClick={() => disableMentor(m.user_id)}>
+                              <X className="h-4 w-4 mr-1" /> Disable
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-destructive" onClick={() => initiateDelete("mentor", m.user_id, m.profiles?.name || "Mentor")}>
+                              <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                            </Button>
+                          </div>
+                          <FeaturedMentorControls mentor={m} onUpdate={handleFeaturedUpdate} />
                         </div>
                       </div>
                     ))}
