@@ -247,7 +247,20 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
             </div>
           );
         })}
-        <div ref={bottomRef} />
+        {showTyping && (
+          <div className="flex justify-start">
+            <div className="bg-card text-card-foreground border border-border rounded-2xl rounded-bl-md px-4 py-2 text-sm">
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground text-xs">{otherUser.name} is typing</span>
+                <span className="flex gap-0.5 ml-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input */}
