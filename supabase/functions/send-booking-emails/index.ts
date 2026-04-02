@@ -305,6 +305,7 @@ Deno.serve(async (req) => {
         label: "booking-admin",
         purpose: "transactional",
         sender_domain: "notify.www.upscconnect.in",
+        unsubscribe_token: adminUnsubToken,
         queued_at: new Date().toISOString(),
       },
     });
