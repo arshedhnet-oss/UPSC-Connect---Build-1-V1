@@ -81,6 +81,8 @@ const MentorListingPage = () => {
           air_rank: m.air_rank,
           rank_year: m.rank_year,
           display_priority: m.display_priority || 0,
+          average_rating: m.average_rating || null,
+          total_reviews: m.total_reviews || null,
           profile: {
             name: profileMap.get(m.user_id)?.name || "Mentor",
             avatar_url: profileMap.get(m.user_id)?.avatar_url,
