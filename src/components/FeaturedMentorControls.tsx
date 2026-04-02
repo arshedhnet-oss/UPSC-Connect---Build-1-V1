@@ -34,7 +34,7 @@ const FeaturedMentorControls = ({ mentor, onUpdate }: FeaturedMentorControlsProp
       setSaving(true);
       const { error } = await supabaseUntyped
         .from("mentor_profiles")
-        .update({ is_featured: false, featured_tag: null, air_rank: null, rank_year: null })
+        .update({ is_featured: false, featured_tag: null, air_rank: null, rank_year: null, display_priority: 0 })
         .eq("user_id", mentor.user_id);
       setSaving(false);
       if (error) {
