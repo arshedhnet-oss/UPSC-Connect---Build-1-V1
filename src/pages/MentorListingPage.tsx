@@ -123,12 +123,14 @@ const MentorListingPage = () => {
 
   // Filtered mentors
   const filtered = useMemo(() => {
-    return mentors.filter(m => {
+    const result = mentors.filter(m => {
       if (selectedDate && !mentorsWithSlots.has(m.user_id)) return false;
       if (selectedLanguage && !m.languages.includes(selectedLanguage)) return false;
       if (selectedOptional && m.optional_subject !== selectedOptional) return false;
       return true;
     });
+    // Featured mentors first
+    return result.sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
   }, [mentors, selectedDate, mentorsWithSlots, selectedLanguage, selectedOptional]);
 
   const hasFilters = !!selectedDate || !!selectedLanguage || !!selectedOptional;
