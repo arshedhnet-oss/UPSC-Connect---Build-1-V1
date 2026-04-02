@@ -45,7 +45,7 @@ const FeaturedMentorControls = ({ mentor, onUpdate }: FeaturedMentorControlsProp
         setAirRank("");
         setRankYear("");
         setExpanded(false);
-        onUpdate(mentor.user_id, { is_featured: false, featured_tag: null, air_rank: null, rank_year: null });
+        onUpdate(mentor.user_id, { is_featured: false, featured_tag: null, air_rank: null, rank_year: null, display_priority: 0 });
         toast({ title: "Mentor unfeatured" });
       }
     } else {
