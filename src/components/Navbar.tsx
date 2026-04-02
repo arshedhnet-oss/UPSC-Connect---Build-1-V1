@@ -86,14 +86,16 @@ export default function Navbar() {
         >
           <Link to="/mentors">Mentors</Link>
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className={`sm:hidden text-xs px-2 ${isActive("/organisations") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "border border-input"}`}
-        >
-          <Link to="/organisations">Orgs</Link>
-        </Button>
+        {ENABLE_ORGANISATIONS && (
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className={`sm:hidden text-xs px-2 ${isActive("/organisations") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "border border-input"}`}
+          >
+            <Link to="/organisations">Orgs</Link>
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"
