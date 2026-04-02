@@ -7,6 +7,19 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+async function getOrCreateUnsubscribeToken(supabase: any, email: string): Promise<string> {
+  const { data: existing } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", email)
+    .is("used_at", null)
+    .maybeSingle();
+  if (existing?.token) return existing.token;
+  const token = crypto.randomUUID();
+  await supabase.from("email_unsubscribe_tokens").insert({ email, token });
+  return token;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
