@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabaseUntyped } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useAutoResponse } from "@/hooks/useAutoResponse";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,13 +35,28 @@ function formatMessageTime(dateStr: string) {
 }
 
 export default function ChatWindow({ conversationId, otherUser, otherUserId, onBack, hideHeader }: ChatWindowProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [showTyping, setShowTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const sentMessageCountRef = useRef(0);
+
+  const isMentee = profile?.role === "mentee";
+
+  const { triggerAutoResponse, cancelAutoResponse } = useAutoResponse({
+    conversationId,
+    mentorId: otherUserId,
+    currentUserId: user?.id,
+    isMentee,
+    onTypingIndicator: (show) => {
+      setShowTyping(show);
+      if (show) scrollToBottom();
+    },
+  });
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -96,6 +112,10 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
             return [...prev, payload.new as Message];
           });
           scrollToBottom();
+          // If mentor replied, cancel any pending auto-response
+          if (payload.new.sender_id === otherUserId) {
+            cancelAutoResponse();
+          }
           if (payload.new.receiver_id === user?.id) {
             supabaseUntyped
               .from("messages")
@@ -128,6 +148,11 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
     });
     if (!error) {
       setNewMessage("");
+      sentMessageCountRef.current += 1;
+      // Trigger auto-response on first message from mentee
+      if (isMentee && sentMessageCountRef.current === 1) {
+        triggerAutoResponse();
+      }
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       fetch(`https://${projectId}.supabase.co/functions/v1/send-push-notification`, {
         method: "POST",
@@ -222,7 +247,20 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
             </div>
           );
         })}
-        <div ref={bottomRef} />
+        {showTyping && (
+          <div className="flex justify-start">
+            <div className="bg-card text-card-foreground border border-border rounded-2xl rounded-bl-md px-4 py-2 text-sm">
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground text-xs">{otherUser.name} is typing</span>
+                <span className="flex gap-0.5 ml-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input */}
