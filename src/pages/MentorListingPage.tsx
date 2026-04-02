@@ -72,6 +72,10 @@ const MentorListingPage = () => {
           price_per_session: m.price_per_session,
           languages: m.languages || [],
           optional_subject: m.optional_subject,
+          is_featured: m.is_featured || false,
+          featured_tag: m.featured_tag,
+          air_rank: m.air_rank,
+          rank_year: m.rank_year,
           profile: {
             name: profileMap.get(m.user_id)?.name || "Mentor",
             avatar_url: profileMap.get(m.user_id)?.avatar_url,
