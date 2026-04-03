@@ -408,8 +408,13 @@ function buildMenteeEmail(mentorName: string, date: string, time: string, meetin
   return emailWrapper(header + details);
 }
 
-function buildMentorEmail(menteeName: string, date: string, time: string, meetingLink: string, passcode: string, calendarLink: string): string {
+function buildMentorEmail(menteeName: string, menteeEmail: string, menteePhone: string | null, date: string, time: string, meetingLink: string, passcode: string, calendarLink: string): string {
   const header = `<h1>New Session Booked</h1><p class="subtitle">A mentee has booked a session with you.</p><!--HEADER_END-->`;
+  const contactRows = [
+    detailRow("Name", menteeName),
+    detailRow("Email", menteeEmail),
+  ];
+  if (menteePhone) contactRows.push(detailRow("Phone", `<strong>${menteePhone}</strong>`));
   const details = `
     <p class="section-title">Session Details</p>
     <table class="detail-table">
@@ -417,6 +422,12 @@ function buildMentorEmail(menteeName: string, date: string, time: string, meetin
       ${detailRow("Date", date)}
       ${detailRow("Time", time)}
     </table>
+    <hr class="divider" />
+    <p class="section-title">Mentee Contact Details</p>
+    <table class="detail-table">
+      ${contactRows.join("\n      ")}
+    </table>
+    <p class="tip" style="text-align:left;margin-bottom:20px;">You may contact the mentee if needed to ensure session attendance.</p>
     <hr class="divider" />
     <p class="section-title">Meeting Details</p>
     <div class="passcode-box">
