@@ -178,13 +178,13 @@ Deno.serve(async (req) => {
 
     const { data: menteeProfile } = await supabase
       .from("profiles")
-      .select("name, email")
+      .select("name, email, phone")
       .eq("id", booking.mentee_id)
       .single();
 
     const { data: mentorProfile } = await supabase
       .from("profiles")
-      .select("name, email")
+      .select("name, email, phone")
       .eq("id", booking.mentor_id)
       .single();
 
@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
 
     // Enqueue mentor email
     const mentorMessageId = `booking-mentor-${booking_id}`;
-    const mentorHtml = buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode, calendarLink);
+    const mentorHtml = buildMentorEmail(menteeProfile.name, menteeProfile.email, menteeProfile.phone, sessionDate, sessionTime, meetingLink, passcode, calendarLink);
     await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
@@ -289,8 +289,9 @@ Deno.serve(async (req) => {
     // Enqueue admin email
     const adminMessageId = `booking-admin-${booking_id}`;
     const adminHtml = buildAdminEmail(
-      mentorProfile.name, menteeProfile.name, sessionDate, sessionTime,
-      transaction.amount, transaction.razorpay_payment_id || "N/A", booking_id, meetingLink
+      mentorProfile.name, mentorProfile.email, mentorProfile.phone,
+      menteeProfile.name, menteeProfile.email, menteeProfile.phone,
+      sessionDate, sessionTime, transaction.amount, transaction.razorpay_payment_id || "N/A", booking_id, meetingLink
     );
     await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
@@ -407,8 +408,13 @@ function buildMenteeEmail(mentorName: string, date: string, time: string, meetin
   return emailWrapper(header + details);
 }
 
-function buildMentorEmail(menteeName: string, date: string, time: string, meetingLink: string, passcode: string, calendarLink: string): string {
+function buildMentorEmail(menteeName: string, menteeEmail: string, menteePhone: string | null, date: string, time: string, meetingLink: string, passcode: string, calendarLink: string): string {
   const header = `<h1>New Session Booked</h1><p class="subtitle">A mentee has booked a session with you.</p><!--HEADER_END-->`;
+  const contactRows = [
+    detailRow("Name", menteeName),
+    detailRow("Email", menteeEmail),
+  ];
+  if (menteePhone) contactRows.push(detailRow("Phone", `<strong>${menteePhone}</strong>`));
   const details = `
     <p class="section-title">Session Details</p>
     <table class="detail-table">
@@ -416,6 +422,12 @@ function buildMentorEmail(menteeName: string, date: string, time: string, meetin
       ${detailRow("Date", date)}
       ${detailRow("Time", time)}
     </table>
+    <hr class="divider" />
+    <p class="section-title">Mentee Contact Details</p>
+    <table class="detail-table">
+      ${contactRows.join("\n      ")}
+    </table>
+    <p class="tip" style="text-align:left;margin-bottom:20px;">You may contact the mentee if needed to ensure session attendance.</p>
     <hr class="divider" />
     <p class="section-title">Meeting Details</p>
     <div class="passcode-box">
@@ -434,10 +446,24 @@ function buildMentorEmail(menteeName: string, date: string, time: string, meetin
 }
 
 function buildAdminEmail(
-  mentorName: string, menteeName: string, date: string, time: string,
-  amount: number, paymentId: string, bookingId: string, meetingLink: string
+  mentorName: string, mentorEmail: string, mentorPhone: string | null,
+  menteeName: string, menteeEmail: string, menteePhone: string | null,
+  date: string, time: string, amount: number, paymentId: string, bookingId: string, meetingLink: string
 ): string {
   const header = `<h1>New Booking Confirmed</h1><p class="subtitle">A new session has been booked on the platform.</p><!--HEADER_END-->`;
+
+  const menteeContactRows = [
+    detailRow("Name", menteeName),
+    detailRow("Email", menteeEmail),
+  ];
+  if (menteePhone) menteeContactRows.push(detailRow("Phone", `<strong>${menteePhone}</strong>`));
+
+  const mentorContactRows = [
+    detailRow("Name", mentorName),
+    detailRow("Email", mentorEmail),
+  ];
+  if (mentorPhone) mentorContactRows.push(detailRow("Phone", `<strong>${mentorPhone}</strong>`));
+
   const details = `
     <p class="section-title">Session Details</p>
     <table class="detail-table">
@@ -446,6 +472,15 @@ function buildAdminEmail(
       ${detailRow("Date", date)}
       ${detailRow("Time", time)}
       ${detailRow("Amount", `&#8377;${amount}`)}
+    </table>
+    <hr class="divider" />
+    <p class="section-title">Mentee Contact</p>
+    <table class="detail-table">
+      ${menteeContactRows.join("\n      ")}
+    </table>
+    <p class="section-title" style="margin-top:16px;">Mentor Contact</p>
+    <table class="detail-table">
+      ${mentorContactRows.join("\n      ")}
     </table>
     <hr class="divider" />
     <p class="section-title">Transaction Details</p>
