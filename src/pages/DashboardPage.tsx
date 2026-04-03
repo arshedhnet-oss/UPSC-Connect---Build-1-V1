@@ -4,17 +4,15 @@ import { supabaseUntyped } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { Plus, Trash2, Pencil, Calendar } from "lucide-react";
+import { Pencil, Calendar } from "lucide-react";
 import MentorProfileForm from "@/components/MentorProfileForm";
 import DeleteMentorAccount from "@/components/DeleteMentorAccount";
 import ReviewModal from "@/components/ReviewModal";
 import SessionCard from "@/components/SessionCard";
+import SlotManager from "@/components/SlotManager";
 import Navbar from "@/components/Navbar";
 
 const DashboardPage = () => {
@@ -24,14 +22,13 @@ const DashboardPage = () => {
 
   const [bookings, setBookings] = useState<any[]>([]);
   const [mentorProfile, setMentorProfile] = useState<any>(null);
-  const [slots, setSlots] = useState<any[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
 
-  const [slotDate, setSlotDate] = useState("");
-  const [slotStart, setSlotStart] = useState("");
-  const [slotEnd, setSlotEnd] = useState("");
+
+
   const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
   const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string; mentorId: string; mentorName: string } | null>(null);
   const [chattingWith, setChattingWith] = useState<string | null>(null);
@@ -101,39 +98,14 @@ const DashboardPage = () => {
           .eq("user_id", user.id)
           .single();
         if (mp) setMentorProfile(mp);
-
-        const { data: sl } = await supabaseUntyped
-          .from("slots")
-          .select("*")
-          .eq("mentor_id", user.id)
-          .order("date", { ascending: true });
-        if (sl) setSlots(sl);
       }
       setLoading(false);
     };
     fetchData();
   }, [user, profile]);
 
-  const addSlot = async () => {
-    if (!slotDate || !slotStart || !slotEnd) return;
-    const { data, error } = await supabaseUntyped
-      .from("slots")
-      .insert({ mentor_id: user!.id, date: slotDate, start_time: slotStart, end_time: slotEnd })
-      .select()
-      .single();
-    if (error) toast({ title: "Failed to add slot", description: error.message, variant: "destructive" });
-    else if (data) {
-      setSlots(prev => [...prev, data]);
-      setSlotDate(""); setSlotStart(""); setSlotEnd("");
-      toast({ title: "Slot added!" });
-    }
-  };
 
-  const deleteSlot = async (slotId: string) => {
-    await supabaseUntyped.from("slots").delete().eq("id", slotId);
-    setSlots(prev => prev.filter(s => s.id !== slotId));
-    toast({ title: "Slot removed" });
-  };
+
 
   if (authLoading || loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!profile) return null;
@@ -215,31 +187,7 @@ const DashboardPage = () => {
           </div>
         )}
 
-        {profile.role === "mentor" && (
-          <Card>
-            <CardHeader><CardTitle className="font-display">Manage Slots</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end">
-                <div className="space-y-1"><Label>Date</Label><Input type="date" value={slotDate} onChange={e => setSlotDate(e.target.value)} min={new Date().toISOString().split("T")[0]} /></div>
-                <div className="space-y-1"><Label>Start</Label><Input type="time" value={slotStart} onChange={e => setSlotStart(e.target.value)} /></div>
-                <div className="space-y-1"><Label>End</Label><Input type="time" value={slotEnd} onChange={e => setSlotEnd(e.target.value)} /></div>
-                <Button onClick={addSlot} className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add Slot</Button>
-              </div>
-              <div className="space-y-2">
-                {slots.filter(s => !s.is_booked).map((slot: any) => (
-                  <div key={slot.id} className="flex items-center justify-between rounded-lg border border-border p-3">
-                    <div>
-                      <span className="font-medium text-foreground">{format(new Date(slot.date), "MMM d, yyyy")}</span>
-                      <span className="text-sm text-muted-foreground ml-3">{slot.start_time.slice(0, 5)} – {slot.end_time.slice(0, 5)}</span>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => deleteSlot(slot.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                  </div>
-                ))}
-                {slots.filter(s => !s.is_booked).length === 0 && <p className="text-sm text-muted-foreground">No available slots. Add some above.</p>}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {profile.role === "mentor" && <SlotManager userId={user!.id} />}
 
         {/* Sessions with Tabs */}
         <Card>
