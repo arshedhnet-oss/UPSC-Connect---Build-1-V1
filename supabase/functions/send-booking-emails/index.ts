@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
 
     // Enqueue mentor email
     const mentorMessageId = `booking-mentor-${booking_id}`;
-    const mentorHtml = buildMentorEmail(menteeProfile.name, sessionDate, sessionTime, meetingLink, passcode, calendarLink);
+    const mentorHtml = buildMentorEmail(menteeProfile.name, menteeProfile.email, menteeProfile.phone, sessionDate, sessionTime, meetingLink, passcode, calendarLink);
     await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
