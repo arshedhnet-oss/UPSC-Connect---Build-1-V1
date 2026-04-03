@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck, MessageCircle } from "lucide-react";
+import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck, MessageCircle, GraduationCap } from "lucide-react";
 import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import Navbar from "@/components/Navbar";
 import FreeChatModal from "@/components/chat/FreeChatModal";
@@ -50,8 +50,18 @@ const LandingPage = () => {
             </Button>
           )}
         </div>
+        {/* Mentor CTA */}
+        <div className="mt-3 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <Link
+            to="/mentor-onboarding"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <GraduationCap className="h-4 w-4" />
+            Are you a UPSC Mentor? <span className="underline underline-offset-2">Apply here</span>
+          </Link>
+        </div>
         {ENABLE_ORGANISATIONS && (
-          <div className="mt-3 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <div className="mt-3 flex flex-col sm:flex-row gap-3 justify-center animate-fade-in" style={{ animationDelay: "0.35s" }}>
             <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
               <Link to="/organisations/register"><Building2 className="mr-2 h-4 w-4" /> Register Your Institute</Link>
             </Button>
@@ -69,80 +79,60 @@ const LandingPage = () => {
         </p>
 
         <div className="space-y-8 sm:space-y-10">
-          {/* Step 1 */}
           <div className="rounded-xl border border-border bg-card p-6 sm:p-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">1</span>
               <h3 className="font-display text-xl font-semibold text-card-foreground">Explore Verified UPSC Mentors</h3>
             </div>
-            <p className="text-muted-foreground mb-3">
-              Browse through a curated list of mentors, including UPSC aspirants, interview candidates, and subject experts.
-            </p>
+            <p className="text-muted-foreground mb-3">Browse through a curated list of mentors, including UPSC aspirants, interview candidates, and subject experts.</p>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> View detailed mentor profiles</li>
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Check subject expertise (Polity, GS, Optional subjects, etc.)</li>
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Compare experience, pricing, and session formats</li>
             </ul>
-            <p className="mt-3 text-sm font-medium text-foreground">
-              Choose a mentor based on your preparation stage and specific needs.
-            </p>
+            <p className="mt-3 text-sm font-medium text-foreground">Choose a mentor based on your preparation stage and specific needs.</p>
           </div>
 
-          {/* Step 2 */}
           <div className="rounded-xl border border-border bg-card p-6 sm:p-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">2</span>
               <h3 className="font-display text-xl font-semibold text-card-foreground">Book a 1-on-1 Session</h3>
             </div>
-            <p className="text-muted-foreground mb-3">
-              Select a convenient time slot and book your session instantly.
-            </p>
+            <p className="text-muted-foreground mb-3">Select a convenient time slot and book your session instantly.</p>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Flexible scheduling options</li>
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Transparent pricing</li>
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Secure online payment</li>
             </ul>
-            <p className="mt-3 text-sm font-medium text-foreground">
-              Get direct access to mentors without any intermediaries.
-            </p>
+            <p className="mt-3 text-sm font-medium text-foreground">Get direct access to mentors without any intermediaries.</p>
           </div>
 
-          {/* Step 3 */}
           <div className="rounded-xl border border-border bg-card p-6 sm:p-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">3</span>
               <h3 className="font-display text-xl font-semibold text-card-foreground">Attend Your Mentorship Session</h3>
             </div>
-            <p className="text-muted-foreground mb-3">
-              Join your session through a secure online meeting link.
-            </p>
+            <p className="text-muted-foreground mb-3">Join your session through a secure online meeting link.</p>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Discuss preparation strategy and study plans</li>
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Get personalized feedback on your approach</li>
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Clarify doubts in real time</li>
             </ul>
-            <p className="mt-3 text-sm font-medium text-foreground">
-              Focus on targeted guidance instead of generic coaching.
-            </p>
+            <p className="mt-3 text-sm font-medium text-foreground">Focus on targeted guidance instead of generic coaching.</p>
           </div>
 
-          {/* Step 4 */}
           <div className="rounded-xl border border-border bg-card p-6 sm:p-8 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">4</span>
               <h3 className="font-display text-xl font-semibold text-card-foreground">Improve with Personalized Guidance</h3>
             </div>
-            <p className="text-muted-foreground mb-3">
-              Apply the mentor's advice to strengthen your preparation.
-            </p>
+            <p className="text-muted-foreground mb-3">Apply the mentor's advice to strengthen your preparation.</p>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Refine your study strategy</li>
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Improve answer writing and conceptual clarity</li>
               <li className="flex items-start gap-2"><CircleCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" /> Stay consistent and accountable</li>
             </ul>
-            <p className="mt-3 text-sm font-medium text-foreground">
-              Small improvements over time lead to better performance in the exam.
-            </p>
+            <p className="mt-3 text-sm font-medium text-foreground">Small improvements over time lead to better performance in the exam.</p>
           </div>
         </div>
 
@@ -214,10 +204,21 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="border-t border-border px-6 py-8 text-center text-sm text-muted-foreground">
-        © 2026 UPSC Connect. All rights reserved.
+        <div className="max-w-4xl mx-auto space-y-3">
+          <div>
+            <Link
+              to="/mentor-onboarding"
+              className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+            >
+              <GraduationCap className="h-4 w-4" />
+              Are you a UPSC Mentor? <span className="underline underline-offset-2">Apply here</span>
+            </Link>
+          </div>
+          <p>© 2026 UPSC Connect. All rights reserved.</p>
+        </div>
       </footer>
-    </div>);
-
+    </div>
+  );
 };
 
 export default LandingPage;

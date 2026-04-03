@@ -15,7 +15,6 @@ const SignupPage = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"mentor" | "mentee">("mentee");
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -25,9 +24,9 @@ const SignupPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signUp(email, password, { name, phone, role });
+      await signUp(email, password, { name, phone, role: "mentee" });
       toast({ title: "Account created!", description: "Welcome to UPSC Connect." });
-      navigate("/dashboard");
+      navigate("/role-selection");
     } catch (err: unknown) {
       toast({ title: "Signup failed", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
     } finally {
@@ -61,17 +60,6 @@ const SignupPage = () => {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} placeholder="Min 6 characters" />
-              </div>
-              <div className="space-y-2">
-                <Label>I am a</Label>
-                <div className="flex gap-3">
-                  <Button type="button" variant={role === "mentee" ? "default" : "outline"} className="flex-1" onClick={() => setRole("mentee")}>
-                    Mentee (Aspirant)
-                  </Button>
-                  <Button type="button" variant={role === "mentor" ? "default" : "outline"} className="flex-1" onClick={() => setRole("mentor")}>
-                    Mentor
-                  </Button>
-                </div>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Creating account..." : "Sign Up"}
