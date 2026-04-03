@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog, Star, RotateCcw, Trash2, Search, Building2, Ban, ShieldAlert, Video, Copy } from "lucide-react";
+import { LogOut, Check, X, DollarSign, Clock, CheckCircle, Users, AlertTriangle, UserCog, Star, RotateCcw, Trash2, Search, Building2, Ban, ShieldAlert, Video, Copy, Calendar } from "lucide-react";
+import SessionCard from "@/components/SessionCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import StarRating from "@/components/StarRating";
@@ -139,15 +140,15 @@ const AdminDashboardPage = () => {
     setApprovedMentors(prev => prev.map(m => m.user_id === userId ? { ...m, ...updates } : m));
   };
 
-  const markCompleted = async (bookingId: string) => {
+  const handleAdminStatusUpdate = async (bookingId: string, status: string) => {
     const { error } = await supabaseUntyped
       .from("bookings")
-      .update({ status: "completed" })
+      .update({ status })
       .eq("id", bookingId);
     if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
     else {
-      setAllBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: "completed" } : b));
-      toast({ title: "Session marked as completed" });
+      setAllBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
+      toast({ title: `Session marked as ${status}` });
     }
   };
 
@@ -315,11 +316,7 @@ const AdminDashboardPage = () => {
 
         <Tabs defaultValue="sessions" className="space-y-4">
           <TabsList className="flex flex-wrap h-auto gap-1">
-            <TabsTrigger value="sessions" className="text-xs sm:text-sm">All Sessions</TabsTrigger>
-            <TabsTrigger value="pending" className="text-xs sm:text-sm">
-              Pending
-              {pendingSessions.length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{pendingSessions.length}</span>}
-            </TabsTrigger>
+            <TabsTrigger value="sessions" className="text-xs sm:text-sm">Sessions</TabsTrigger>
             <TabsTrigger value="transactions" className="text-xs sm:text-sm">Transactions</TabsTrigger>
             <TabsTrigger value="mentors" className="text-xs sm:text-sm">
               Mentors
@@ -335,147 +332,61 @@ const AdminDashboardPage = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* All Sessions Tab */}
+          {/* Sessions Tab with Upcoming/Completed sub-tabs */}
           <TabsContent value="sessions">
             <Card>
-              <CardHeader><CardTitle className="font-display">Session Details</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="font-display flex items-center gap-2"><Calendar className="h-5 w-5" /> Sessions</CardTitle></CardHeader>
               <CardContent>
-                {allBookings.length === 0 ? (
-                  <p className="text-muted-foreground">No sessions yet.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-border text-left text-muted-foreground">
-                          <th className="pb-3 pr-4">Mentor</th>
-                          <th className="pb-3 pr-4">Mentee</th>
-                          <th className="pb-3 pr-4">Date & Time</th>
-                          <th className="pb-3 pr-4">Booking Time</th>
-                          <th className="pb-3 pr-4">Status</th>
-                          <th className="pb-3 pr-4">Payment</th>
-                          <th className="pb-3 pr-4">Meeting</th>
-                          <th className="pb-3">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {allBookings.map((b: any) => {
-                          const tx = transactions.find(t => t.booking_id === b.id);
-                          return (
-                            <tr key={b.id} className="border-b border-border/50">
-                              <td className="py-3 pr-4">
-                                <p className="font-medium text-foreground">{b.mentor?.name || "—"}</p>
-                                <p className="text-xs text-muted-foreground">{b.mentor?.email}</p>
-                              </td>
-                              <td className="py-3 pr-4">
-                                <p className="font-medium text-foreground">{b.mentee?.name || "—"}</p>
-                                <p className="text-xs text-muted-foreground">{b.mentee?.email}</p>
-                              </td>
-                              <td className="py-3 pr-4">
-                                {b.slots ? (
-                                  <>
-                                    <p className="text-foreground">{format(new Date(b.slots.date), "MMM d, yyyy")}</p>
-                                    <p className="text-xs text-muted-foreground">{b.slots.start_time?.slice(0, 5)} – {b.slots.end_time?.slice(0, 5)}</p>
-                                  </>
-                                ) : <span className="text-muted-foreground">—</span>}
-                              </td>
-                              <td className="py-3 pr-4 text-foreground text-xs">
-                                {b.created_at ? format(new Date(b.created_at), "MMM d, yyyy HH:mm") : "—"}
-                              </td>
-                              <td className="py-3 pr-4">
-                                <Badge variant={statusColor(b.status)}>{b.status}</Badge>
-                              </td>
-                              <td className="py-3 pr-4">
-                                {tx ? (
-                                  <div>
-                                    <p className="text-foreground font-medium">₹{tx.amount}</p>
-                                    {tx.razorpay_payment_id && (
-                                      <p className="text-xs text-muted-foreground font-mono">{tx.razorpay_payment_id}</p>
-                                    )}
-                                    <Badge variant={tx.status === "paid" ? "default" : "outline"} className="mt-1 text-xs">{tx.status}</Badge>
-                                  </div>
-                                ) : <span className="text-muted-foreground text-xs">No payment</span>}
-                              </td>
-                              <td className="py-3 pr-4">
-                                {b.meeting_link ? (
-                                  <div className="space-y-1">
-                                    <div className="flex items-center gap-1">
-                                      <Video className="h-3.5 w-3.5 text-primary shrink-0" />
-                                      <a href={b.meeting_link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[120px]">
-                                        Join Link
-                                      </a>
-                                      <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => { navigator.clipboard.writeText(b.meeting_link); toast({ title: "Link copied!" }); }}>
-                                        <Copy className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                    {b.meeting_passcode && (
-                                      <div className="flex items-center gap-1">
-                                        <code className="text-xs font-mono text-foreground bg-muted px-1 rounded">{b.meeting_passcode}</code>
-                                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => { navigator.clipboard.writeText(b.meeting_passcode); toast({ title: "Passcode copied!" }); }}>
-                                          <Copy className="h-3 w-3" />
-                                        </Button>
-                                      </div>
-                                    )}
-                                  </div>
-                                ) : <span className="text-xs text-muted-foreground">—</span>}
-                              </td>
-                              <td className="py-3">
-                                {b.status === "confirmed" && (
-                                  <Button size="sm" variant="outline" onClick={() => markCompleted(b.id)}>
-                                    <CheckCircle className="h-3.5 w-3.5 mr-1" /> Complete
-                                  </Button>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                <Tabs defaultValue="upcoming" className="space-y-4">
+                  <TabsList className="w-full grid grid-cols-2">
+                    <TabsTrigger value="upcoming" className="text-sm">
+                      Upcoming {pendingSessions.length > 0 && <span className="ml-1.5 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-xs">{pendingSessions.length}</span>}
+                    </TabsTrigger>
+                    <TabsTrigger value="completed" className="text-sm">
+                      Completed {completedSessions.length > 0 && <span className="ml-1.5 rounded-full bg-muted-foreground/20 text-muted-foreground px-1.5 py-0.5 text-xs">{completedSessions.length}</span>}
+                    </TabsTrigger>
+                  </TabsList>
 
-          {/* Pending Sessions Tab */}
-          <TabsContent value="pending">
-            <Card>
-              <CardHeader><CardTitle className="font-display flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-accent" /> Pending Sessions</CardTitle></CardHeader>
-              <CardContent>
-                {pendingSessions.length === 0 ? (
-                  <p className="text-muted-foreground">No pending sessions.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {pendingSessions.map((b: any) => (
-                      <div key={b.id} className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border border-border p-4 gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium text-foreground">{b.mentor?.name}</p>
-                            <span className="text-muted-foreground">→</span>
-                            <p className="font-medium text-foreground">{b.mentee?.name}</p>
-                          </div>
-                          {b.slots && (
-                            <p className="text-sm text-muted-foreground">
-                              {format(new Date(b.slots.date), "MMM d, yyyy")} · {b.slots.start_time?.slice(0, 5)} – {b.slots.end_time?.slice(0, 5)}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-2 mt-1">
-                            <p className="text-xs text-muted-foreground">Mentor: {b.mentor?.phone || b.mentor?.email}</p>
-                            <span className="text-muted-foreground">·</span>
-                            <p className="text-xs text-muted-foreground">Mentee: {b.mentee?.phone || b.mentee?.email}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={statusColor(b.status)}>{b.status}</Badge>
-                          {b.status === "confirmed" && (
-                            <Button size="sm" onClick={() => markCompleted(b.id)}>
-                              <CheckCircle className="h-3.5 w-3.5 mr-1" /> Mark Complete
-                            </Button>
-                          )}
-                        </div>
+                  <TabsContent value="upcoming">
+                    {pendingSessions.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Calendar className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                        <p className="font-medium">No upcoming sessions</p>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    ) : (
+                      <div className="space-y-3">
+                        {pendingSessions.map((b: any) => (
+                          <SessionCard
+                            key={b.id}
+                            booking={b}
+                            role="admin"
+                            onStatusUpdate={handleAdminStatusUpdate}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="completed">
+                    {completedSessions.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Calendar className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                        <p className="font-medium">No completed sessions</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {completedSessions.map((b: any) => (
+                          <SessionCard
+                            key={b.id}
+                            booking={b}
+                            role="admin"
+                            onStatusUpdate={handleAdminStatusUpdate}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </TabsContent>

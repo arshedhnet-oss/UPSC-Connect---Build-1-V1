@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, Trash2, MessageSquare, Pencil, Video, Copy, Calendar, Send } from "lucide-react";
+import { Plus, Trash2, Pencil, Calendar } from "lucide-react";
 import MentorProfileForm from "@/components/MentorProfileForm";
 import DeleteMentorAccount from "@/components/DeleteMentorAccount";
 import ReviewModal from "@/components/ReviewModal";
+import SessionCard from "@/components/SessionCard";
 import Navbar from "@/components/Navbar";
 
 const DashboardPage = () => {
@@ -38,7 +40,6 @@ const DashboardPage = () => {
     if (!user) return;
     setChattingWith(menteeId);
     try {
-      // Check for existing conversation
       const { data: existing } = await supabaseUntyped
         .from("conversations")
         .select("id")
@@ -50,15 +51,24 @@ const DashboardPage = () => {
         navigate(`/chat?conversation=${existing.id}`);
         return;
       }
-
-      // Create new conversation (RLS requires mentee_id = auth.uid(), so we use service approach)
-      // Actually, conversations_insert policy requires mentee_id = auth.uid()
-      // Mentor can't create conversations directly. Navigate to chat with mentor param instead.
       navigate(`/chat?mentee=${menteeId}`);
     } catch {
       toast({ title: "Failed to open chat", variant: "destructive" });
     } finally {
       setChattingWith(null);
+    }
+  };
+
+  const handleStatusUpdate = async (bookingId: string, status: string) => {
+    const { error } = await supabaseUntyped
+      .from("bookings")
+      .update({ status })
+      .eq("id", bookingId);
+    if (error) {
+      toast({ title: "Failed to update status", description: error.message, variant: "destructive" });
+    } else {
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
+      toast({ title: `Session marked as ${status}` });
     }
   };
 
@@ -77,7 +87,6 @@ const DashboardPage = () => {
         .order("created_at", { ascending: false });
       if (bk) setBookings(bk);
 
-      // Fetch reviewed booking IDs for this mentee
       if (profile.role === "mentee") {
         const { data: reviews } = await supabaseUntyped
           .from("mentor_reviews")
@@ -129,8 +138,21 @@ const DashboardPage = () => {
   if (authLoading || loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!profile) return null;
 
-  const upcomingSessions = bookings.filter(b => b.status === "confirmed");
-  const completedSessions = bookings.filter(b => b.status === "completed");
+  const now = new Date();
+  const upcomingSessions = bookings.filter(b => {
+    if (b.status === "completed" || b.status === "cancelled") return false;
+    return true;
+  });
+  const completedSessions = bookings.filter(b => {
+    if (b.status === "completed") return true;
+    // Past sessions count as completed even if not marked
+    if (b.slots) {
+      const sessionDate = new Date(`${b.slots.date}T${b.slots.end_time || "23:59:59"}`);
+      if (sessionDate < now && b.status !== "pending_payment") return true;
+    }
+    return false;
+  });
+
   const totalEarnings = profile.role === "mentor" ? completedSessions.length * (mentorProfile?.price_per_session || 0) : 0;
 
   return (
@@ -219,113 +241,70 @@ const DashboardPage = () => {
           </Card>
         )}
 
+        {/* Sessions with Tabs */}
         <Card>
-          <CardHeader><CardTitle className="font-display">Sessions</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="font-display flex items-center gap-2"><Calendar className="h-5 w-5" /> Sessions</CardTitle></CardHeader>
           <CardContent>
-            {bookings.length === 0 ? (
-              <p className="text-muted-foreground">
-                {profile.role === "mentee" ? (<>No bookings yet. <Link to="/mentors" className="text-primary hover:underline">Browse mentors</Link> to get started.</>) : "No sessions yet."}
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {bookings.map((b: any) => (
-                  <div key={b.id} className="rounded-lg border border-border p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-foreground">{profile.role === "mentee" ? `Mentor: ${b.mentor?.name}` : `Mentee: ${b.mentee?.name}`}</p>
-                        {b.slots && <p className="text-sm text-muted-foreground">{format(new Date(b.slots.date), "MMM d, yyyy")} · {b.slots.start_time?.slice(0, 5)} – {b.slots.end_time?.slice(0, 5)}</p>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {profile.role === "mentee" && b.status === "completed" && !reviewedBookingIds.has(b.id) && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setReviewModal({ open: true, bookingId: b.id, mentorId: b.mentor_id, mentorName: b.mentor?.name || "Mentor" })}
-                          >
-                            <MessageSquare className="h-3.5 w-3.5 mr-1" /> Leave Review
-                          </Button>
-                        )}
-                        {profile.role === "mentee" && b.status === "completed" && reviewedBookingIds.has(b.id) && (
-                          <Badge variant="secondary" className="text-xs">Reviewed</Badge>
-                        )}
-                        {profile.role === "mentor" && (b.status === "confirmed" || b.status === "completed") && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={chattingWith === b.mentee_id}
-                            onClick={() => handleChatWithMentee(b.mentee_id)}
-                          >
-                            <Send className="h-3.5 w-3.5 mr-1" /> Chat with Mentee
-                          </Button>
-                        )}
-                        <Badge variant={b.status === "confirmed" ? "default" : b.status === "completed" ? "secondary" : "outline"}>{b.status}</Badge>
-                      </div>
-                    </div>
+            <Tabs defaultValue="upcoming" className="space-y-4">
+              <TabsList className="w-full grid grid-cols-2">
+                <TabsTrigger value="upcoming" className="text-sm">
+                  Upcoming {upcomingSessions.length > 0 && <span className="ml-1.5 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-xs">{upcomingSessions.length}</span>}
+                </TabsTrigger>
+                <TabsTrigger value="completed" className="text-sm">
+                  Completed {completedSessions.length > 0 && <span className="ml-1.5 rounded-full bg-muted-foreground/20 text-muted-foreground px-1.5 py-0.5 text-xs">{completedSessions.length}</span>}
+                </TabsTrigger>
+              </TabsList>
 
-                    {/* Meeting details for confirmed/completed bookings */}
-                    {(b.status === "confirmed" || b.status === "completed") && b.meeting_link && (
-                      <div className="rounded-lg bg-muted/50 border border-border p-3 space-y-2">
-                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                          <Video className="h-4 w-4 text-primary" />
-                          Meeting Details
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                          <a
-                            href={b.meeting_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-primary hover:underline break-all"
-                          >
-                            {b.meeting_link}
-                          </a>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 shrink-0"
-                            onClick={() => {
-                              navigator.clipboard.writeText(b.meeting_link);
-                              toast({ title: "Link copied!" });
-                            }}
-                          >
-                            <Copy className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                        {b.meeting_passcode && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">Passcode:</span>
-                            <code className="text-sm font-mono font-semibold text-foreground bg-background px-2 py-0.5 rounded border border-border">
-                              {b.meeting_passcode}
-                            </code>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 px-2"
-                              onClick={() => {
-                                navigator.clipboard.writeText(b.meeting_passcode);
-                                toast({ title: "Passcode copied!" });
-                              }}
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        )}
-                        {b.status === "confirmed" && (
-                          <a
-                            href={b.meeting_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Button size="sm" className="mt-1">
-                              <Video className="h-3.5 w-3.5 mr-1.5" /> Join Meeting
-                            </Button>
-                          </a>
-                        )}
-                      </div>
+              <TabsContent value="upcoming">
+                {upcomingSessions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Calendar className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                    <p className="font-medium">No upcoming sessions</p>
+                    {profile.role === "mentee" && (
+                      <Link to="/mentors" className="text-primary hover:underline text-sm mt-1 inline-block">Browse mentors to get started</Link>
                     )}
                   </div>
-                ))}
-              </div>
-            )}
+                ) : (
+                  <div className="space-y-3">
+                    {upcomingSessions.map((b: any) => (
+                      <SessionCard
+                        key={b.id}
+                        booking={b}
+                        role={profile.role as "mentor" | "mentee"}
+                        onChatWithMentee={handleChatWithMentee}
+                        onStatusUpdate={profile.role === "mentor" ? handleStatusUpdate : undefined}
+                        onReview={(bk) => setReviewModal({ open: true, bookingId: bk.id, mentorId: bk.mentor_id, mentorName: bk.mentor?.name || "Mentor" })}
+                        isReviewed={reviewedBookingIds.has(b.id)}
+                        chattingWith={chattingWith}
+                      />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="completed">
+                {completedSessions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Calendar className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                    <p className="font-medium">No completed sessions</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {completedSessions.map((b: any) => (
+                      <SessionCard
+                        key={b.id}
+                        booking={b}
+                        role={profile.role as "mentor" | "mentee"}
+                        onChatWithMentee={handleChatWithMentee}
+                        onReview={(bk) => setReviewModal({ open: true, bookingId: bk.id, mentorId: bk.mentor_id, mentorName: bk.mentor?.name || "Mentor" })}
+                        isReviewed={reviewedBookingIds.has(b.id)}
+                        chattingWith={chattingWith}
+                      />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
