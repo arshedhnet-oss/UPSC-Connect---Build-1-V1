@@ -20,7 +20,7 @@ const COMMON_LANGUAGES = ["English", "Hindi", "Urdu", "Tamil", "Telugu", "Kannad
 
 interface MentorProfileFormProps {
   userId: string;
-  profile: { name: string; avatar_url: string | null; role: string; email: string };
+  profile: { name: string; avatar_url: string | null; role: string; email: string; phone?: string | null };
   mentorProfile: any;
   onProfileUpdate: (url: string) => void;
 }
@@ -28,6 +28,10 @@ interface MentorProfileFormProps {
 export default function MentorProfileForm({ userId, profile, mentorProfile, onProfileUpdate }: MentorProfileFormProps) {
   const { toast } = useToast();
   const [name, setName] = useState(profile.name || "");
+  const [phone, setPhone] = useState(() => {
+    const p = profile.phone || "";
+    return p.startsWith("+91") ? p.slice(3) : p;
+  });
   const [bio, setBio] = useState(mentorProfile.bio || "");
   const [subjects, setSubjects] = useState((mentorProfile.subjects || []).join(", "));
   const [price, setPrice] = useState(mentorProfile.price_per_session || 500);
@@ -59,14 +63,16 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
 
     const finalOptional = optionalSubject === "Others" ? customOptional.trim() || "Others" : optionalSubject;
 
-    // Update profile name
+    const phoneDigits = phone.replace(/\D/g, "");
+
+    // Update profile name and phone
     const { error: nameError } = await supabaseUntyped
       .from("profiles")
-      .update({ name })
+      .update({ name, phone: phoneDigits ? `+91${phoneDigits}` : null })
       .eq("id", userId);
 
     if (nameError) {
-      toast({ title: "Name update failed", description: nameError.message, variant: "destructive" });
+      toast({ title: "Profile update failed", description: nameError.message, variant: "destructive" });
       return;
     }
 
@@ -104,6 +110,22 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
             Your profile is pending admin approval.
           </div>
         )}
+
+        <div className="space-y-2">
+          <Label>Phone Number</Label>
+          <div className="flex gap-2">
+            <div className="flex items-center justify-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">+91</div>
+            <Input
+              type="tel"
+              inputMode="numeric"
+              value={phone}
+              onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              placeholder="10-digit mobile number"
+              className="flex-1"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">Only visible to admin and booked mentees.</p>
+        </div>
 
         <div className="space-y-2">
           <Label>Name</Label>

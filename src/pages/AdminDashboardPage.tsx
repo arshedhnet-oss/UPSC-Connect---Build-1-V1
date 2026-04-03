@@ -452,21 +452,40 @@ const AdminDashboardPage = () => {
                 ) : (
                   <div className="space-y-3">
                     {pendingMentors.map((m: any) => (
-                      <div key={m.user_id} className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border border-accent/30 bg-accent/5 p-4 gap-3">
-                        <div>
-                          <p className="font-medium text-foreground">{m.profiles?.name}</p>
-                          <p className="text-sm text-muted-foreground">{m.profiles?.email}</p>
-                          {m.profiles?.phone && <p className="text-sm text-muted-foreground">{m.profiles.phone}</p>}
-                          {m.bio && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{m.bio}</p>}
-                          {m.subjects?.length > 0 && (
-                            <div className="flex gap-1 mt-1 flex-wrap">
-                              {m.subjects.map((s: string) => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}
+                      <div key={m.user_id} className="rounded-lg border border-accent/30 bg-accent/5 p-4 space-y-3">
+                        <div className="flex items-start gap-3">
+                          {m.profiles?.avatar_url ? (
+                            <img src={m.profiles.avatar_url} alt={m.profiles?.name} className="h-12 w-12 rounded-full object-cover shrink-0" />
+                          ) : (
+                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-display font-bold">
+                              {(m.profiles?.name || "M").charAt(0).toUpperCase()}
                             </div>
                           )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground">{m.profiles?.name}</p>
+                            <p className="text-sm text-muted-foreground">{m.profiles?.email}</p>
+                            {m.profiles?.phone && <p className="text-sm text-muted-foreground font-medium">{m.profiles.phone}</p>}
+                          </div>
                         </div>
-                        <div className="flex gap-2">
+                        {m.bio && <p className="text-sm text-muted-foreground line-clamp-3">{m.bio}</p>}
+                        <div className="flex flex-wrap gap-2 text-sm">
+                          {m.price_per_session && <Badge variant="secondary">₹{m.price_per_session}/session</Badge>}
+                          {m.air_rank && <Badge variant="default">AIR {m.air_rank}{m.rank_year ? ` (${m.rank_year})` : ""}</Badge>}
+                          {m.optional_subject && <Badge variant="outline">{m.optional_subject}</Badge>}
+                          {m.mains_written > 0 && <Badge variant="outline">Mains: {m.mains_written}x</Badge>}
+                          {m.interviews_appeared > 0 && <Badge variant="outline">Interviews: {m.interviews_appeared}x</Badge>}
+                        </div>
+                        {m.subjects?.length > 0 && (
+                          <div className="flex gap-1 flex-wrap">
+                            {m.subjects.map((s: string) => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}
+                          </div>
+                        )}
+                        <div className="flex gap-2 pt-1">
                           <Button size="sm" onClick={() => approveMentor(m.user_id)}>
                             <Check className="h-4 w-4 mr-1" /> Approve
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => disableMentor(m.user_id)}>
+                            <X className="h-4 w-4 mr-1" /> Reject
                           </Button>
                           <Button size="sm" variant="outline" className="text-destructive" onClick={() => initiateDelete("mentor", m.user_id, m.profiles?.name || "Mentor")}>
                             <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
