@@ -140,15 +140,15 @@ const AdminDashboardPage = () => {
     setApprovedMentors(prev => prev.map(m => m.user_id === userId ? { ...m, ...updates } : m));
   };
 
-  const markCompleted = async (bookingId: string) => {
+  const handleAdminStatusUpdate = async (bookingId: string, status: string) => {
     const { error } = await supabaseUntyped
       .from("bookings")
-      .update({ status: "completed" })
+      .update({ status })
       .eq("id", bookingId);
     if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
     else {
-      setAllBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: "completed" } : b));
-      toast({ title: "Session marked as completed" });
+      setAllBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
+      toast({ title: `Session marked as ${status}` });
     }
   };
 
