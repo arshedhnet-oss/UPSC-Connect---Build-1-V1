@@ -289,8 +289,9 @@ Deno.serve(async (req) => {
     // Enqueue admin email
     const adminMessageId = `booking-admin-${booking_id}`;
     const adminHtml = buildAdminEmail(
-      mentorProfile.name, menteeProfile.name, sessionDate, sessionTime,
-      transaction.amount, transaction.razorpay_payment_id || "N/A", booking_id, meetingLink
+      mentorProfile.name, mentorProfile.email, mentorProfile.phone,
+      menteeProfile.name, menteeProfile.email, menteeProfile.phone,
+      sessionDate, sessionTime, transaction.amount, transaction.razorpay_payment_id || "N/A", booking_id, meetingLink
     );
     await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
