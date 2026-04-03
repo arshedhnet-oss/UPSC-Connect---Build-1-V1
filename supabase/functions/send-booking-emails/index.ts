@@ -178,13 +178,13 @@ Deno.serve(async (req) => {
 
     const { data: menteeProfile } = await supabase
       .from("profiles")
-      .select("name, email")
+      .select("name, email, phone")
       .eq("id", booking.mentee_id)
       .single();
 
     const { data: mentorProfile } = await supabase
       .from("profiles")
-      .select("name, email")
+      .select("name, email, phone")
       .eq("id", booking.mentor_id)
       .single();
 
