@@ -107,7 +107,8 @@ const MentorListingPage = () => {
         .from("slots")
         .select("mentor_id")
         .eq("date", dateStr)
-        .eq("is_booked", false);
+        .eq("is_booked", false)
+        .eq("is_active", true);
       if (data) {
         setMentorsWithSlots(new Set(data.map((s: any) => s.mentor_id)));
       }

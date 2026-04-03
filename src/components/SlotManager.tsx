@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Plus, Trash2, Save, Loader2 } from "lucide-react";
@@ -14,6 +15,7 @@ interface Slot {
   start_time: string;
   end_time: string;
   is_booked: boolean;
+  is_active: boolean;
   mentor_id: string;
   _status?: "existing" | "added";
 }
@@ -63,7 +65,7 @@ const SlotManager = ({ userId }: SlotManagerProps) => {
   }, [fetchSlots]);
 
   const validateNoOverlap = (newSlot: { date: string; start_time: string; end_time: string }) => {
-    const visible = slots.filter(s => !removedIds.has(s.id) && !s.is_booked);
+    const visible = slots.filter(s => !removedIds.has(s.id) && s.is_active && !s.is_booked);
     return !visible.some(
       s =>
         s.date === newSlot.date &&
@@ -86,7 +88,7 @@ const SlotManager = ({ userId }: SlotManagerProps) => {
     const tempId = `temp-${Date.now()}-${Math.random()}`;
     setSlots(prev => [
       ...prev,
-      { id: tempId, ...newSlot, is_booked: false, mentor_id: userId, _status: "added" },
+      { id: tempId, ...newSlot, is_booked: false, is_active: true, mentor_id: userId, _status: "added" },
     ]);
     setSlotDate("");
     setSlotStart("");
@@ -96,6 +98,16 @@ const SlotManager = ({ userId }: SlotManagerProps) => {
   const removeSlot = (slotId: string) => {
     const slot = slots.find(s => s.id === slotId);
     if (!slot) return;
+
+    // Prevent removal of booked slots
+    if (slot.is_booked) {
+      toast({
+        title: "This slot cannot be removed because it has an existing booking",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (slot._status === "added") {
       setSlots(prev => prev.filter(s => s.id !== slotId));
     } else {
@@ -106,11 +118,11 @@ const SlotManager = ({ userId }: SlotManagerProps) => {
   const saveChanges = async () => {
     setSaving(true);
     try {
-      // Delete removed slots
+      // Soft-delete removed slots (set is_active = false)
       if (removedIds.size > 0) {
         const { error: delErr } = await supabaseUntyped
           .from("slots")
-          .delete()
+          .update({ is_active: false })
           .in("id", Array.from(removedIds));
         if (delErr) throw delErr;
       }
@@ -137,7 +149,9 @@ const SlotManager = ({ userId }: SlotManagerProps) => {
     }
   };
 
-  const visibleSlots = slots.filter(s => !removedIds.has(s.id) && !s.is_booked);
+  // Show active unbooked slots (excluding pending removals) + booked slots
+  const activeSlots = slots.filter(s => s.is_active !== false || s._status === "added");
+  const visibleSlots = activeSlots.filter(s => !removedIds.has(s.id));
 
   if (loading) return null;
 
@@ -177,22 +191,33 @@ const SlotManager = ({ userId }: SlotManagerProps) => {
               className={`flex items-center justify-between rounded-lg border p-3 ${
                 slot._status === "added"
                   ? "border-primary/40 bg-primary/5"
+                  : slot.is_booked
+                  ? "border-accent/30 bg-accent/5"
                   : "border-border"
               }`}
             >
-              <div>
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-foreground">
                   {format(new Date(slot.date), "MMM d, yyyy")}
                 </span>
-                <span className="text-sm text-muted-foreground ml-3">
+                <span className="text-sm text-muted-foreground">
                   {slot.start_time.slice(0, 5)} – {slot.end_time.slice(0, 5)}
                 </span>
                 {slot._status === "added" && (
-                  <span className="ml-2 text-xs text-primary font-medium">New</span>
+                  <Badge variant="secondary" className="text-xs">New</Badge>
+                )}
+                {slot.is_booked && (
+                  <Badge variant="default" className="text-xs">Booked</Badge>
                 )}
               </div>
-              <Button variant="ghost" size="icon" onClick={() => removeSlot(slot.id)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => removeSlot(slot.id)}
+                disabled={slot.is_booked}
+                title={slot.is_booked ? "Cannot remove a booked slot" : "Remove slot"}
+              >
+                <Trash2 className={`h-4 w-4 ${slot.is_booked ? "text-muted-foreground" : "text-destructive"}`} />
               </Button>
             </div>
           ))}
