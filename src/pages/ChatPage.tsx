@@ -13,6 +13,8 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const mentorIdParam = searchParams.get("mentor");
+  const menteeIdParam = searchParams.get("mentee");
+  const conversationIdParam = searchParams.get("conversation");
 
   const [selectedConv, setSelectedConv] = useState<any>(null);
   const [initializing, setInitializing] = useState(false);
@@ -21,7 +23,34 @@ export default function ChatPage() {
     if (!authLoading && !user) navigate("/login");
   }, [authLoading, user]);
 
-  // Auto-create or open conversation from mentor param
+  // Auto-open conversation from conversation ID param
+  useEffect(() => {
+    if (!user || !conversationIdParam || !profile || initializing) return;
+    const openConversation = async () => {
+      setInitializing(true);
+      const { data: conv } = await supabaseUntyped
+        .from("conversations")
+        .select("*")
+        .eq("id", conversationIdParam)
+        .single();
+      if (conv) {
+        const otherId = conv.mentee_id === user.id ? conv.mentor_id : conv.mentee_id;
+        const { data: otherProfile } = await supabaseUntyped
+          .from("profiles")
+          .select("name, avatar_url")
+          .eq("id", otherId)
+          .single();
+        setSelectedConv({
+          ...conv,
+          other_user: otherProfile || { name: "User", avatar_url: null },
+        });
+      }
+      setInitializing(false);
+    };
+    openConversation();
+  }, [user, conversationIdParam, profile]);
+
+  // Auto-create or open conversation from mentor param (mentee flow)
   useEffect(() => {
     if (!user || !mentorIdParam || !profile || initializing) return;
     if (profile.role !== "mentee") return;
@@ -29,7 +58,6 @@ export default function ChatPage() {
     const initConversation = async () => {
       setInitializing(true);
 
-      // Check if conversation exists
       const { data: existing } = await supabaseUntyped
         .from("conversations")
         .select("*")
@@ -50,7 +78,6 @@ export default function ChatPage() {
         convId = created.id;
       }
 
-      // Fetch other user profile
       const { data: otherProfile } = await supabaseUntyped
         .from("profiles")
         .select("name, avatar_url")
@@ -68,6 +95,52 @@ export default function ChatPage() {
 
     initConversation();
   }, [user, mentorIdParam, profile]);
+
+  // Auto-create or open conversation from mentee param (mentor flow)
+  useEffect(() => {
+    if (!user || !menteeIdParam || !profile || initializing) return;
+    if (profile.role !== "mentor") return;
+
+    const initConversation = async () => {
+      setInitializing(true);
+
+      const { data: existing } = await supabaseUntyped
+        .from("conversations")
+        .select("*")
+        .eq("mentor_id", user.id)
+        .eq("mentee_id", menteeIdParam)
+        .single();
+
+      let convId: string;
+      if (existing) {
+        convId = existing.id;
+      } else {
+        const { data: created, error } = await supabaseUntyped
+          .from("conversations")
+          .insert({ mentee_id: menteeIdParam, mentor_id: user.id })
+          .select()
+          .single();
+        if (error || !created) { setInitializing(false); return; }
+        convId = created.id;
+      }
+
+      const { data: otherProfile } = await supabaseUntyped
+        .from("profiles")
+        .select("name, avatar_url")
+        .eq("id", menteeIdParam)
+        .single();
+
+      setSelectedConv({
+        id: convId,
+        mentee_id: menteeIdParam,
+        mentor_id: user.id,
+        other_user: otherProfile || { name: "Mentee", avatar_url: null },
+      });
+      setInitializing(false);
+    };
+
+    initConversation();
+  }, [user, menteeIdParam, profile]);
 
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;

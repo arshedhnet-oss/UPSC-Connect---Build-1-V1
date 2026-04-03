@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, Trash2, MessageSquare, Pencil, Video, Copy, Calendar } from "lucide-react";
+import { Plus, Trash2, MessageSquare, Pencil, Video, Copy, Calendar, Send } from "lucide-react";
 import MentorProfileForm from "@/components/MentorProfileForm";
 import DeleteMentorAccount from "@/components/DeleteMentorAccount";
 import ReviewModal from "@/components/ReviewModal";
@@ -32,6 +32,35 @@ const DashboardPage = () => {
   const [slotEnd, setSlotEnd] = useState("");
   const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
   const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string; mentorId: string; mentorName: string } | null>(null);
+  const [chattingWith, setChattingWith] = useState<string | null>(null);
+
+  const handleChatWithMentee = async (menteeId: string) => {
+    if (!user) return;
+    setChattingWith(menteeId);
+    try {
+      // Check for existing conversation
+      const { data: existing } = await supabaseUntyped
+        .from("conversations")
+        .select("id")
+        .eq("mentor_id", user.id)
+        .eq("mentee_id", menteeId)
+        .maybeSingle();
+
+      if (existing) {
+        navigate(`/chat?conversation=${existing.id}`);
+        return;
+      }
+
+      // Create new conversation (RLS requires mentee_id = auth.uid(), so we use service approach)
+      // Actually, conversations_insert policy requires mentee_id = auth.uid()
+      // Mentor can't create conversations directly. Navigate to chat with mentor param instead.
+      navigate(`/chat?mentee=${menteeId}`);
+    } catch {
+      toast({ title: "Failed to open chat", variant: "destructive" });
+    } finally {
+      setChattingWith(null);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -218,6 +247,16 @@ const DashboardPage = () => {
                         )}
                         {profile.role === "mentee" && b.status === "completed" && reviewedBookingIds.has(b.id) && (
                           <Badge variant="secondary" className="text-xs">Reviewed</Badge>
+                        )}
+                        {profile.role === "mentor" && (b.status === "confirmed" || b.status === "completed") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={chattingWith === b.mentee_id}
+                            onClick={() => handleChatWithMentee(b.mentee_id)}
+                          >
+                            <Send className="h-3.5 w-3.5 mr-1" /> Chat with Mentee
+                          </Button>
                         )}
                         <Badge variant={b.status === "confirmed" ? "default" : b.status === "completed" ? "secondary" : "outline"}>{b.status}</Badge>
                       </div>
