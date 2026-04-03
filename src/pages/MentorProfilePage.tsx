@@ -65,6 +65,7 @@ const MentorProfilePage = () => {
         .select("*")
         .eq("mentor_id", id!)
         .eq("is_booked", false)
+        .eq("is_active", true)
         .gte("date", new Date().toISOString().split("T")[0])
         .order("date", { ascending: true });
       if (sl) setSlots(sl as Slot[]);
