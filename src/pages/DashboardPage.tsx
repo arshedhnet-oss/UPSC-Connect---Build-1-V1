@@ -107,26 +107,8 @@ const DashboardPage = () => {
     fetchData();
   }, [user, profile]);
 
-  const addSlot = async () => {
-    if (!slotDate || !slotStart || !slotEnd) return;
-    const { data, error } = await supabaseUntyped
-      .from("slots")
-      .insert({ mentor_id: user!.id, date: slotDate, start_time: slotStart, end_time: slotEnd })
-      .select()
-      .single();
-    if (error) toast({ title: "Failed to add slot", description: error.message, variant: "destructive" });
-    else if (data) {
-      setSlots(prev => [...prev, data]);
-      setSlotDate(""); setSlotStart(""); setSlotEnd("");
-      toast({ title: "Slot added!" });
-    }
-  };
 
-  const deleteSlot = async (slotId: string) => {
-    await supabaseUntyped.from("slots").delete().eq("id", slotId);
-    setSlots(prev => prev.filter(s => s.id !== slotId));
-    toast({ title: "Slot removed" });
-  };
+
 
   if (authLoading || loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!profile) return null;
