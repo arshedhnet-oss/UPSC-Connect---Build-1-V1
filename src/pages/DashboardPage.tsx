@@ -25,7 +25,7 @@ const DashboardPage = () => {
 
   const [bookings, setBookings] = useState<any[]>([]);
   const [mentorProfile, setMentorProfile] = useState<any>(null);
-  const [slots, setSlots] = useState<any[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
