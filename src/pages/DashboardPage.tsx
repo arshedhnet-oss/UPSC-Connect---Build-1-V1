@@ -190,31 +190,7 @@ const DashboardPage = () => {
           </div>
         )}
 
-        {profile.role === "mentor" && (
-          <Card>
-            <CardHeader><CardTitle className="font-display">Manage Slots</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end">
-                <div className="space-y-1"><Label>Date</Label><Input type="date" value={slotDate} onChange={e => setSlotDate(e.target.value)} min={new Date().toISOString().split("T")[0]} /></div>
-                <div className="space-y-1"><Label>Start</Label><Input type="time" value={slotStart} onChange={e => setSlotStart(e.target.value)} /></div>
-                <div className="space-y-1"><Label>End</Label><Input type="time" value={slotEnd} onChange={e => setSlotEnd(e.target.value)} /></div>
-                <Button onClick={addSlot} className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add Slot</Button>
-              </div>
-              <div className="space-y-2">
-                {slots.filter(s => !s.is_booked).map((slot: any) => (
-                  <div key={slot.id} className="flex items-center justify-between rounded-lg border border-border p-3">
-                    <div>
-                      <span className="font-medium text-foreground">{format(new Date(slot.date), "MMM d, yyyy")}</span>
-                      <span className="text-sm text-muted-foreground ml-3">{slot.start_time.slice(0, 5)} – {slot.end_time.slice(0, 5)}</span>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => deleteSlot(slot.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                  </div>
-                ))}
-                {slots.filter(s => !s.is_booked).length === 0 && <p className="text-sm text-muted-foreground">No available slots. Add some above.</p>}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {profile.role === "mentor" && <SlotManager userId={user!.id} />}
 
         {/* Sessions with Tabs */}
         <Card>
