@@ -248,6 +248,16 @@ const DashboardPage = () => {
                         {profile.role === "mentee" && b.status === "completed" && reviewedBookingIds.has(b.id) && (
                           <Badge variant="secondary" className="text-xs">Reviewed</Badge>
                         )}
+                        {profile.role === "mentor" && (b.status === "confirmed" || b.status === "completed") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={chattingWith === b.mentee_id}
+                            onClick={() => handleChatWithMentee(b.mentee_id)}
+                          >
+                            <Send className="h-3.5 w-3.5 mr-1" /> Chat with Mentee
+                          </Button>
+                        )}
                         <Badge variant={b.status === "confirmed" ? "default" : b.status === "completed" ? "secondary" : "outline"}>{b.status}</Badge>
                       </div>
                     </div>
