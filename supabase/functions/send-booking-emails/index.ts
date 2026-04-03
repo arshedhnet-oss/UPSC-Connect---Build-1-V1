@@ -446,10 +446,24 @@ function buildMentorEmail(menteeName: string, menteeEmail: string, menteePhone: 
 }
 
 function buildAdminEmail(
-  mentorName: string, menteeName: string, date: string, time: string,
-  amount: number, paymentId: string, bookingId: string, meetingLink: string
+  mentorName: string, mentorEmail: string, mentorPhone: string | null,
+  menteeName: string, menteeEmail: string, menteePhone: string | null,
+  date: string, time: string, amount: number, paymentId: string, bookingId: string, meetingLink: string
 ): string {
   const header = `<h1>New Booking Confirmed</h1><p class="subtitle">A new session has been booked on the platform.</p><!--HEADER_END-->`;
+
+  const menteeContactRows = [
+    detailRow("Name", menteeName),
+    detailRow("Email", menteeEmail),
+  ];
+  if (menteePhone) menteeContactRows.push(detailRow("Phone", `<strong>${menteePhone}</strong>`));
+
+  const mentorContactRows = [
+    detailRow("Name", mentorName),
+    detailRow("Email", mentorEmail),
+  ];
+  if (mentorPhone) mentorContactRows.push(detailRow("Phone", `<strong>${mentorPhone}</strong>`));
+
   const details = `
     <p class="section-title">Session Details</p>
     <table class="detail-table">
@@ -458,6 +472,15 @@ function buildAdminEmail(
       ${detailRow("Date", date)}
       ${detailRow("Time", time)}
       ${detailRow("Amount", `&#8377;${amount}`)}
+    </table>
+    <hr class="divider" />
+    <p class="section-title">Mentee Contact</p>
+    <table class="detail-table">
+      ${menteeContactRows.join("\n      ")}
+    </table>
+    <p class="section-title" style="margin-top:16px;">Mentor Contact</p>
+    <table class="detail-table">
+      ${mentorContactRows.join("\n      ")}
     </table>
     <hr class="divider" />
     <p class="section-title">Transaction Details</p>
