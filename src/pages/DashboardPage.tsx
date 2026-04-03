@@ -32,6 +32,35 @@ const DashboardPage = () => {
   const [slotEnd, setSlotEnd] = useState("");
   const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
   const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string; mentorId: string; mentorName: string } | null>(null);
+  const [chattingWith, setChattingWith] = useState<string | null>(null);
+
+  const handleChatWithMentee = async (menteeId: string) => {
+    if (!user) return;
+    setChattingWith(menteeId);
+    try {
+      // Check for existing conversation
+      const { data: existing } = await supabaseUntyped
+        .from("conversations")
+        .select("id")
+        .eq("mentor_id", user.id)
+        .eq("mentee_id", menteeId)
+        .maybeSingle();
+
+      if (existing) {
+        navigate(`/chat?conversation=${existing.id}`);
+        return;
+      }
+
+      // Create new conversation (RLS requires mentee_id = auth.uid(), so we use service approach)
+      // Actually, conversations_insert policy requires mentee_id = auth.uid()
+      // Mentor can't create conversations directly. Navigate to chat with mentor param instead.
+      navigate(`/chat?mentee=${menteeId}`);
+    } catch {
+      toast({ title: "Failed to open chat", variant: "destructive" });
+    } finally {
+      setChattingWith(null);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
