@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Plus, Trash2, MessageSquare, Pencil, Video, Copy, Calendar } from "lucide-react";
+import { Plus, Trash2, MessageSquare, Pencil, Video, Copy, Calendar, Send } from "lucide-react";
 import MentorProfileForm from "@/components/MentorProfileForm";
 import DeleteMentorAccount from "@/components/DeleteMentorAccount";
 import ReviewModal from "@/components/ReviewModal";
