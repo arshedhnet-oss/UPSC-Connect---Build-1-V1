@@ -101,13 +101,6 @@ const DashboardPage = () => {
           .eq("user_id", user.id)
           .single();
         if (mp) setMentorProfile(mp);
-
-        const { data: sl } = await supabaseUntyped
-          .from("slots")
-          .select("*")
-          .eq("mentor_id", user.id)
-          .order("date", { ascending: true });
-        if (sl) setSlots(sl);
       }
       setLoading(false);
     };
