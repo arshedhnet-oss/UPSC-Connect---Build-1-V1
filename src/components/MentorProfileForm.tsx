@@ -20,7 +20,7 @@ const COMMON_LANGUAGES = ["English", "Hindi", "Urdu", "Tamil", "Telugu", "Kannad
 
 interface MentorProfileFormProps {
   userId: string;
-  profile: { name: string; avatar_url: string | null; role: string; email: string };
+  profile: { name: string; avatar_url: string | null; role: string; email: string; phone?: string | null };
   mentorProfile: any;
   onProfileUpdate: (url: string) => void;
 }
