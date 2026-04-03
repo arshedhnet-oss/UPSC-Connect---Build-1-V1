@@ -112,6 +112,22 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
         )}
 
         <div className="space-y-2">
+          <Label>Phone Number</Label>
+          <div className="flex gap-2">
+            <div className="flex items-center justify-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">+91</div>
+            <Input
+              type="tel"
+              inputMode="numeric"
+              value={phone}
+              onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              placeholder="10-digit mobile number"
+              className="flex-1"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">Only visible to admin and booked mentees.</p>
+        </div>
+
+        <div className="space-y-2">
           <Label>Name</Label>
           <Input value={name} onChange={e => setName(e.target.value)} placeholder="Your full name" />
         </div>
