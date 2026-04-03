@@ -15,6 +15,7 @@ import MentorProfileForm from "@/components/MentorProfileForm";
 import DeleteMentorAccount from "@/components/DeleteMentorAccount";
 import ReviewModal from "@/components/ReviewModal";
 import SessionCard from "@/components/SessionCard";
+import SlotManager from "@/components/SlotManager";
 import Navbar from "@/components/Navbar";
 
 const DashboardPage = () => {
