@@ -207,7 +207,7 @@ const DashboardPage = () => {
           <div className="space-y-3">
             <MentorProfileForm
               userId={user!.id}
-              profile={{ ...profile, avatar_url: avatarUrl }}
+              profile={{ ...profile, avatar_url: avatarUrl, phone: profile.phone }}
               mentorProfile={mentorProfile}
               onProfileUpdate={(url) => setAvatarUrl(url)}
             />
