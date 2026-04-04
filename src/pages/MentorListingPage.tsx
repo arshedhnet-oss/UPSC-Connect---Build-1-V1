@@ -103,8 +103,9 @@ const MentorListingPage = () => {
     }
     const fetchSlots = async () => {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const today = new Date().toISOString().split("T")[0];
-      const nowTime = new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: "Asia/Kolkata" }).slice(0, 5);
+      const istNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      const today = istNow.getFullYear() + "-" + String(istNow.getMonth() + 1).padStart(2, "0") + "-" + String(istNow.getDate()).padStart(2, "0");
+      const nowTime = String(istNow.getHours()).padStart(2, "0") + ":" + String(istNow.getMinutes()).padStart(2, "0");
 
       const { data } = await supabaseUntyped
         .from("slots")
