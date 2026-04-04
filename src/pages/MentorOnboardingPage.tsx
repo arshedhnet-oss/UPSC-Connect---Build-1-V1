@@ -94,11 +94,18 @@ const MentorOnboardingPage = () => {
 
       if (mentorError) throw mentorError;
 
-      // Send notification emails (fire-and-forget, don't block submission)
-      const mentorOnboardingId = crypto.randomUUID();
+      // Send notification emails with the current session token and stable
+      // idempotency keys so each mentor signup only triggers once.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const authHeaders = session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : undefined;
+
       const emailData = {
         mentorName: profile?.name || "New Mentor",
-        mentorEmail: profile?.email || "",
+        mentorEmail: user.email || profile?.email || "",
         mentorPhone: `+91${phoneDigits}`,
         bio,
         pricing: price,
@@ -106,25 +113,37 @@ const MentorOnboardingPage = () => {
         rankYear: rankYear ? parseInt(rankYear) : null,
       };
 
-      // Admin notification
-      supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "admin-mentor-signup",
-          recipientEmail: "admin@upscconnect.in",
-          idempotencyKey: `admin-mentor-signup-${mentorOnboardingId}`,
-          templateData: emailData,
-        },
-      }).catch(console.error);
+      const emailResults = await Promise.allSettled([
+        supabase.functions.invoke("send-transactional-email", {
+          headers: authHeaders,
+          body: {
+            templateName: "admin-mentor-signup",
+            recipientEmail: "admin@upscconnect.in",
+            idempotencyKey: `admin-mentor-signup-${user.id}`,
+            templateData: emailData,
+          },
+        }),
+        supabase.functions.invoke("send-transactional-email", {
+          headers: authHeaders,
+          body: {
+            templateName: "mentor-welcome",
+            recipientEmail: user.email || profile?.email || "",
+            idempotencyKey: `mentor-welcome-${user.id}`,
+            templateData: { mentorName: profile?.name || "Mentor" },
+          },
+        }),
+      ]);
 
-      // Mentor welcome email
-      supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "mentor-welcome",
-          recipientEmail: profile?.email || "",
-          idempotencyKey: `mentor-welcome-${mentorOnboardingId}`,
-          templateData: { mentorName: profile?.name || "Mentor" },
-        },
-      }).catch(console.error);
+      emailResults.forEach((result, index) => {
+        if (result.status === "rejected") {
+          console.error(index === 0 ? "Admin mentor signup email failed" : "Mentor welcome email failed", result.reason);
+          return;
+        }
+
+        if (result.value.error) {
+          console.error(index === 0 ? "Admin mentor signup email failed" : "Mentor welcome email failed", result.value.error);
+        }
+      });
 
       setSubmitted(true);
       toast({ title: "Application submitted!", description: "Your mentor application is pending admin approval." });
