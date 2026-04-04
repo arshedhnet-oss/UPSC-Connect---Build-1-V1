@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabaseUntyped } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,6 +99,38 @@ const MentorOnboardingPage = () => {
         });
 
       if (mentorError) throw mentorError;
+
+      // Send notification emails (fire-and-forget, don't block submission)
+      const mentorOnboardingId = crypto.randomUUID();
+      const emailData = {
+        mentorName: profile?.name || "New Mentor",
+        mentorEmail: profile?.email || "",
+        mentorPhone: `+91${phoneDigits}`,
+        bio,
+        pricing: price,
+        airRank: airRank ? parseInt(airRank) : null,
+        rankYear: rankYear ? parseInt(rankYear) : null,
+      };
+
+      // Admin notification
+      supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "admin-mentor-signup",
+          recipientEmail: "admin@upscconnect.in",
+          idempotencyKey: `admin-mentor-signup-${mentorOnboardingId}`,
+          templateData: emailData,
+        },
+      }).catch(console.error);
+
+      // Mentor welcome email
+      supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "mentor-welcome",
+          recipientEmail: profile?.email || "",
+          idempotencyKey: `mentor-welcome-${mentorOnboardingId}`,
+          templateData: { mentorName: profile?.name || "Mentor" },
+        },
+      }).catch(console.error);
 
       setSubmitted(true);
       toast({ title: "Application submitted!", description: "Your mentor application is pending admin approval." });

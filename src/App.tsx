@@ -24,6 +24,7 @@ import InstituteDashboardPage from "./pages/InstituteDashboardPage";
 import ChatPage from "./pages/ChatPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 import NotFound from "./pages/NotFound";
+import UnsubscribePage from "./pages/UnsubscribePage";
 import NotificationManager from "./components/NotificationManager";
 import EnableNotificationsPrompt from "./components/EnableNotificationsPrompt";
 
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/profile" element={<AdminProfilePage />} />
+            <Route path="/unsubscribe" element={<UnsubscribePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
