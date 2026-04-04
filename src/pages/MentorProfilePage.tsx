@@ -60,15 +60,26 @@ const MentorProfilePage = () => {
         setMentor({ ...mp, profiles: pubProfile || { name: "Mentor", avatar_url: null } });
       }
 
+      const today = new Date().toISOString().split("T")[0];
+      const nowTime = new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: "Asia/Kolkata" }).slice(0, 5);
+
       const { data: sl } = await supabaseUntyped
         .from("slots")
         .select("*")
         .eq("mentor_id", id!)
         .eq("is_booked", false)
         .eq("is_active", true)
-        .gte("date", new Date().toISOString().split("T")[0])
-        .order("date", { ascending: true });
-      if (sl) setSlots(sl as Slot[]);
+        .gte("date", today)
+        .order("date", { ascending: true })
+        .order("start_time", { ascending: true });
+
+      // Frontend safety filter: remove past slots (same-day slots where time has passed)
+      const filtered = (sl || []).filter((s: Slot) => {
+        if (s.date > today) return true;
+        if (s.date === today && s.start_time.slice(0, 5) > nowTime) return true;
+        return false;
+      });
+      setSlots(filtered as Slot[]);
 
       // Check eligible bookings for review (mentee only)
       if (user && authProfile?.role === "mentee") {
@@ -97,6 +108,14 @@ const MentorProfilePage = () => {
     if (!user) { navigate("/login"); return; }
     if (authProfile?.role !== "mentee") {
       toast({ title: "Only mentees can book sessions", variant: "destructive" });
+      return;
+    }
+    // Re-validate slot is still in the future
+    const now = new Date();
+    const slotDateTime = new Date(`${slot.date}T${slot.start_time}`);
+    if (slotDateTime <= now) {
+      toast({ title: "This time slot is no longer available", variant: "destructive" });
+      setSlots(prev => prev.filter(s => s.id !== slot.id));
       return;
     }
     setBooking(slot.id);
@@ -296,7 +315,7 @@ const MentorProfilePage = () => {
           <CardHeader><CardTitle className="font-display">Available Slots</CardTitle></CardHeader>
           <CardContent>
             {slots.length === 0 ? (
-              <p className="text-muted-foreground">No available slots at the moment.</p>
+              <p className="text-muted-foreground">No upcoming slots available.</p>
             ) : (
               <div className="grid sm:grid-cols-2 gap-3">
                 {slots.map(slot => (

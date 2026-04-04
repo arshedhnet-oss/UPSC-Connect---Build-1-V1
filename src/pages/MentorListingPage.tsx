@@ -103,14 +103,23 @@ const MentorListingPage = () => {
     }
     const fetchSlots = async () => {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
+      const today = new Date().toISOString().split("T")[0];
+      const nowTime = new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: "Asia/Kolkata" }).slice(0, 5);
+
       const { data } = await supabaseUntyped
         .from("slots")
-        .select("mentor_id")
+        .select("mentor_id, start_time, date")
         .eq("date", dateStr)
         .eq("is_booked", false)
         .eq("is_active", true);
       if (data) {
-        setMentorsWithSlots(new Set(data.map((s: any) => s.mentor_id)));
+        // Filter out past slots for today
+        const validSlots = data.filter((s: any) => {
+          if (s.date > today) return true;
+          if (s.date === today && s.start_time.slice(0, 5) > nowTime) return true;
+          return false;
+        });
+        setMentorsWithSlots(new Set(validSlots.map((s: any) => s.mentor_id)));
       }
     };
     fetchSlots();
