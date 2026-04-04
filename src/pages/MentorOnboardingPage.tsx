@@ -67,36 +67,30 @@ const MentorOnboardingPage = () => {
     try {
       const finalOptional = optionalSubject === "Others" ? customOptional.trim() || "Others" : optionalSubject;
 
-      // Update profile role and phone
+      // Update profile phone (role is already set by signup trigger)
       const { error: profileError } = await supabaseUntyped
         .from("profiles")
-        .update({ role: "mentor", phone: `+91${phoneDigits}` })
+        .update({ phone: `+91${phoneDigits}` })
         .eq("id", user.id);
 
       if (profileError) throw profileError;
 
-      // Update user_roles
-      const { error: roleError } = await supabaseUntyped
-        .from("user_roles")
-        .update({ role: "mentor" })
-        .eq("user_id", user.id);
+      // Upsert mentor_profiles (the signup trigger may have already created a row)
+      const mentorData = {
+        user_id: user.id,
+        bio: experience ? `${bio}\n\nExperience: ${experience}` : bio,
+        price_per_session: price,
+        optional_subject: finalOptional || null,
+        mains_written: mainsWritten,
+        interviews_appeared: interviewsAppeared,
+        air_rank: airRank ? parseInt(airRank) : null,
+        rank_year: rankYear ? parseInt(rankYear) : null,
+        is_approved: false,
+      };
 
-      if (roleError) throw roleError;
-
-      // Create mentor_profiles entry
       const { error: mentorError } = await supabaseUntyped
         .from("mentor_profiles")
-        .insert({
-          user_id: user.id,
-          bio: experience ? `${bio}\n\nExperience: ${experience}` : bio,
-          price_per_session: price,
-          optional_subject: finalOptional || null,
-          mains_written: mainsWritten,
-          interviews_appeared: interviewsAppeared,
-          air_rank: airRank ? parseInt(airRank) : null,
-          rank_year: rankYear ? parseInt(rankYear) : null,
-          is_approved: false,
-        });
+        .upsert(mentorData, { onConflict: "user_id" });
 
       if (mentorError) throw mentorError;
 
