@@ -560,6 +560,7 @@ export type Database = {
           date: string
           end_time: string
           id: string
+          is_active: boolean
           is_booked: boolean | null
           mentor_id: string
           start_time: string
@@ -569,6 +570,7 @@ export type Database = {
           date: string
           end_time: string
           id?: string
+          is_active?: boolean
           is_booked?: boolean | null
           mentor_id: string
           start_time: string
@@ -578,6 +580,7 @@ export type Database = {
           date?: string
           end_time?: string
           id?: string
+          is_active?: boolean
           is_booked?: boolean | null
           mentor_id?: string
           start_time?: string
