@@ -24,6 +24,7 @@ import InstituteDashboardPage from "./pages/InstituteDashboardPage";
 import ChatPage from "./pages/ChatPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 import NotFound from "./pages/NotFound";
+import UnsubscribePage from "./pages/UnsubscribePage";
 import NotificationManager from "./components/NotificationManager";
 import EnableNotificationsPrompt from "./components/EnableNotificationsPrompt";
 
