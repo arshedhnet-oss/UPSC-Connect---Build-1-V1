@@ -315,7 +315,7 @@ const MentorProfilePage = () => {
           <CardHeader><CardTitle className="font-display">Available Slots</CardTitle></CardHeader>
           <CardContent>
             {slots.length === 0 ? (
-              <p className="text-muted-foreground">No available slots at the moment.</p>
+              <p className="text-muted-foreground">No upcoming slots available.</p>
             ) : (
               <div className="grid sm:grid-cols-2 gap-3">
                 {slots.map(slot => (
