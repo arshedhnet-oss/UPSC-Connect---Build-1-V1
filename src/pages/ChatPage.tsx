@@ -19,6 +19,14 @@ export default function ChatPage() {
   const [selectedConv, setSelectedConv] = useState<any>(null);
   const [initializing, setInitializing] = useState(false);
 
+  // Lock body scroll when chat page is mounted
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
   }, [authLoading, user]);
@@ -153,20 +161,20 @@ export default function ChatPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="flex flex-col h-[100dvh] bg-background overflow-hidden">
       <Navbar />
-      <div className="flex-1 flex overflow-hidden" style={{ height: "calc(100vh - 64px)" }}>
-        {/* Conversation list */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Conversation list sidebar */}
         <div
           className={cn(
-            "w-full md:w-80 border-r border-border bg-card flex flex-col shrink-0",
+            "w-full md:w-80 border-r border-border bg-card flex flex-col shrink-0 min-h-0",
             selectedConv ? "hidden md:flex" : "flex"
           )}
         >
-          <div className="px-4 py-3 border-b border-border">
+          <div className="px-4 py-3 border-b border-border shrink-0">
             <h2 className="font-display font-semibold text-foreground">Messages</h2>
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <ConversationList
               selectedId={selectedConv?.id || null}
               onSelect={(conv) => setSelectedConv(conv)}
@@ -175,7 +183,7 @@ export default function ChatPage() {
         </div>
 
         {/* Chat window */}
-        <div className={cn("flex-1 flex flex-col", !selectedConv ? "hidden md:flex" : "flex")}>
+        <div className={cn("flex-1 flex flex-col min-h-0 min-w-0", !selectedConv ? "hidden md:flex" : "flex")}>
           {selectedConv ? (
             <ChatWindow
               conversationId={selectedConv.id}
