@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseUntyped } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -27,20 +27,57 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// Fire-and-forget welcome email for new mentees — runs once per user
+function sendMenteeWelcomeEmail(session: Session, profile: Profile) {
+  const key = `mentee-welcome-sent-${profile.id}`;
+  if (localStorage.getItem(key)) return;
+  localStorage.setItem(key, "1");
+
+  supabase.functions.invoke("send-transactional-email", {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    body: {
+      templateName: "mentee-welcome",
+      recipientEmail: profile.email,
+      idempotencyKey: `mentee-welcome-${profile.id}`,
+      templateData: { menteeName: profile.name || "there" },
+    },
+  }).catch((err) => console.error("Mentee welcome email failed:", err));
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const welcomeEmailSentRef = useRef<Set<string>>(new Set());
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, currentSession?: Session | null) => {
     const { data } = await supabaseUntyped
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
-    if (data) setProfile(data as Profile);
+    if (data) {
+      const p = data as Profile;
+      setProfile(p);
+
+      // Send welcome email for new mentee users (auth-provider-agnostic)
+      const activeSession = currentSession || session;
+      if (
+        activeSession &&
+        p.role === "mentee" &&
+        !welcomeEmailSentRef.current.has(p.id)
+      ) {
+        // Only send if profile was created in the last 5 minutes
+        const createdAt = new Date(p.created_at || 0).getTime();
+        const fiveMinAgo = Date.now() - 5 * 60 * 1000;
+        if (createdAt > fiveMinAgo) {
+          welcomeEmailSentRef.current.add(p.id);
+          sendMenteeWelcomeEmail(activeSession, p);
+        }
+      }
+    }
   };
 
   const signOut = async () => {
@@ -62,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
+          setTimeout(() => fetchProfile(session.user.id, session), 0);
         } else {
           setProfile(null);
         }
@@ -73,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+      if (session?.user) fetchProfile(session.user.id, session);
       setLoading(false);
     });
 
