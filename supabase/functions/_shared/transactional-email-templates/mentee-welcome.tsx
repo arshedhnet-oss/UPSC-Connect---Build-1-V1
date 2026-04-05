@@ -13,7 +13,7 @@ interface MenteeWelcomeProps {
 const MenteeWelcomeEmail = ({ menteeName = 'there' }: MenteeWelcomeProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Welcome to {SITE_NAME} – Start Your UPSC Preparation with the Right Guidance</Preview>
+    <Preview>Welcome to {SITE_NAME} – Find the Right Guidance for Your UPSC Civil Services Examination Preparation</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>{SITE_NAME}</Heading>
@@ -24,18 +24,18 @@ const MenteeWelcomeEmail = ({ menteeName = 'there' }: MenteeWelcomeProps) => (
         <Text style={text}>Welcome to {SITE_NAME}.</Text>
 
         <Text style={text}>
-          Preparing for the UPSC Civil Services Examination can often feel overwhelming without the right direction.
+          Preparing for the UPSC Civil Services Examination can be challenging without the right guidance.
         </Text>
 
         <Text style={text}>
-          {SITE_NAME} helps you connect directly with experienced mentors, including UPSC toppers and serving officers, for structured and practical guidance.
+          {SITE_NAME} helps you connect directly with experienced mentors, including UPSC toppers and serving officers.
         </Text>
 
-        <Text style={textBold}>To get started, here is what you can do:</Text>
+        <Text style={textBold}>To get started:</Text>
 
         <Section style={checklistBox}>
-          <Text style={checklistItem}>Browse available mentors based on your needs</Text>
-          <Text style={checklistItem}>Review their experience and approach</Text>
+          <Text style={checklistItem}>Browse mentors based on your preparation needs</Text>
+          <Text style={checklistItem}>Review their experience and subjects</Text>
           <Text style={checklistItem}>Book a one-on-one session at a convenient time</Text>
         </Section>
 
@@ -45,12 +45,12 @@ const MenteeWelcomeEmail = ({ menteeName = 'there' }: MenteeWelcomeProps) => (
           </Button>
         </Section>
 
-        <Text style={reinforcement}>
-          Even a single focused session can help you gain clarity and avoid common preparation mistakes.
-        </Text>
-
         <Text style={text}>
           If you are unsure where to begin, you can use the "Talk to a Mentor" option for initial guidance.
+        </Text>
+
+        <Text style={reinforcement}>
+          Even a single focused session can help you gain clarity and avoid common preparation mistakes.
         </Text>
 
         <Hr style={hr} />
@@ -67,7 +67,7 @@ const MenteeWelcomeEmail = ({ menteeName = 'there' }: MenteeWelcomeProps) => (
 
 export const template = {
   component: MenteeWelcomeEmail,
-  subject: 'Welcome to UPSC Connect – Start Your UPSC Civil Services Examination Preparation with the Right Guidance',
+  subject: 'Welcome to UPSC Connect – Find the Right Guidance for Your UPSC Civil Services Examination Preparation',
   displayName: 'Mentee Welcome',
   previewData: { menteeName: 'Priya' },
 } satisfies TemplateEntry
