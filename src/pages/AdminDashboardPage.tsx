@@ -488,7 +488,8 @@ const AdminDashboardPage = () => {
                         </div>
                         {m.bio && <p className="text-sm text-muted-foreground line-clamp-3">{m.bio}</p>}
                         <div className="flex flex-wrap gap-2 text-sm">
-                          {m.price_per_session && <Badge variant="secondary">₹{m.price_per_session}/session</Badge>}
+                          {m.price_per_session && m.mentor_type !== "serving_officer" && <Badge variant="secondary">₹{m.price_per_session}/session</Badge>}
+                          {m.mentor_type === "serving_officer" && <Badge variant="secondary">Serving Officer</Badge>}
                           {m.air_rank && <Badge variant="default">AIR {m.air_rank}{m.rank_year ? ` (${m.rank_year})` : ""}</Badge>}
                           {m.optional_subject && <Badge variant="outline">{m.optional_subject}</Badge>}
                           {m.mains_written > 0 && <Badge variant="outline">Mains: {m.mains_written}x</Badge>}
@@ -535,7 +536,12 @@ const AdminDashboardPage = () => {
                               {m.subjects.map((s: string) => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}
                             </div>
                           )}
-                          <p className="text-sm text-muted-foreground mt-1">₹{m.price_per_session}/session</p>
+                          {m.mentor_type !== "serving_officer" && (
+                            <p className="text-sm text-muted-foreground mt-1">₹{m.price_per_session}/session</p>
+                          )}
+                          {m.mentor_type === "serving_officer" && (
+                            <p className="text-sm text-muted-foreground mt-1">Serving Officer · Free sessions</p>
+                          )}
                         </div>
                         <div className="flex flex-col gap-2">
                           <div className="flex gap-2 flex-wrap">
