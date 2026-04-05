@@ -27,6 +27,7 @@ const MentorOnboardingPage = () => {
   const [step, setStep] = useState(1);
   const [bio, setBio] = useState("");
   const [phone, setPhone] = useState("");
+  const [mentorType, setMentorType] = useState("aspirant");
   const [price, setPrice] = useState(500);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [optionalSubject, setOptionalSubject] = useState("");
@@ -51,7 +52,8 @@ const MentorOnboardingPage = () => {
   const phoneDigits = phone.replace(/\D/g, "");
   const isPhoneValid = phoneDigits.length === 10;
   const isBioValid = bio.trim().length >= 50;
-  const isPriceValid = price >= 99;
+  const isServingOfficer = mentorType === "serving_officer";
+  const isPriceValid = isServingOfficer ? price >= 0 : price >= 99;
 
   const canProceedStep1 = isPhoneValid && isBioValid && isPriceValid;
 
@@ -79,7 +81,8 @@ const MentorOnboardingPage = () => {
       const mentorData = {
         user_id: user.id,
         bio: experience ? `${bio}\n\nExperience: ${experience}` : bio,
-        price_per_session: price,
+        mentor_type: mentorType,
+        price_per_session: isServingOfficer ? 0 : price,
         optional_subject: finalOptional || null,
         mains_written: mainsWritten,
         interviews_appeared: interviewsAppeared,
@@ -259,23 +262,44 @@ const MentorOnboardingPage = () => {
                     </div>
                   </div>
 
-                  {/* Pricing */}
+                  {/* Mentor Type */}
                   <div className="space-y-2">
-                    <Label htmlFor="price" className="flex items-center gap-1.5">
-                      <IndianRupee className="h-3.5 w-3.5" /> Session Price (₹) *
-                    </Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      inputMode="numeric"
-                      value={price}
-                      onChange={e => setPrice(Number(e.target.value))}
-                      min={99}
-                    />
-                    {price < 99 && (
-                      <p className="text-xs text-destructive">Minimum session price is ₹99</p>
-                    )}
+                    <Label>Mentor Type *</Label>
+                    <Select value={mentorType} onValueChange={(val) => {
+                      setMentorType(val);
+                      if (val === "serving_officer") setPrice(0);
+                      else if (price === 0) setPrice(500);
+                    }}>
+                      <SelectTrigger><SelectValue placeholder="Select mentor type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="aspirant">UPSC Aspirant / Qualified</SelectItem>
+                        <SelectItem value="serving_officer">Serving Officer</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  {/* Pricing */}
+                  {!isServingOfficer && (
+                    <div className="space-y-2">
+                      <Label htmlFor="price" className="flex items-center gap-1.5">
+                        <IndianRupee className="h-3.5 w-3.5" /> Session Price (₹) *
+                      </Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        inputMode="numeric"
+                        value={price}
+                        onChange={e => setPrice(Number(e.target.value))}
+                        min={99}
+                      />
+                      {price < 99 && (
+                        <p className="text-xs text-destructive">Minimum session price is ₹99</p>
+                      )}
+                    </div>
+                  )}
+                  {isServingOfficer && (
+                    <p className="text-xs text-muted-foreground">As a serving officer, your sessions will be offered voluntarily at no cost to aspirants.</p>
+                  )}
 
                   <Button
                     type="button"
