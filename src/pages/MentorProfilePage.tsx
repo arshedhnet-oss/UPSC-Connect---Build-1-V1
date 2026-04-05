@@ -269,8 +269,7 @@ const MentorProfilePage = () => {
               {mentor.mentor_type !== "serving_officer" && (
                 <p className="text-lg text-accent font-semibold">₹{mentor.price_per_session}/session</p>
               )}
-              )}
-              {mentor.mentor_type !== "serving_officer" && (
+              {(mentor.total_reviews || 0) > 0 && (
                 <div className="flex items-center gap-1.5">
                   <StarRating rating={Math.round(mentor.average_rating || 0)} size="sm" />
                   <span className="text-sm text-muted-foreground">{mentor.average_rating} ({mentor.total_reviews})</span>
