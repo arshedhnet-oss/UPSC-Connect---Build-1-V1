@@ -113,12 +113,31 @@ const AdminDashboardPage = () => {
       .from("mentor_profiles")
       .update({ is_approved: true })
       .eq("user_id", userId);
-    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
-    else {
+    if (error) {
+      toast({ title: "Failed", description: error.message, variant: "destructive" });
+    } else {
       const approved = pendingMentors.find(m => m.user_id === userId);
       setPendingMentors(prev => prev.filter(m => m.user_id !== userId));
       if (approved) setApprovedMentors(prev => [...prev, { ...approved, is_approved: true }]);
       toast({ title: "Mentor approved!" });
+
+      // Send approval notification email to the mentor
+      const mentorProfile = approved?.profiles;
+      if (mentorProfile?.email) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const authHeaders = session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined;
+        supabase.functions.invoke("send-transactional-email", {
+          headers: authHeaders,
+          body: {
+            templateName: "mentor-approved",
+            recipientEmail: mentorProfile.email,
+            idempotencyKey: `mentor-approved-${userId}`,
+            templateData: { mentorName: mentorProfile.name || "Mentor" },
+          },
+        });
+      }
     }
   };
 
