@@ -10,8 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { lovable } from "@/integrations/lovable/index";
 import { Separator } from "@/components/ui/separator";
 import Navbar from "@/components/Navbar";
-import { Separator } from "@/components/ui/separator";
-import Navbar from "@/components/Navbar";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
