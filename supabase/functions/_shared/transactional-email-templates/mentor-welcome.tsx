@@ -13,7 +13,7 @@ interface MentorWelcomeProps {
 const MentorWelcomeEmail = ({ mentorName = 'Mentor' }: MentorWelcomeProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Welcome to {SITE_NAME} – Complete Your Profile to Start Receiving Bookings</Preview>
+    <Preview>Welcome to {SITE_NAME} – Let's Get Your Profile Ready</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>{SITE_NAME}</Heading>
@@ -22,26 +22,26 @@ const MentorWelcomeEmail = ({ mentorName = 'Mentor' }: MentorWelcomeProps) => (
         <Text style={text}>Hello {mentorName},</Text>
 
         <Text style={text}>
-          Welcome to {SITE_NAME}. We are glad to have you onboard as a mentor.
+          Welcome to {SITE_NAME}. We're really glad to have you with us.
         </Text>
 
         <Text style={text}>
-          You will soon be able to connect with UPSC aspirants seeking structured guidance based on your experience.
+          You are now part of a growing community of mentors helping UPSC aspirants navigate their preparation with the right guidance.
         </Text>
 
         <Text style={textBold}>
-          To start receiving bookings, please complete your profile by ensuring the following:
+          To start receiving bookings, let's get your profile ready:
         </Text>
 
         <Section style={checklistBox}>
-          <Text style={checklistItem}>Add a clear display picture</Text>
-          <Text style={checklistItem}>Write a short and focused bio</Text>
+          <Text style={checklistItem}>Add a clear and professional display picture</Text>
+          <Text style={checklistItem}>Write a concise and structured bio</Text>
           <Text style={checklistItem}>Set your session pricing</Text>
           <Text style={checklistItem}>Add your available time slots</Text>
         </Section>
 
         <Text style={text}>
-          Your profile will be active within 15 minutes. You may contact {SITE_NAME} (admin@upscconnect.in) for faster approval.
+          Once completed, your profile will be reviewed and activated shortly (usually within 15 minutes). If you need faster approval, feel free to reach out at admin@upscconnect.in
         </Text>
 
         <Section style={buttonSection}>
@@ -50,14 +50,25 @@ const MentorWelcomeEmail = ({ mentorName = 'Mentor' }: MentorWelcomeProps) => (
           </Button>
         </Section>
 
+        <Text style={textBold}>
+          Pro Tips – Mentors who receive more bookings usually:
+        </Text>
+
+        <Section style={tipsBox}>
+          <Text style={checklistItem}>Keep their bio clear, specific, and outcome-focused</Text>
+          <Text style={checklistItem}>Add multiple time slots for better availability</Text>
+          <Text style={checklistItem}>Use a professional and approachable profile photo</Text>
+          <Text style={checklistItem}>Respond quickly to mentee queries</Text>
+        </Section>
+
         <Text style={reinforcement}>
-          Mentors with complete profiles tend to receive bookings faster and more consistently.
+          A well-structured profile improves your visibility and helps mentees choose you with confidence.
         </Text>
 
         <Hr style={hr} />
 
         <Text style={text}>
-          Thank you for being part of {SITE_NAME}.
+          We're excited to have you onboard and look forward to the impact you'll create.
         </Text>
 
         <Text style={signature}>
@@ -70,7 +81,7 @@ const MentorWelcomeEmail = ({ mentorName = 'Mentor' }: MentorWelcomeProps) => (
 
 export const template = {
   component: MentorWelcomeEmail,
-  subject: 'Welcome to UPSC Connect – Complete Your Profile to Start Receiving Bookings',
+  subject: "Welcome to UPSC Connect – Let's Get Your Profile Ready",
   displayName: 'Mentor Welcome',
   previewData: { mentorName: 'Rahul Sharma' },
 } satisfies TemplateEntry
@@ -82,6 +93,7 @@ const hr = { borderColor: '#e5e7eb', margin: '20px 0' }
 const text = { fontSize: '14px', color: '#374151', lineHeight: '1.6', margin: '0 0 16px' }
 const textBold = { fontSize: '14px', color: '#374151', lineHeight: '1.6', margin: '0 0 12px', fontWeight: '600' as const }
 const checklistBox = { backgroundColor: '#f0f7ff', borderRadius: '8px', padding: '16px 20px', margin: '0 0 20px', borderLeft: '4px solid #1a3a7a' }
+const tipsBox = { backgroundColor: '#fffbeb', borderRadius: '8px', padding: '16px 20px', margin: '0 0 20px', borderLeft: '4px solid #d97706' }
 const checklistItem = { fontSize: '14px', color: '#374151', margin: '0 0 8px', paddingLeft: '8px' }
 const buttonSection = { textAlign: 'center' as const, margin: '24px 0' }
 const button = { backgroundColor: '#1a3a7a', color: '#ffffff', fontSize: '14px', fontWeight: '600' as const, padding: '12px 28px', borderRadius: '6px', textDecoration: 'none' }
