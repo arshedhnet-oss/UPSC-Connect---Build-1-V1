@@ -246,7 +246,7 @@ Deno.serve(async (req) => {
         from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "Your Mentorship Session is Confirmed — UPSC Connect",
         html: menteeHtml,
-        text: `Your session is confirmed!\n\nMentor: ${mentorProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}\nAmount Paid: ₹${transaction.amount}\n\nPlease join 5 minutes early.`,
+        text: `Your session is confirmed!\n\nMentor: ${mentorProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nMeeting Link: ${meetingLink}\nPasscode: ${passcode}${sessionAmount > 0 ? `\nAmount Paid: ₹${sessionAmount}` : ``}\n\nPlease join 5 minutes early.`,
         message_id: menteeMessageId,
         idempotency_key: menteeMessageId,
         label: "booking-mentee",
@@ -297,7 +297,7 @@ Deno.serve(async (req) => {
     const adminHtml = buildAdminEmail(
       mentorProfile.name, mentorProfile.email, mentorProfile.phone,
       menteeProfile.name, menteeProfile.email, menteeProfile.phone,
-      sessionDate, sessionTime, transaction.amount, transaction.razorpay_payment_id || "N/A", booking_id, meetingLink
+      sessionDate, sessionTime, sessionAmount, transaction?.razorpay_payment_id || "N/A", booking_id, meetingLink
     );
     await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
@@ -306,7 +306,7 @@ Deno.serve(async (req) => {
         from: "UPSC Connect <noreply@notify.www.upscconnect.in>",
         subject: "New Booking Confirmed – UPSC Connect",
         html: adminHtml,
-        text: `New booking confirmed!\n\nMentor: ${mentorProfile.name}\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nAmount: ₹${transaction.amount}\nPayment ID: ${transaction.razorpay_payment_id || "N/A"}\nBooking ID: ${booking_id}\nMeeting: ${meetingLink}`,
+        text: `New booking confirmed!\n\nMentor: ${mentorProfile.name}\nMentee: ${menteeProfile.name}\nDate: ${sessionDate}\nTime: ${sessionTime}\nAmount: ₹${sessionAmount}\nPayment ID: ${transaction?.razorpay_payment_id || "N/A"}\nBooking ID: ${booking_id}\nMeeting: ${meetingLink}`,
         message_id: adminMessageId,
         idempotency_key: adminMessageId,
         label: "booking-admin",
