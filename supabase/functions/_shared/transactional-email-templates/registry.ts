@@ -12,9 +12,11 @@ export interface TemplateEntry {
 import { template as adminMentorSignup } from './admin-mentor-signup.tsx'
 import { template as mentorWelcome } from './mentor-welcome.tsx'
 import { template as mentorApproved } from './mentor-approved.tsx'
+import { template as menteeWelcome } from './mentee-welcome.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'admin-mentor-signup': adminMentorSignup,
   'mentor-welcome': mentorWelcome,
   'mentor-approved': mentorApproved,
+  'mentee-welcome': menteeWelcome,
 }
