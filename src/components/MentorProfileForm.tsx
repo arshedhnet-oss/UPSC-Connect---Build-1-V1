@@ -79,6 +79,11 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
 
     const isServingOfficer = mentorType === "serving_officer";
 
+    if (!isServingOfficer && price < 99) {
+      toast({ title: "Minimum session price is ₹99", variant: "destructive" });
+      return;
+    }
+
     const { error } = await supabaseUntyped
       .from("mentor_profiles")
       .update({
