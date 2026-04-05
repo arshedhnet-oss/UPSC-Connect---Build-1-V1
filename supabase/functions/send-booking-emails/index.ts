@@ -395,7 +395,7 @@ function buildMenteeEmail(mentorName: string, date: string, time: string, meetin
       ${detailRow("Mentor", mentorName)}
       ${detailRow("Date", date)}
       ${detailRow("Time", time)}
-      ${detailRow("Amount Paid", `&#8377;${amount}`)}
+      ${amount > 0 ? detailRow("Amount Paid", `&#8377;${amount}`) : detailRow("Session", "Offered voluntarily")}
     </table>
     <hr class="divider" />
     <p class="section-title">Meeting Details</p>
