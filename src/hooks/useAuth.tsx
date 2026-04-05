@@ -13,6 +13,7 @@ interface Profile {
   email: string;
   role: "mentor" | "mentee" | "admin" | "institute_admin";
   avatar_url: string | null;
+  created_at: string | null;
 }
 
 interface AuthContextType {
