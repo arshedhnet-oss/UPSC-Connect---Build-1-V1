@@ -222,7 +222,7 @@ const BookingConfirmationPage = () => {
           </Card>
 
           {/* Payment Confirmation */}
-          {booking.transaction && (
+          {booking.transaction && booking.transaction.amount > 0 && (
             <Card>
               <CardContent className="p-5 space-y-3">
                 <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
@@ -244,6 +244,13 @@ const BookingConfirmationPage = () => {
                     </div>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+          )}
+          {booking.transaction === null && (
+            <Card className="border-muted">
+              <CardContent className="p-4 text-center">
+                <p className="text-sm text-muted-foreground">This session is offered voluntarily</p>
               </CardContent>
             </Card>
           )}
