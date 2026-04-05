@@ -208,6 +208,7 @@ export type Database = {
           languages: string[] | null
           mains_written: number | null
           mains_years: string[] | null
+          mentor_type: string
           optional_subject: string | null
           price_per_session: number | null
           rank_year: number | null
@@ -231,6 +232,7 @@ export type Database = {
           languages?: string[] | null
           mains_written?: number | null
           mains_years?: string[] | null
+          mentor_type?: string
           optional_subject?: string | null
           price_per_session?: number | null
           rank_year?: number | null
@@ -254,6 +256,7 @@ export type Database = {
           languages?: string[] | null
           mains_written?: number | null
           mains_years?: string[] | null
+          mentor_type?: string
           optional_subject?: string | null
           price_per_session?: number | null
           rank_year?: number | null
