@@ -35,6 +35,7 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
   const [bio, setBio] = useState(mentorProfile.bio || "");
   const [subjects, setSubjects] = useState((mentorProfile.subjects || []).join(", "));
   const [price, setPrice] = useState(mentorProfile.price_per_session || 500);
+  const [mentorType, setMentorType] = useState(mentorProfile.mentor_type || "aspirant");
   const [languages, setLanguages] = useState<string[]>(mentorProfile.languages || []);
   const [langInput, setLangInput] = useState("");
   const [optionalSubject, setOptionalSubject] = useState(mentorProfile.optional_subject || "");
@@ -76,12 +77,15 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
       return;
     }
 
+    const isServingOfficer = mentorType === "serving_officer";
+
     const { error } = await supabaseUntyped
       .from("mentor_profiles")
       .update({
         bio,
         subjects: subjectArr,
-        price_per_session: price,
+        mentor_type: mentorType,
+        price_per_session: isServingOfficer ? 0 : price,
         languages,
         optional_subject: finalOptional || null,
         mains_written: mainsWritten,
@@ -197,9 +201,31 @@ export default function MentorProfileForm({ userId, profile, mentorProfile, onPr
         </div>
 
         <div className="space-y-2">
-          <Label>Price per session (₹)</Label>
-          <Input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} min={0} />
+          <Label>Mentor Type</Label>
+          <Select value={mentorType} onValueChange={(val) => {
+            setMentorType(val);
+            if (val === "serving_officer") setPrice(0);
+            else if (price === 0) setPrice(500);
+          }}>
+            <SelectTrigger><SelectValue placeholder="Select mentor type" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="aspirant">UPSC Aspirant / Qualified</SelectItem>
+              <SelectItem value="serving_officer">Serving Officer</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+
+        {mentorType !== "serving_officer" ? (
+          <div className="space-y-2">
+            <Label>Price per session (₹)</Label>
+            <Input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} min={99} />
+            {price < 99 && (
+              <p className="text-xs text-destructive">Minimum session price is ₹99</p>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">As a serving officer, your sessions are offered voluntarily at no cost.</p>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">

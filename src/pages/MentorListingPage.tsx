@@ -30,6 +30,7 @@ interface MentorListing {
   display_priority: number;
   average_rating: number | null;
   total_reviews: number | null;
+  mentor_type: string;
   profile: { name: string; avatar_url: string | null };
 }
 
@@ -49,7 +50,7 @@ const MentorListingPage = () => {
     const fetchMentors = async () => {
       let query = supabaseUntyped
         .from("mentor_profiles")
-        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, featured_tag, air_rank, rank_year, display_priority, average_rating, total_reviews")
+        .select("user_id, bio, subjects, price_per_session, languages, optional_subject, is_featured, featured_tag, air_rank, rank_year, display_priority, average_rating, total_reviews, mentor_type")
         .eq("is_approved", true)
         .order("display_priority", { ascending: false });
 
@@ -83,6 +84,7 @@ const MentorListingPage = () => {
           display_priority: m.display_priority || 0,
           average_rating: m.average_rating || null,
           total_reviews: m.total_reviews || null,
+          mentor_type: m.mentor_type || "aspirant",
           profile: {
             name: profileMap.get(m.user_id)?.name || "Mentor",
             avatar_url: profileMap.get(m.user_id)?.avatar_url,
@@ -270,7 +272,9 @@ const MentorListingPage = () => {
                     </Avatar>
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <h3 className="font-display font-semibold text-card-foreground truncate">{m.profile.name}</h3>
-                      <p className="text-sm text-muted-foreground">₹{m.price_per_session}/session</p>
+                      {m.mentor_type !== "serving_officer" && (
+                        <p className="text-sm text-muted-foreground">₹{m.price_per_session}/session</p>
+                      )}
                       {m.average_rating != null && m.average_rating > 0 && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
