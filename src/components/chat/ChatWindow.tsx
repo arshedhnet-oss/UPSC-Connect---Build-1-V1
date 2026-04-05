@@ -4,7 +4,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAutoResponse } from "@/hooks/useAutoResponse";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Send, ArrowLeft } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -40,9 +39,8 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const sentMessageCountRef = useRef(0);
 
   const isMentee = profile?.role === "mentee";
@@ -72,7 +70,6 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
       .order("created_at", { ascending: true });
     if (data) {
       setMessages(data);
-      // Use instant scroll on initial load
       requestAnimationFrame(() => {
         bottomRef.current?.scrollIntoView({ behavior: "instant" });
       });
@@ -112,7 +109,6 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
             return [...prev, payload.new as Message];
           });
           scrollToBottom();
-          // If mentor replied, cancel any pending auto-response
           if (payload.new.sender_id === otherUserId) {
             cancelAutoResponse();
           }
@@ -129,7 +125,14 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
     return () => { supabaseUntyped.removeChannel(channel); };
   }, [conversationId, user, scrollToBottom]);
 
-  // Scroll to bottom when keyboard opens (input focused)
+  // Auto-resize textarea
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNewMessage(e.target.value);
+    const el = e.target;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+  };
+
   const handleInputFocus = () => {
     setTimeout(() => {
       scrollToBottom();
@@ -148,8 +151,10 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
     });
     if (!error) {
       setNewMessage("");
+      if (inputRef.current) {
+        inputRef.current.style.height = "auto";
+      }
       sentMessageCountRef.current += 1;
-      // Trigger auto-response on first message from mentee
       if (isMentee && sentMessageCountRef.current === 1) {
         triggerAutoResponse();
       }
@@ -181,29 +186,31 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
     <div className="flex flex-col h-full min-h-0">
       {/* Header */}
       {!hideHeader && (
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shrink-0">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shrink-0 z-10">
           {onBack && (
             <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 md:hidden h-11 w-11">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <Avatar className="h-9 w-9">
+          <Avatar className="h-9 w-9 shrink-0">
             <AvatarImage src={otherUser.avatar_url || undefined} />
             <AvatarFallback className="bg-primary/10 text-primary text-sm">
               {otherUser.name?.charAt(0)?.toUpperCase() || "?"}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <p className="font-medium text-sm text-foreground">{otherUser.name}</p>
+          <div className="min-w-0">
+            <p className="font-medium text-sm text-foreground truncate">{otherUser.name}</p>
           </div>
         </div>
       )}
 
       {/* Messages */}
       <div
-        ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/30 min-h-0"
-        style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", touchAction: "pan-y" }}
+        style={{
+          WebkitOverflowScrolling: "touch",
+          overscrollBehavior: "contain",
+        }}
       >
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
@@ -216,7 +223,7 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
             <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
               <div
                 className={cn(
-                  "max-w-[75%] rounded-2xl px-4 py-2 text-sm break-words",
+                  "max-w-[75%] rounded-2xl px-4 py-2 text-sm",
                   isMine
                     ? "bg-primary text-primary-foreground rounded-br-md"
                     : "bg-card text-card-foreground border border-border rounded-bl-md"
@@ -261,22 +268,25 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
             </div>
           </div>
         )}
+        <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
+      {/* Input bar - always visible at bottom */}
       <div
-        className="flex items-center gap-2 p-3 border-t border-border bg-card shrink-0"
+        className="flex items-end gap-2 p-3 border-t border-border bg-card shrink-0 z-50"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
       >
-        <Input
+        <textarea
           ref={inputRef}
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={handleInputFocus}
           placeholder="Type a message..."
-          className="flex-1 h-11"
+          rows={1}
           disabled={sending}
+          className="flex-1 min-h-[44px] max-h-[120px] resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          style={{ WebkitUserSelect: "text", userSelect: "text" }}
         />
         <Button
           size="icon"
