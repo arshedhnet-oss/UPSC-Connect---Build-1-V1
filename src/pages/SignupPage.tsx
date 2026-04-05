@@ -27,8 +27,27 @@ const SignupPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signUp(email, password, { name, phone, role: "mentee" });
+      const result = await signUp(email, password, { name, phone, role: "mentee" });
       toast({ title: "Account created!", description: "Welcome to UPSC Connect." });
+
+      // Send mentee welcome email (fire-and-forget)
+      const userId = result?.user?.id;
+      if (userId) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const authHeaders = session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined;
+        supabase.functions.invoke("send-transactional-email", {
+          headers: authHeaders,
+          body: {
+            templateName: "mentee-welcome",
+            recipientEmail: email,
+            idempotencyKey: `mentee-welcome-${userId}`,
+            templateData: { menteeName: name || "there" },
+          },
+        });
+      }
+
       navigate("/role-selection");
     } catch (err: unknown) {
       toast({ title: "Signup failed", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
