@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,25 @@ const SignupPage = () => {
     try {
       await signUp(email, password, { name, phone, role: "mentee" });
       toast({ title: "Account created!", description: "Welcome to UPSC Connect." });
+
+      // Send mentee welcome email (fire-and-forget)
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (userId) {
+        const authHeaders = session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined;
+        supabase.functions.invoke("send-transactional-email", {
+          headers: authHeaders,
+          body: {
+            templateName: "mentee-welcome",
+            recipientEmail: email,
+            idempotencyKey: `mentee-welcome-${userId}`,
+            templateData: { menteeName: name || "there" },
+          },
+        });
+      }
+
       navigate("/role-selection");
     } catch (err: unknown) {
       toast({ title: "Signup failed", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
