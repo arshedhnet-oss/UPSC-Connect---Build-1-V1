@@ -28,13 +28,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Fire-and-forget welcome email for new mentees — runs once per user
-function sendMenteeWelcomeEmail(session: Session, profile: Profile) {
-  const key = `mentee-welcome-sent-${profile.id}`;
-  if (localStorage.getItem(key)) return;
-  localStorage.setItem(key, "1");
+const getMenteeWelcomeStorageKey = (userId: string) => `mentee-welcome-sent-${userId}`;
 
-  supabase.functions.invoke("send-transactional-email", {
+async function sendMenteeWelcomeEmail(session: Session, profile: Profile) {
+  if (!profile.email) return false;
+
+  const key = getMenteeWelcomeStorageKey(profile.id);
+  if (localStorage.getItem(key)) return true;
+
+  const { error } = await supabase.functions.invoke("send-transactional-email", {
     headers: { Authorization: `Bearer ${session.access_token}` },
     body: {
       templateName: "mentee-welcome",
@@ -42,7 +44,15 @@ function sendMenteeWelcomeEmail(session: Session, profile: Profile) {
       idempotencyKey: `mentee-welcome-${profile.id}`,
       templateData: { menteeName: profile.name || "there" },
     },
-  }).catch((err) => console.error("Mentee welcome email failed:", err));
+  });
+
+  if (error) {
+    console.error("Mentee welcome email failed:", error);
+    return false;
+  }
+
+  localStorage.setItem(key, "1");
+  return true;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -51,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const welcomeEmailSentRef = useRef<Set<string>>(new Set());
+  const welcomeEmailInFlightRef = useRef<Set<string>>(new Set());
 
   const fetchProfile = async (userId: string, currentSession?: Session | null) => {
     const { data } = await supabaseUntyped
@@ -65,18 +75,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Send welcome email for new mentee users (auth-provider-agnostic)
       const activeSession = currentSession || session;
+      const welcomeEmailStorageKey = getMenteeWelcomeStorageKey(p.id);
       if (
         activeSession &&
         p.role === "mentee" &&
-        !welcomeEmailSentRef.current.has(p.id)
+        !localStorage.getItem(welcomeEmailStorageKey) &&
+        !welcomeEmailInFlightRef.current.has(p.id)
       ) {
-        // Only send if profile was created in the last 5 minutes
-        const createdAt = new Date(p.created_at || 0).getTime();
-        const fiveMinAgo = Date.now() - 5 * 60 * 1000;
-        if (createdAt > fiveMinAgo) {
-          welcomeEmailSentRef.current.add(p.id);
-          sendMenteeWelcomeEmail(activeSession, p);
-        }
+        welcomeEmailInFlightRef.current.add(p.id);
+        void sendMenteeWelcomeEmail(activeSession, p).finally(() => {
+          welcomeEmailInFlightRef.current.delete(p.id);
+        });
       }
     }
   };
