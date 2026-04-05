@@ -269,7 +269,8 @@ const MentorProfilePage = () => {
               {mentor.mentor_type !== "serving_officer" && (
                 <p className="text-lg text-accent font-semibold">₹{mentor.price_per_session}/session</p>
               )}
-              {(mentor.total_reviews || 0) > 0 && (
+              )}
+              {mentor.mentor_type !== "serving_officer" && (
                 <div className="flex items-center gap-1.5">
                   <StarRating rating={Math.round(mentor.average_rating || 0)} size="sm" />
                   <span className="text-sm text-muted-foreground">{mentor.average_rating} ({mentor.total_reviews})</span>
@@ -338,7 +339,12 @@ const MentorProfilePage = () => {
         )}
 
         <Card>
-          <CardHeader><CardTitle className="font-display">Available Slots</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="font-display">Available Slots</CardTitle>
+            {mentor.mentor_type === "serving_officer" && (
+              <p className="text-xs text-muted-foreground mt-1">This session is offered voluntarily</p>
+            )}
+          </CardHeader>
           <CardContent>
             {slots.length === 0 ? (
               <p className="text-muted-foreground">No upcoming slots available.</p>
