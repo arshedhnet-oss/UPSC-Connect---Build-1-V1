@@ -574,6 +574,28 @@ const AdminDashboardPage = () => {
                               {m.is_default_chat_mentor ? "Default Chat Mentor" : "Set as Chat Mentor"}
                             </Button>
                           </div>
+                          {/* Serving Officer Toggle */}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant={m.mentor_type === "serving_officer" ? "default" : "outline"}
+                              className="h-7 text-xs"
+                              onClick={async () => {
+                                const newType = m.mentor_type === "serving_officer" ? "aspirant" : "serving_officer";
+                                const updates: any = { mentor_type: newType };
+                                if (newType === "serving_officer") {
+                                  updates.price_per_session = 0;
+                                } else {
+                                  updates.price_per_session = 500;
+                                }
+                                await supabaseUntyped.from("mentor_profiles").update(updates).eq("user_id", m.user_id);
+                                setApprovedMentors(prev => prev.map(mt => mt.user_id === m.user_id ? { ...mt, ...updates } : mt));
+                                toast({ title: newType === "serving_officer" ? "Marked as Serving Officer (price set to ₹0)" : "Removed Serving Officer tag (price reset to ₹500)" });
+                              }}
+                            >
+                              {m.mentor_type === "serving_officer" ? "Serving Officer ✓" : "Set as Serving Officer"}
+                            </Button>
+                          </div>
                           {/* Priority Control */}
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs text-muted-foreground whitespace-nowrap">Priority:</span>
