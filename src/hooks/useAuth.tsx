@@ -29,6 +29,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const getMenteeWelcomeStorageKey = (userId: string) => `mentee-welcome-sent-${userId}`;
+const getAdminMenteeNotifKey = (userId: string) => `admin-mentee-notif-${userId}`;
 
 async function sendMenteeWelcomeEmail(session: Session, profile: Profile) {
   if (!profile.email) return false;
@@ -48,6 +49,36 @@ async function sendMenteeWelcomeEmail(session: Session, profile: Profile) {
 
   if (error) {
     console.error("Mentee welcome email failed:", error);
+    return false;
+  }
+
+  localStorage.setItem(key, "1");
+  return true;
+}
+
+async function sendAdminMenteeSignupEmail(session: Session, profile: Profile) {
+  if (!profile.email) return false;
+
+  const key = getAdminMenteeNotifKey(profile.id);
+  if (localStorage.getItem(key)) return true;
+
+  const { error } = await supabase.functions.invoke("send-transactional-email", {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    body: {
+      templateName: "admin-mentee-signup",
+      recipientEmail: "admin@upscconnect.in",
+      idempotencyKey: `admin-mentee-signup-${profile.id}`,
+      templateData: {
+        menteeName: profile.name || "New User",
+        menteeEmail: profile.email,
+        menteePhone: profile.phone || "",
+        signupTime: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+      },
+    },
+  });
+
+  if (error) {
+    console.error("Admin mentee signup email failed:", error);
     return false;
   }
 
