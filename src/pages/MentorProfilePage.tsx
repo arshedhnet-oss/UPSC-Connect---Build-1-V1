@@ -128,77 +128,100 @@ const MentorProfilePage = () => {
         .single();
       if (bookingErr) throw bookingErr;
 
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const session = (await supabaseUntyped.auth.getSession()).data.session;
-      const orderRes = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/create-razorpay-order`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({
-            amount: mentor.price_per_session,
-            booking_id: bookingData.id,
-          }),
-        }
-      );
-      const orderData = await orderRes.json();
-      if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
+      const isServingOfficer = mentor.mentor_type === "serving_officer";
 
-      const p = mentor.profiles;
-      const options = {
-        key: orderData.key_id,
-        amount: mentor.price_per_session * 100,
-        currency: "INR",
-        name: "UPSC Connect",
-        description: `Session with ${p?.name} on ${format(new Date(slot.date), "MMM d, yyyy")}`,
-        order_id: orderData.order_id,
-        handler: async (_response: any) => {
-          try {
-            // Call server function to confirm booking, create meeting, and send emails
-            // (uses service role key to bypass RLS)
-            const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-            const sess = (await supabaseUntyped.auth.getSession()).data.session;
-            const res = await fetch(
-              `https://${projectId}.supabase.co/functions/v1/send-booking-emails`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${sess?.access_token}`,
-                },
-                body: JSON.stringify({ booking_id: bookingData.id }),
-              }
-            );
-            const result = await res.json();
-            if (!res.ok) throw new Error(result.error || "Failed to confirm booking");
-
-            setSlots(prev => prev.filter(s => s.id !== slot.id));
-            navigate(`/booking-confirmed/${bookingData.id}`, { replace: true });
-          } catch {
-            toast({ title: "Payment recorded but booking update failed", description: "Please contact support.", variant: "destructive" });
+      if (isServingOfficer) {
+        // Free session — skip payment, directly confirm
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const sess = (await supabaseUntyped.auth.getSession()).data.session;
+        const res = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/send-booking-emails`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sess?.access_token}`,
+            },
+            body: JSON.stringify({ booking_id: bookingData.id, is_free: true }),
           }
-        },
-        modal: {
-          ondismiss: async () => {
-            await supabaseUntyped
-              .from("bookings")
-              .update({ status: "cancelled" })
-              .eq("id", bookingData.id);
-            toast({ title: "Payment cancelled", variant: "destructive" });
-          },
-        },
-        prefill: {
-          email: authProfile?.email || user.email,
-          contact: authProfile?.phone || "",
-        },
-        theme: { color: "#1a1a2e" },
-      };
+        );
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "Failed to confirm booking");
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+        setSlots(prev => prev.filter(s => s.id !== slot.id));
+        navigate(`/booking-confirmed/${bookingData.id}`, { replace: true });
+      } else {
+        // Paid session — use Razorpay
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const session = (await supabaseUntyped.auth.getSession()).data.session;
+        const orderRes = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/create-razorpay-order`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session?.access_token}`,
+            },
+            body: JSON.stringify({
+              amount: mentor.price_per_session,
+              booking_id: bookingData.id,
+            }),
+          }
+        );
+        const orderData = await orderRes.json();
+        if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
+
+        const p = mentor.profiles;
+        const options = {
+          key: orderData.key_id,
+          amount: mentor.price_per_session * 100,
+          currency: "INR",
+          name: "UPSC Connect",
+          description: `Session with ${p?.name} on ${format(new Date(slot.date), "MMM d, yyyy")}`,
+          order_id: orderData.order_id,
+          handler: async (_response: any) => {
+            try {
+              const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+              const sess = (await supabaseUntyped.auth.getSession()).data.session;
+              const res = await fetch(
+                `https://${projectId}.supabase.co/functions/v1/send-booking-emails`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${sess?.access_token}`,
+                  },
+                  body: JSON.stringify({ booking_id: bookingData.id }),
+                }
+              );
+              const result = await res.json();
+              if (!res.ok) throw new Error(result.error || "Failed to confirm booking");
+
+              setSlots(prev => prev.filter(s => s.id !== slot.id));
+              navigate(`/booking-confirmed/${bookingData.id}`, { replace: true });
+            } catch {
+              toast({ title: "Payment recorded but booking update failed", description: "Please contact support.", variant: "destructive" });
+            }
+          },
+          modal: {
+            ondismiss: async () => {
+              await supabaseUntyped
+                .from("bookings")
+                .update({ status: "cancelled" })
+                .eq("id", bookingData.id);
+              toast({ title: "Payment cancelled", variant: "destructive" });
+            },
+          },
+          prefill: {
+            email: authProfile?.email || user.email,
+            contact: authProfile?.phone || "",
+          },
+          theme: { color: "#1a1a2e" },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      }
     } catch (err: unknown) {
       toast({ title: "Booking failed", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
     } finally {
@@ -243,7 +266,9 @@ const MentorProfilePage = () => {
 
             {/* Price + Rating */}
             <div className="flex items-center justify-center gap-2 flex-wrap">
-              <p className="text-lg text-accent font-semibold">₹{mentor.price_per_session}/session</p>
+              {mentor.mentor_type !== "serving_officer" && (
+                <p className="text-lg text-accent font-semibold">₹{mentor.price_per_session}/session</p>
+              )}
               {(mentor.total_reviews || 0) > 0 && (
                 <div className="flex items-center gap-1.5">
                   <StarRating rating={Math.round(mentor.average_rating || 0)} size="sm" />
