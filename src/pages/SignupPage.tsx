@@ -25,13 +25,13 @@ const SignupPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const result = await signUp(email, password, { name, phone, role: "mentee" });
+      await signUp(email, password, { name, phone, role: "mentee" });
       toast({ title: "Account created!", description: "Welcome to UPSC Connect." });
 
       // Send mentee welcome email (fire-and-forget)
-      const userId = result?.user?.id;
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
       if (userId) {
-        const { data: { session } } = await supabase.auth.getSession();
         const authHeaders = session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }
           : undefined;
