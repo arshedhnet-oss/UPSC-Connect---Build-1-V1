@@ -86,13 +86,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { booking_id } = await req.json();
+    const { booking_id, is_free } = await req.json();
     if (!booking_id) {
       return new Response(JSON.stringify({ error: "booking_id is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const isFreeSession = is_free === true;
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
@@ -133,28 +134,32 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find the transaction (any status — frontend confirms payment via Razorpay SDK)
-    const { data: transaction } = await supabase
-      .from("transactions")
-      .select("id, amount, razorpay_payment_id, razorpay_order_id, status")
-      .eq("booking_id", booking_id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    if (!transaction) {
-      return new Response(JSON.stringify({ error: "Transaction not found" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Mark transaction as success if still pending (payment was confirmed client-side via Razorpay)
-    if (transaction.status !== "success") {
-      await supabase
+    // Find the transaction (skip for free sessions)
+    let transaction: any = null;
+    if (!isFreeSession) {
+      const { data: txData } = await supabase
         .from("transactions")
-        .update({ status: "success" })
-        .eq("id", transaction.id);
+        .select("id, amount, razorpay_payment_id, razorpay_order_id, status")
+        .eq("booking_id", booking_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!txData) {
+        return new Response(JSON.stringify({ error: "Transaction not found" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      transaction = txData;
+
+      // Mark transaction as success if still pending
+      if (transaction.status !== "success") {
+        await supabase
+          .from("transactions")
+          .update({ status: "success" })
+          .eq("id", transaction.id);
+      }
     }
 
     // Confirm booking and mark slot as booked (using service role, bypasses RLS)
