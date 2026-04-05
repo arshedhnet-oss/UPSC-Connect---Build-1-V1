@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabaseUntyped } from "@/lib/supabase";
 import { supabase } from "@/integrations/supabase/client";
+import { sendEmailBatch } from "@/lib/sendEmail";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,14 +98,11 @@ const MentorOnboardingPage = () => {
 
       if (mentorError) throw mentorError;
 
-      // Send notification emails with the current session token and stable
-      // idempotency keys so each mentor signup only triggers once.
+      // Send notification emails with retry logic
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      const authHeaders = session?.access_token
-        ? { Authorization: `Bearer ${session.access_token}` }
-        : undefined;
+      const token = session?.access_token;
 
       const emailData = {
         mentorName: profile?.name || "New Mentor",
@@ -116,35 +114,26 @@ const MentorOnboardingPage = () => {
         rankYear: rankYear ? parseInt(rankYear) : null,
       };
 
-      const emailResults = await Promise.allSettled([
-        supabase.functions.invoke("send-transactional-email", {
-          headers: authHeaders,
-          body: {
-            templateName: "admin-mentor-signup",
-            recipientEmail: "admin@upscconnect.in",
-            idempotencyKey: `admin-mentor-signup-${user.id}`,
-            templateData: emailData,
-          },
-        }),
-        supabase.functions.invoke("send-transactional-email", {
-          headers: authHeaders,
-          body: {
-            templateName: "mentor-welcome",
-            recipientEmail: user.email || profile?.email || "",
-            idempotencyKey: `mentor-welcome-${user.id}`,
-            templateData: { mentorName: profile?.name || "Mentor" },
-          },
-        }),
+      const results = await sendEmailBatch([
+        {
+          templateName: "admin-mentor-signup",
+          recipientEmail: "admin@upscconnect.in",
+          idempotencyKey: `admin-mentor-signup-${user.id}`,
+          templateData: emailData,
+          accessToken: token,
+        },
+        {
+          templateName: "mentor-welcome",
+          recipientEmail: user.email || profile?.email || "",
+          idempotencyKey: `mentor-welcome-${user.id}`,
+          templateData: { mentorName: profile?.name || "Mentor" },
+          accessToken: token,
+        },
       ]);
 
-      emailResults.forEach((result, index) => {
-        if (result.status === "rejected") {
-          console.error(index === 0 ? "Admin mentor signup email failed" : "Mentor welcome email failed", result.reason);
-          return;
-        }
-
-        if (result.value.error) {
-          console.error(index === 0 ? "Admin mentor signup email failed" : "Mentor welcome email failed", result.value.error);
+      results.forEach((r, i) => {
+        if (!r.success) {
+          console.error(`[MentorOnboarding] Email ${i} failed after ${r.attempts} attempts: ${r.error}`);
         }
       });
 
