@@ -29,6 +29,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const getMenteeWelcomeStorageKey = (userId: string) => `mentee-welcome-sent-${userId}`;
+const getAdminMenteeNotifKey = (userId: string) => `admin-mentee-notif-${userId}`;
 
 async function sendMenteeWelcomeEmail(session: Session, profile: Profile) {
   if (!profile.email) return false;
@@ -55,6 +56,36 @@ async function sendMenteeWelcomeEmail(session: Session, profile: Profile) {
   return true;
 }
 
+async function sendAdminMenteeSignupEmail(session: Session, profile: Profile) {
+  if (!profile.email) return false;
+
+  const key = getAdminMenteeNotifKey(profile.id);
+  if (localStorage.getItem(key)) return true;
+
+  const { error } = await supabase.functions.invoke("send-transactional-email", {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    body: {
+      templateName: "admin-mentee-signup",
+      recipientEmail: "admin@upscconnect.in",
+      idempotencyKey: `admin-mentee-signup-${profile.id}`,
+      templateData: {
+        menteeName: profile.name || "New User",
+        menteeEmail: profile.email,
+        menteePhone: profile.phone || "",
+        signupTime: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+      },
+    },
+  });
+
+  if (error) {
+    console.error("Admin mentee signup email failed:", error);
+    return false;
+  }
+
+  localStorage.setItem(key, "1");
+  return true;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -73,19 +104,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const p = data as Profile;
       setProfile(p);
 
-      // Send welcome email for new mentee users (auth-provider-agnostic)
+      // Send welcome email and admin notification for new mentee users
       const activeSession = currentSession || session;
       const welcomeEmailStorageKey = getMenteeWelcomeStorageKey(p.id);
+      const adminNotifKey = getAdminMenteeNotifKey(p.id);
       if (
         activeSession &&
         p.role === "mentee" &&
-        !localStorage.getItem(welcomeEmailStorageKey) &&
         !welcomeEmailInFlightRef.current.has(p.id)
       ) {
-        welcomeEmailInFlightRef.current.add(p.id);
-        void sendMenteeWelcomeEmail(activeSession, p).finally(() => {
-          welcomeEmailInFlightRef.current.delete(p.id);
-        });
+        const needsWelcome = !localStorage.getItem(welcomeEmailStorageKey);
+        const needsAdminNotif = !localStorage.getItem(adminNotifKey);
+
+        if (needsWelcome || needsAdminNotif) {
+          welcomeEmailInFlightRef.current.add(p.id);
+          const promises: Promise<boolean>[] = [];
+          if (needsWelcome) promises.push(sendMenteeWelcomeEmail(activeSession, p));
+          if (needsAdminNotif) promises.push(sendAdminMenteeSignupEmail(activeSession, p));
+          void Promise.allSettled(promises).finally(() => {
+            welcomeEmailInFlightRef.current.delete(p.id);
+          });
+        }
       }
     }
   };
