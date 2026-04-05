@@ -104,19 +104,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const p = data as Profile;
       setProfile(p);
 
-      // Send welcome email for new mentee users (auth-provider-agnostic)
+      // Send welcome email and admin notification for new mentee users
       const activeSession = currentSession || session;
       const welcomeEmailStorageKey = getMenteeWelcomeStorageKey(p.id);
+      const adminNotifKey = getAdminMenteeNotifKey(p.id);
       if (
         activeSession &&
         p.role === "mentee" &&
-        !localStorage.getItem(welcomeEmailStorageKey) &&
         !welcomeEmailInFlightRef.current.has(p.id)
       ) {
-        welcomeEmailInFlightRef.current.add(p.id);
-        void sendMenteeWelcomeEmail(activeSession, p).finally(() => {
-          welcomeEmailInFlightRef.current.delete(p.id);
-        });
+        const needsWelcome = !localStorage.getItem(welcomeEmailStorageKey);
+        const needsAdminNotif = !localStorage.getItem(adminNotifKey);
+
+        if (needsWelcome || needsAdminNotif) {
+          welcomeEmailInFlightRef.current.add(p.id);
+          const promises: Promise<boolean>[] = [];
+          if (needsWelcome) promises.push(sendMenteeWelcomeEmail(activeSession, p));
+          if (needsAdminNotif) promises.push(sendAdminMenteeSignupEmail(activeSession, p));
+          void Promise.allSettled(promises).finally(() => {
+            welcomeEmailInFlightRef.current.delete(p.id);
+          });
+        }
       }
     }
   };
