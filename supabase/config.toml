@@ -11,6 +11,8 @@ project_id = "hgmoqmslpvimgunnyddc"
     verify_jwt = false
   [functions.send-session-reminders]
     verify_jwt = true
+  [functions.send-booking-reminders]
+    verify_jwt = true
   [functions.send-push-notification]
     verify_jwt = false
   [functions.send-auto-response]
