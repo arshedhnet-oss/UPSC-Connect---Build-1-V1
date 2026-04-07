@@ -25,3 +25,5 @@ project_id = "hgmoqmslpvimgunnyddc"
     verify_jwt = false
   [functions.handle-email-suppression]
     verify_jwt = false
+  [functions.send-pending-onboarding]
+    verify_jwt = false
