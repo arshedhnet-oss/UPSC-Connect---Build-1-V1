@@ -1,8 +1,105 @@
+import * as React from 'npm:react@18.3.1'
+import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { TEMPLATES } from '../_shared/transactional-email-templates/registry.ts'
+
+const SITE_NAME = 'UPSC Connect'
+const SENDER_DOMAIN = 'notify.www.upscconnect.in'
+const FROM_DOMAIN = 'notify.www.upscconnect.in'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+function generateToken(): string {
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+async function enqueueOnboardingEmail(
+  supabase: any,
+  templateName: string,
+  recipientEmail: string,
+  idempotencyKey: string,
+  templateData: Record<string, any>,
+) {
+  const template = TEMPLATES[templateName]
+  if (!template) return { status: 'template_not_found' }
+
+  // Check if already sent via idempotency
+  const messageId = idempotencyKey
+
+  // Check suppression
+  const { data: suppressed } = await supabase
+    .from('suppressed_emails')
+    .select('id')
+    .eq('email', recipientEmail.toLowerCase())
+    .maybeSingle()
+  if (suppressed) return { status: 'suppressed' }
+
+  // Get/create unsubscribe token
+  const normalizedEmail = recipientEmail.toLowerCase()
+  let unsubscribeToken: string
+
+  const { data: existingToken } = await supabase
+    .from('email_unsubscribe_tokens')
+    .select('token, used_at')
+    .eq('email', normalizedEmail)
+    .maybeSingle()
+
+  if (existingToken && !existingToken.used_at) {
+    unsubscribeToken = existingToken.token
+  } else if (!existingToken) {
+    unsubscribeToken = generateToken()
+    await supabase.from('email_unsubscribe_tokens').upsert(
+      { token: unsubscribeToken, email: normalizedEmail },
+      { onConflict: 'email', ignoreDuplicates: true }
+    )
+    const { data: stored } = await supabase
+      .from('email_unsubscribe_tokens')
+      .select('token')
+      .eq('email', normalizedEmail)
+      .maybeSingle()
+    if (stored) unsubscribeToken = stored.token
+  } else {
+    return { status: 'already_unsubscribed' }
+  }
+
+  // Render template
+  const html = await renderAsync(React.createElement(template.component, templateData))
+  const plainText = await renderAsync(React.createElement(template.component, templateData), { plainText: true })
+  const resolvedSubject = typeof template.subject === 'function' ? template.subject(templateData) : template.subject
+
+  // Log pending
+  await supabase.from('email_send_log').insert({
+    message_id: messageId,
+    template_name: templateName,
+    recipient_email: recipientEmail,
+    status: 'pending',
+  })
+
+  // Enqueue
+  const { error } = await supabase.rpc('enqueue_email', {
+    queue_name: 'transactional_emails',
+    payload: {
+      message_id: messageId,
+      to: recipientEmail,
+      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      sender_domain: SENDER_DOMAIN,
+      subject: resolvedSubject,
+      html,
+      text: plainText,
+      purpose: 'transactional',
+      label: templateName,
+      idempotency_key: idempotencyKey,
+      unsubscribe_token: unsubscribeToken,
+      queued_at: new Date().toISOString(),
+    },
+  })
+
+  return { status: error ? `error: ${error.message}` : 'enqueued' }
 }
 
 Deno.serve(async (req) => {
@@ -14,140 +111,64 @@ Deno.serve(async (req) => {
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-  // Find all users who never received onboarding emails
-  // by checking email_send_log for missing entries
-
-  // Get all profiles
-  const { data: profiles, error: profilesError } = await supabase
+  const { data: profiles } = await supabase
     .from('profiles')
     .select('id, name, email, phone, role, created_at')
 
-  if (profilesError) {
-    console.error('Failed to fetch profiles', profilesError)
-    return new Response(JSON.stringify({ error: 'Failed to fetch profiles' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  }
-
-  // Get all existing onboarding email logs
+  // Get existing onboarding email message_ids to avoid duplicates
   const { data: existingLogs } = await supabase
     .from('email_send_log')
-    .select('template_name, recipient_email, status')
+    .select('message_id')
     .in('template_name', ['mentee-welcome', 'mentor-welcome', 'admin-mentee-signup', 'admin-mentor-signup'])
 
-  const sentSet = new Set<string>()
-  for (const log of existingLogs || []) {
-    // Consider it sent if there's any entry (pending/sent)
-    sentSet.add(`${log.template_name}:${log.recipient_email.toLowerCase()}`)
-  }
+  const sentIds = new Set((existingLogs || []).map(l => l.message_id).filter(Boolean))
 
   const results: Array<{ user: string; template: string; status: string }> = []
 
-  for (const profile of profiles || []) {
-    if (!profile.email) continue
+  for (const p of profiles || []) {
+    if (!p.email) continue
 
-    const email = profile.email.toLowerCase()
+    if (p.role === 'mentee') {
+      const welcomeKey = `mentee-welcome-${p.id}`
+      const adminKey = `admin-mentee-signup-${p.id}`
 
-    if (profile.role === 'mentee') {
-      // Send mentee-welcome if not already sent
-      if (!sentSet.has(`mentee-welcome:${email}`)) {
-        const { error } = await supabase.functions.invoke('send-transactional-email', {
-          body: {
-            templateName: 'mentee-welcome',
-            recipientEmail: profile.email,
-            idempotencyKey: `mentee-welcome-${profile.id}`,
-            templateData: { menteeName: profile.name || 'there' },
-          },
+      if (!sentIds.has(welcomeKey)) {
+        const r = await enqueueOnboardingEmail(supabase, 'mentee-welcome', p.email, welcomeKey, { menteeName: p.name || 'there' })
+        results.push({ user: p.email, template: 'mentee-welcome', status: r.status })
+      }
+
+      if (!sentIds.has(adminKey)) {
+        const r = await enqueueOnboardingEmail(supabase, 'admin-mentee-signup', 'admin@upscconnect.in', adminKey, {
+          menteeName: p.name || 'New User',
+          menteeEmail: p.email,
+          menteePhone: p.phone || '',
+          signupTime: new Date(p.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
         })
-        results.push({ user: profile.email, template: 'mentee-welcome', status: error ? `error: ${error.message}` : 'sent' })
-      }
-
-      // Send admin-mentee-signup if not already sent
-      if (!sentSet.has(`admin-mentee-signup:admin@upscconnect.in`)) {
-        // Check per-user idempotency via a more specific check
-        const adminKey = `admin-mentee-signup:${profile.id}`
-        const alreadySentAdmin = (existingLogs || []).some(
-          l => l.template_name === 'admin-mentee-signup' && l.recipient_email === 'admin@upscconnect.in'
-            // We can't easily check per-user from logs, so use idempotency key
-        )
-      }
-      // Send admin notification with user-specific idempotency
-      const adminIdempKey = `admin-mentee-signup-${profile.id}`
-      const hasAdminLog = (existingLogs || []).some(
-        l => l.template_name === 'admin-mentee-signup'
-      )
-      // Just send it - idempotency key will prevent duplicates server-side
-      if (!sentSet.has(`admin-mentee-signup:admin@upscconnect.in`) || true) {
-        // Use message_id check instead
-        const { data: existingMsg } = await supabase
-          .from('email_send_log')
-          .select('id')
-          .eq('template_name', 'admin-mentee-signup')
-          .eq('message_id', adminIdempKey)
-          .maybeSingle()
-
-        if (!existingMsg) {
-          const { error } = await supabase.functions.invoke('send-transactional-email', {
-            body: {
-              templateName: 'admin-mentee-signup',
-              recipientEmail: 'admin@upscconnect.in',
-              idempotencyKey: adminIdempKey,
-              templateData: {
-                menteeName: profile.name || 'New User',
-                menteeEmail: profile.email,
-                menteePhone: profile.phone || '',
-                signupTime: new Date(profile.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-              },
-            },
-          })
-          results.push({ user: profile.email, template: 'admin-mentee-signup', status: error ? `error: ${error.message}` : 'sent' })
-        }
+        results.push({ user: p.email, template: 'admin-mentee-signup', status: r.status })
       }
     }
 
-    if (profile.role === 'mentor') {
-      // Check if mentor-welcome was already sent to this user
-      if (!sentSet.has(`mentor-welcome:${email}`)) {
-        const { error } = await supabase.functions.invoke('send-transactional-email', {
-          body: {
-            templateName: 'mentor-welcome',
-            recipientEmail: profile.email,
-            idempotencyKey: `mentor-welcome-${profile.id}`,
-            templateData: { mentorName: profile.name || 'Mentor' },
-          },
-        })
-        results.push({ user: profile.email, template: 'mentor-welcome', status: error ? `error: ${error.message}` : 'sent' })
+    if (p.role === 'mentor') {
+      const welcomeKey = `mentor-welcome-${p.id}`
+      const adminKey = `admin-mentor-signup-${p.id}`
+
+      if (!sentIds.has(welcomeKey)) {
+        const r = await enqueueOnboardingEmail(supabase, 'mentor-welcome', p.email, welcomeKey, { mentorName: p.name || 'Mentor' })
+        results.push({ user: p.email, template: 'mentor-welcome', status: r.status })
       }
 
-      // Admin mentor signup notification
-      const adminIdempKey = `admin-mentor-signup-${profile.id}`
-      const { data: existingMsg } = await supabase
-        .from('email_send_log')
-        .select('id')
-        .eq('template_name', 'admin-mentor-signup')
-        .eq('message_id', adminIdempKey)
-        .maybeSingle()
-
-      if (!existingMsg) {
-        const { error } = await supabase.functions.invoke('send-transactional-email', {
-          body: {
-            templateName: 'admin-mentor-signup',
-            recipientEmail: 'admin@upscconnect.in',
-            idempotencyKey: adminIdempKey,
-            templateData: {
-              mentorName: profile.name || 'New Mentor',
-              mentorEmail: profile.email,
-              mentorPhone: profile.phone || '',
-            },
-          },
+      if (!sentIds.has(adminKey)) {
+        const r = await enqueueOnboardingEmail(supabase, 'admin-mentor-signup', 'admin@upscconnect.in', adminKey, {
+          mentorName: p.name || 'New Mentor',
+          mentorEmail: p.email,
+          mentorPhone: p.phone || '',
         })
-        results.push({ user: profile.email, template: 'admin-mentor-signup', status: error ? `error: ${error.message}` : 'sent' })
+        results.push({ user: p.email, template: 'admin-mentor-signup', status: r.status })
       }
     }
   }
 
-  console.log('Pending onboarding emails processed:', JSON.stringify(results))
+  console.log(`Pending onboarding: ${results.length} emails enqueued`)
 
   return new Response(JSON.stringify({ success: true, processed: results.length, results }), {
     status: 200,
