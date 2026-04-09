@@ -75,7 +75,7 @@ export default function MenteeSlotRequests() {
     const fetch = async () => {
       const { data } = await supabaseUntyped
         .from("booking_requests")
-        .select("*, mentor:profiles!booking_requests_mentor_id_fkey(name, email)")
+        .select("*")
         .eq("mentee_id", user.id)
         .order("created_at", { ascending: false });
       if (data) setRequests(data);
