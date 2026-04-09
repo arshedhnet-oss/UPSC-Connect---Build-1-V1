@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_requests: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          meeting_link: string | null
+          meeting_passcode: string | null
+          mentee_id: string
+          mentor_id: string
+          message: string | null
+          payment_id: string | null
+          razorpay_order_id: string | null
+          requested_date: string
+          requested_end_time: string
+          requested_start_time: string
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          meeting_link?: string | null
+          meeting_passcode?: string | null
+          mentee_id: string
+          mentor_id: string
+          message?: string | null
+          payment_id?: string | null
+          razorpay_order_id?: string | null
+          requested_date: string
+          requested_end_time: string
+          requested_start_time: string
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          meeting_link?: string | null
+          meeting_passcode?: string | null
+          mentee_id?: string
+          mentor_id?: string
+          message?: string | null
+          payment_id?: string | null
+          razorpay_order_id?: string | null
+          requested_date?: string
+          requested_end_time?: string
+          requested_start_time?: string
+          status?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           created_at: string | null
@@ -387,6 +438,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       organisation_mentors: {
         Row: {

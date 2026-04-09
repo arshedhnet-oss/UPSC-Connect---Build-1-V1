@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import StarRating from "@/components/StarRating";
 import FeaturedMentorControls from "@/components/FeaturedMentorControls";
+import AdminSlotRequests from "@/components/AdminSlotRequests";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -348,6 +349,9 @@ const AdminDashboardPage = () => {
             <TabsTrigger value="organisations" className="text-xs sm:text-sm">
               <Building2 className="h-4 w-4 mr-1" /> Organisations
               {allOrgs.filter(o => !o.is_approved).length > 0 && <span className="ml-1 rounded-full bg-accent/20 text-accent px-1.5 py-0.5 text-xs">{allOrgs.filter(o => !o.is_approved).length}</span>}
+            </TabsTrigger>
+            <TabsTrigger value="slot-requests" className="text-xs sm:text-sm">
+              <Clock className="h-4 w-4 mr-1" /> Slot Requests
             </TabsTrigger>
           </TabsList>
 
@@ -802,6 +806,11 @@ const AdminDashboardPage = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Slot Requests Tab */}
+          <TabsContent value="slot-requests">
+            <AdminSlotRequests />
           </TabsContent>
         </Tabs>
       </div>

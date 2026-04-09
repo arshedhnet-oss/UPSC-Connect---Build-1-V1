@@ -14,6 +14,11 @@ import { template as adminMenteeSignup } from './admin-mentee-signup.tsx'
 import { template as mentorWelcome } from './mentor-welcome.tsx'
 import { template as mentorApproved } from './mentor-approved.tsx'
 import { template as menteeWelcome } from './mentee-welcome.tsx'
+import { template as slotRequestNew } from './slot-request-new.tsx'
+import { template as slotRequestAccepted } from './slot-request-accepted.tsx'
+import { template as slotRequestRejected } from './slot-request-rejected.tsx'
+import { template as slotRequestExpired } from './slot-request-expired.tsx'
+import { template as slotRequestAdmin } from './slot-request-admin.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'admin-mentor-signup': adminMentorSignup,
@@ -21,4 +26,9 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'mentor-welcome': mentorWelcome,
   'mentor-approved': mentorApproved,
   'mentee-welcome': menteeWelcome,
+  'slot-request-new': slotRequestNew,
+  'slot-request-accepted': slotRequestAccepted,
+  'slot-request-rejected': slotRequestRejected,
+  'slot-request-expired': slotRequestExpired,
+  'slot-request-admin': slotRequestAdmin,
 }
