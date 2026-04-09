@@ -7,6 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const ADMIN_EMAIL = "admin@upscconnect.in";
+
 function generateMeetingId(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz";
   const segments = [8, 4, 4].map((len) =>
@@ -29,15 +31,9 @@ async function sendEmail(adminClient: any, templateName: string, recipientEmail:
   }
 }
 
-async function getAdminEmails(adminClient: any): Promise<{ user_id: string; email: string; name: string }[]> {
+async function getAdminUserIds(adminClient: any): Promise<string[]> {
   const { data: admins } = await adminClient.from("user_roles").select("user_id").eq("role", "admin");
-  if (!admins || admins.length === 0) return [];
-  const results: { user_id: string; email: string; name: string }[] = [];
-  for (const a of admins) {
-    const { data: p } = await adminClient.from("profiles").select("email, name").eq("id", a.user_id).single();
-    if (p?.email) results.push({ user_id: a.user_id, email: p.email, name: p.name });
-  }
-  return results;
+  return admins?.map((a: any) => a.user_id) || [];
 }
 
 Deno.serve(async (req) => {
@@ -89,11 +85,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch profile info
-    const { data: menteeProfile } = await adminClient.from("profiles").select("name, email").eq("id", request.mentee_id).single();
+    const { data: menteeProfile } = await adminClient.from("profiles").select("name, email, phone").eq("id", request.mentee_id).single();
     const { data: mentorProfile } = await adminClient.from("profiles").select("name, email").eq("id", request.mentor_id).single();
     const requestedTime = `${request.requested_start_time.slice(0, 5)} – ${request.requested_end_time.slice(0, 5)}`;
-    const adminUsers = await getAdminEmails(adminClient);
+    const adminUserIds = await getAdminUserIds(adminClient);
 
     // ===== PAYMENT CONFIRMED =====
     if (action === "payment_confirmed") {
@@ -120,10 +115,10 @@ Deno.serve(async (req) => {
       });
 
       // In-app: notify admins
-      if (adminUsers.length > 0) {
+      if (adminUserIds.length > 0) {
         await adminClient.from("notifications").insert(
-          adminUsers.map((a) => ({
-            user_id: a.user_id,
+          adminUserIds.map((uid) => ({
+            user_id: uid,
             type: "admin_slot_request",
             title: "New Slot Request Created",
             message: `${menteeProfile?.name || "Mentee"} requested a session with ${mentorProfile?.name || "mentor"} on ${request.requested_date}.`,
@@ -132,7 +127,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Email: mentor
+      // Email: mentor — new request
       if (mentorProfile?.email) {
         await sendEmail(adminClient, "slot-request-new", mentorProfile.email, `slot-new-mentor-${request_id}`, {
           mentorName: mentorProfile.name,
@@ -143,17 +138,25 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Email: admins
-      for (const admin of adminUsers) {
-        await sendEmail(adminClient, "slot-request-admin", admin.email, `slot-new-admin-${request_id}-${admin.user_id}`, {
-          event: "New Slot Request Created",
-          mentorName: mentorProfile?.name || "Unknown",
-          menteeName: menteeProfile?.name || "Unknown",
+      // Email: mentee — confirmation of submission
+      if (menteeProfile?.email) {
+        await sendEmail(adminClient, "slot-request-mentee-confirmation", menteeProfile.email, `slot-confirm-mentee-${request_id}`, {
+          menteeName: menteeProfile.name,
+          mentorName: mentorProfile?.name || "the mentor",
           requestedDate: request.requested_date,
           requestedTime,
-          details: "Payment confirmed. Awaiting mentor response (4-hour timer started).",
         });
       }
+
+      // Email: admin — new request
+      await sendEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-new-admin-${request_id}`, {
+        event: "New Slot Request Created",
+        mentorName: mentorProfile?.name || "Unknown",
+        menteeName: menteeProfile?.name || "Unknown",
+        requestedDate: request.requested_date,
+        requestedTime,
+        details: `Payment confirmed. Awaiting mentor response (4-hour timer started). Mentee contact: ${menteeProfile?.email || "N/A"}, ${menteeProfile?.phone || "N/A"}`,
+      });
 
       return new Response(
         JSON.stringify({ success: true, status: "pending_mentor_confirmation" }),
@@ -202,10 +205,10 @@ Deno.serve(async (req) => {
       });
 
       // In-app: admins
-      if (adminUsers.length > 0) {
+      if (adminUserIds.length > 0) {
         await adminClient.from("notifications").insert(
-          adminUsers.map((a) => ({
-            user_id: a.user_id,
+          adminUserIds.map((uid) => ({
+            user_id: uid,
             type: "admin_slot_request_accepted",
             title: "Slot Request Accepted",
             message: `${mentorProfile?.name || "Mentor"} accepted request from ${menteeProfile?.name || "mentee"} for ${request.requested_date}.`,
@@ -214,7 +217,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Email: mentee
+      // Email: mentee — accepted with meeting details
       if (menteeProfile?.email) {
         await sendEmail(adminClient, "slot-request-accepted", menteeProfile.email, `slot-accepted-mentee-${request_id}`, {
           menteeName: menteeProfile.name,
@@ -226,17 +229,27 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Email: admins
-      for (const admin of adminUsers) {
-        await sendEmail(adminClient, "slot-request-admin", admin.email, `slot-accepted-admin-${request_id}-${admin.user_id}`, {
-          event: "Slot Request Accepted",
-          mentorName: mentorProfile?.name || "Unknown",
-          menteeName: menteeProfile?.name || "Unknown",
+      // Email: mentor — confirmation with meeting details
+      if (mentorProfile?.email) {
+        await sendEmail(adminClient, "slot-request-mentor-confirmed", mentorProfile.email, `slot-accepted-mentor-${request_id}`, {
+          mentorName: mentorProfile.name,
+          menteeName: menteeProfile?.name || "the mentee",
           requestedDate: request.requested_date,
           requestedTime,
-          details: "Meeting link generated. Session confirmed.",
+          meetingLink,
+          meetingPasscode: passcode,
         });
       }
+
+      // Email: admin — accepted
+      await sendEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-accepted-admin-${request_id}`, {
+        event: "Slot Request Accepted",
+        mentorName: mentorProfile?.name || "Unknown",
+        menteeName: menteeProfile?.name || "Unknown",
+        requestedDate: request.requested_date,
+        requestedTime,
+        details: `Meeting link generated: ${meetingLink}. Session confirmed.`,
+      });
 
       return new Response(
         JSON.stringify({ success: true, status: "accepted", meeting_link: meetingLink, meeting_passcode: passcode }),
@@ -269,7 +282,7 @@ Deno.serve(async (req) => {
           console.error("Refund error:", e);
         }
       } else {
-        refundSuccess = true; // Free session
+        refundSuccess = true;
       }
 
       await adminClient.from("booking_requests").update({ status: "rejected" }).eq("id", request_id);
@@ -284,10 +297,10 @@ Deno.serve(async (req) => {
       });
 
       // In-app: admins
-      if (adminUsers.length > 0) {
+      if (adminUserIds.length > 0) {
         await adminClient.from("notifications").insert(
-          adminUsers.map((a) => ({
-            user_id: a.user_id,
+          adminUserIds.map((uid) => ({
+            user_id: uid,
             type: "admin_slot_request_rejected",
             title: "Slot Request Rejected",
             message: `${mentorProfile?.name || "Mentor"} rejected request. Refund ${refundSuccess ? "initiated" : "failed"}.`,
@@ -296,7 +309,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Email: mentee
+      // Email: mentee — rejection
       if (menteeProfile?.email) {
         await sendEmail(adminClient, "slot-request-rejected", menteeProfile.email, `slot-rejected-mentee-${request_id}`, {
           menteeName: menteeProfile.name,
@@ -307,17 +320,15 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Email: admins
-      for (const admin of adminUsers) {
-        await sendEmail(adminClient, "slot-request-admin", admin.email, `slot-rejected-admin-${request_id}-${admin.user_id}`, {
-          event: "Slot Request Rejected",
-          mentorName: mentorProfile?.name || "Unknown",
-          menteeName: menteeProfile?.name || "Unknown",
-          requestedDate: request.requested_date,
-          requestedTime,
-          details: `Mentor rejected. Refund ${refundSuccess ? "initiated" : "FAILED – manual action needed"}.`,
-        });
-      }
+      // Email: admin — rejection
+      await sendEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-rejected-admin-${request_id}`, {
+        event: "Slot Request Rejected",
+        mentorName: mentorProfile?.name || "Unknown",
+        menteeName: menteeProfile?.name || "Unknown",
+        requestedDate: request.requested_date,
+        requestedTime,
+        details: `Mentor rejected. Refund ${refundSuccess ? "initiated" : "FAILED – manual action needed"}.`,
+      });
 
       return new Response(
         JSON.stringify({ success: true, status: "rejected", refund_initiated: refundSuccess }),
