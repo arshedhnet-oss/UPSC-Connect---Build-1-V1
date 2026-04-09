@@ -44,7 +44,7 @@ export default function Navbar() {
     }
   };
 
-  const NotificationBell = () => (
+  const ChatBell = () => (
     <Link to="/chat" className="relative">
       <Button variant="ghost" size="icon" className="h-9 w-9">
         <MessageCircle className="h-5 w-5" />
@@ -110,7 +110,7 @@ export default function Navbar() {
           <>
             {/* Notification Bell */}
             <NotificationBellComponent />
-            <NotificationBell />
+            <ChatBell />
 
             {/* Desktop dropdown */}
             <div className="hidden sm:block">
