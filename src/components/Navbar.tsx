@@ -5,6 +5,7 @@ import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, LayoutDashboard, CalendarCheck, User, Menu, MessageCircle } from "lucide-react";
+import NotificationBellComponent from "@/components/NotificationBell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,6 +109,7 @@ export default function Navbar() {
         {user && profile ? (
           <>
             {/* Notification Bell */}
+            <NotificationBellComponent />
             <NotificationBell />
 
             {/* Desktop dropdown */}

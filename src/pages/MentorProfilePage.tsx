@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { MessageSquare, Send, ShieldCheck } from "lucide-react";
+import { MessageSquare, Send, ShieldCheck, CalendarPlus } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MentorReviews from "@/components/MentorReviews";
 import ReviewModal from "@/components/ReviewModal";
 import StarRating from "@/components/StarRating";
 import FeaturedMentorBadge from "@/components/FeaturedMentorBadge";
 import AirRankLabel from "@/components/AirRankLabel";
+import RequestSlotModal from "@/components/RequestSlotModal";
 
 declare global {
   interface Window {
@@ -42,6 +43,7 @@ const MentorProfilePage = () => {
   const [eligibleBookings, setEligibleBookings] = useState<any[]>([]);
   const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
   const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string } | null>(null);
+  const [requestSlotOpen, setRequestSlotOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -346,20 +348,41 @@ const MentorProfilePage = () => {
           </CardHeader>
           <CardContent>
             {slots.length === 0 ? (
-              <p className="text-muted-foreground">No upcoming slots available.</p>
+              <div className="text-center space-y-3">
+                <p className="text-muted-foreground">No upcoming slots available.</p>
+                {user && authProfile?.role === "mentee" && id !== user.id && (
+                  <Button onClick={() => setRequestSlotOpen(true)} variant="outline">
+                    <CalendarPlus className="h-4 w-4 mr-1.5" /> Request a Slot
+                  </Button>
+                )}
+                {!user && (
+                  <Button onClick={() => navigate("/login")} variant="outline">
+                    <CalendarPlus className="h-4 w-4 mr-1.5" /> Request a Slot
+                  </Button>
+                )}
+              </div>
             ) : (
-              <div className="grid sm:grid-cols-2 gap-3">
-                {slots.map(slot => (
-                  <div key={slot.id} className="flex items-center justify-between rounded-lg border border-border p-4">
-                    <div>
-                      <p className="font-medium text-foreground">{format(new Date(slot.date), "EEE, MMM d, yyyy")}</p>
-                      <p className="text-sm text-muted-foreground">{slot.start_time.slice(0, 5)} – {slot.end_time.slice(0, 5)}</p>
+              <div className="space-y-3">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {slots.map(slot => (
+                    <div key={slot.id} className="flex items-center justify-between rounded-lg border border-border p-4">
+                      <div>
+                        <p className="font-medium text-foreground">{format(new Date(slot.date), "EEE, MMM d, yyyy")}</p>
+                        <p className="text-sm text-muted-foreground">{slot.start_time.slice(0, 5)} – {slot.end_time.slice(0, 5)}</p>
+                      </div>
+                      <Button size="sm" onClick={() => handleBook(slot)} disabled={booking === slot.id}>
+                        {booking === slot.id ? "Booking..." : "Book"}
+                      </Button>
                     </div>
-                    <Button size="sm" onClick={() => handleBook(slot)} disabled={booking === slot.id}>
-                      {booking === slot.id ? "Booking..." : "Book"}
+                  ))}
+                </div>
+                {user && authProfile?.role === "mentee" && id !== user.id && (
+                  <p className="text-center">
+                    <Button variant="link" size="sm" onClick={() => setRequestSlotOpen(true)} className="text-muted-foreground">
+                      <CalendarPlus className="h-3.5 w-3.5 mr-1" /> None of these work? Request a custom slot
                     </Button>
-                  </div>
-                ))}
+                  </p>
+                )}
               </div>
             )}
           </CardContent>
@@ -399,6 +422,20 @@ const MentorProfilePage = () => {
             // Refresh page data
             window.location.reload();
           }}
+        />
+      )}
+
+      {user && authProfile?.role === "mentee" && mentor && (
+        <RequestSlotModal
+          open={requestSlotOpen}
+          onOpenChange={setRequestSlotOpen}
+          mentorId={id!}
+          mentorName={p?.name || "Mentor"}
+          pricePerSession={mentor.price_per_session || 0}
+          mentorType={mentor.mentor_type}
+          userId={user.id}
+          userEmail={authProfile?.email || user.email || ""}
+          userPhone={authProfile?.phone || ""}
         />
       )}
     </div>
