@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil, Calendar } from "lucide-react";
+import { Pencil, Calendar, Clock, FileText } from "lucide-react";
 import MentorProfileForm from "@/components/MentorProfileForm";
 import DeleteMentorAccount from "@/components/DeleteMentorAccount";
 import ReviewModal from "@/components/ReviewModal";
@@ -15,6 +15,7 @@ import SessionCard from "@/components/SessionCard";
 import SlotManager from "@/components/SlotManager";
 import SlotRequestsManager from "@/components/SlotRequestsManager";
 import MenteeSlotRequests from "@/components/MenteeSlotRequests";
+import MenteeAcceptedRequests from "@/components/MenteeAcceptedRequests";
 import Navbar from "@/components/Navbar";
 
 const DashboardPage = () => {
@@ -28,8 +29,6 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
-
-
 
   const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
   const [reviewModal, setReviewModal] = useState<{ open: boolean; bookingId: string; mentorId: string; mentorName: string } | null>(null);
@@ -106,9 +105,6 @@ const DashboardPage = () => {
     fetchData();
   }, [user, profile]);
 
-
-
-
   if (authLoading || loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!profile) return null;
 
@@ -119,7 +115,6 @@ const DashboardPage = () => {
   });
   const completedSessions = bookings.filter(b => {
     if (b.status === "completed") return true;
-    // Past sessions count as completed even if not marked
     if (b.slots) {
       const sessionDate = new Date(`${b.slots.date}T${b.slots.end_time || "23:59:59"}`);
       if (sessionDate < now && b.status !== "pending_payment") return true;
@@ -128,6 +123,78 @@ const DashboardPage = () => {
   });
 
   const totalEarnings = profile.role === "mentor" ? completedSessions.length * (mentorProfile?.price_per_session || 0) : 0;
+
+  const isMentee = profile.role === "mentee";
+
+  const renderSessionsContent = () => (
+    <Card>
+      <CardHeader><CardTitle className="font-display flex items-center gap-2"><Calendar className="h-5 w-5" /> Sessions</CardTitle></CardHeader>
+      <CardContent>
+        <Tabs defaultValue="upcoming" className="space-y-4">
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger value="upcoming" className="text-sm">
+              Upcoming {upcomingSessions.length > 0 && <span className="ml-1.5 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-xs">{upcomingSessions.length}</span>}
+            </TabsTrigger>
+            <TabsTrigger value="completed" className="text-sm">
+              Completed {completedSessions.length > 0 && <span className="ml-1.5 rounded-full bg-muted-foreground/20 text-muted-foreground px-1.5 py-0.5 text-xs">{completedSessions.length}</span>}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="upcoming">
+            {isMentee && <MenteeAcceptedRequests />}
+            {upcomingSessions.length === 0 && !isMentee ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Calendar className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                <p className="font-medium">No upcoming sessions</p>
+              </div>
+            ) : upcomingSessions.length === 0 && isMentee ? (
+              <div className="text-center py-6 text-sm text-muted-foreground">
+                <Link to="/mentors" className="text-primary hover:underline text-sm mt-1 inline-block">Browse mentors to get started</Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {upcomingSessions.map((b: any) => (
+                  <SessionCard
+                    key={b.id}
+                    booking={b}
+                    role={profile.role as "mentor" | "mentee"}
+                    onChatWithMentee={handleChatWithMentee}
+                    onStatusUpdate={profile.role === "mentor" ? handleStatusUpdate : undefined}
+                    onReview={(bk) => setReviewModal({ open: true, bookingId: bk.id, mentorId: bk.mentor_id, mentorName: bk.mentor?.name || "Mentor" })}
+                    isReviewed={reviewedBookingIds.has(b.id)}
+                    chattingWith={chattingWith}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="completed">
+            {completedSessions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Calendar className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                <p className="font-medium">No completed sessions</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {completedSessions.map((b: any) => (
+                  <SessionCard
+                    key={b.id}
+                    booking={b}
+                    role={profile.role as "mentor" | "mentee"}
+                    onChatWithMentee={handleChatWithMentee}
+                    onReview={(bk) => setReviewModal({ open: true, bookingId: bk.id, mentorId: bk.mentor_id, mentorName: bk.mentor?.name || "Mentor" })}
+                    isReviewed={reviewedBookingIds.has(b.id)}
+                    chattingWith={chattingWith}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -191,74 +258,32 @@ const DashboardPage = () => {
 
         {profile.role === "mentor" && <SlotRequestsManager />}
         {profile.role === "mentor" && <SlotManager userId={user!.id} />}
-        {profile.role === "mentee" && <MenteeSlotRequests />}
 
-        {/* Sessions with Tabs */}
-        <Card>
-          <CardHeader><CardTitle className="font-display flex items-center gap-2"><Calendar className="h-5 w-5" /> Sessions</CardTitle></CardHeader>
-          <CardContent>
-            <Tabs defaultValue="upcoming" className="space-y-4">
-              <TabsList className="w-full grid grid-cols-2">
-                <TabsTrigger value="upcoming" className="text-sm">
-                  Upcoming {upcomingSessions.length > 0 && <span className="ml-1.5 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-xs">{upcomingSessions.length}</span>}
-                </TabsTrigger>
-                <TabsTrigger value="completed" className="text-sm">
-                  Completed {completedSessions.length > 0 && <span className="ml-1.5 rounded-full bg-muted-foreground/20 text-muted-foreground px-1.5 py-0.5 text-xs">{completedSessions.length}</span>}
-                </TabsTrigger>
-              </TabsList>
+        {/* Mentee: Top-level tabs for Sessions vs Slot Requests */}
+        {isMentee ? (
+          <Tabs defaultValue="sessions" className="space-y-4">
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="sessions" className="text-sm flex items-center gap-1.5">
+                <Calendar className="h-4 w-4" /> Sessions
+              </TabsTrigger>
+              <TabsTrigger value="slot-requests" className="text-sm flex items-center gap-1.5">
+                <FileText className="h-4 w-4" /> Slot Requests
+              </TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="upcoming">
-                {upcomingSessions.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Calendar className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                    <p className="font-medium">No upcoming sessions</p>
-                    {profile.role === "mentee" && (
-                      <Link to="/mentors" className="text-primary hover:underline text-sm mt-1 inline-block">Browse mentors to get started</Link>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {upcomingSessions.map((b: any) => (
-                      <SessionCard
-                        key={b.id}
-                        booking={b}
-                        role={profile.role as "mentor" | "mentee"}
-                        onChatWithMentee={handleChatWithMentee}
-                        onStatusUpdate={profile.role === "mentor" ? handleStatusUpdate : undefined}
-                        onReview={(bk) => setReviewModal({ open: true, bookingId: bk.id, mentorId: bk.mentor_id, mentorName: bk.mentor?.name || "Mentor" })}
-                        isReviewed={reviewedBookingIds.has(b.id)}
-                        chattingWith={chattingWith}
-                      />
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
+            <TabsContent value="sessions">
+              {renderSessionsContent()}
+            </TabsContent>
 
-              <TabsContent value="completed">
-                {completedSessions.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Calendar className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                    <p className="font-medium">No completed sessions</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {completedSessions.map((b: any) => (
-                      <SessionCard
-                        key={b.id}
-                        booking={b}
-                        role={profile.role as "mentor" | "mentee"}
-                        onChatWithMentee={handleChatWithMentee}
-                        onReview={(bk) => setReviewModal({ open: true, bookingId: bk.id, mentorId: bk.mentor_id, mentorName: bk.mentor?.name || "Mentor" })}
-                        isReviewed={reviewedBookingIds.has(b.id)}
-                        chattingWith={chattingWith}
-                      />
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+            <TabsContent value="slot-requests">
+              <MenteeSlotRequests />
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <>
+            {renderSessionsContent()}
+          </>
+        )}
 
         {profile.role === "mentor" && (
           <DeleteMentorAccount onDeleted={() => signOut()} />

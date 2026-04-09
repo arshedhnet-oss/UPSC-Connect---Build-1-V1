@@ -108,7 +108,6 @@ export default function MenteeSlotRequests() {
   if (requests.length === 0) return null;
 
   const pending = requests.filter(r => r.status === "pending_mentor_confirmation" || r.status === "pending_payment");
-  const accepted = requests.filter(r => r.status === "accepted");
   const closed = requests.filter(r => ["rejected", "expired_refunded", "cancelled"].includes(r.status));
 
   const copyToClipboard = (text: string) => {
