@@ -182,12 +182,9 @@ export default function MenteeSlotRequests() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="pending" className="space-y-4">
-          <TabsList className="w-full grid grid-cols-3">
+          <TabsList className="w-full grid grid-cols-2">
             <TabsTrigger value="pending" className="text-sm">
               Pending {pending.length > 0 && <span className="ml-1 rounded-full bg-amber-500/20 text-amber-600 px-1.5 py-0.5 text-xs">{pending.length}</span>}
-            </TabsTrigger>
-            <TabsTrigger value="accepted" className="text-sm">
-              Accepted {accepted.length > 0 && <span className="ml-1 rounded-full bg-emerald-500/20 text-emerald-600 px-1.5 py-0.5 text-xs">{accepted.length}</span>}
             </TabsTrigger>
             <TabsTrigger value="closed" className="text-sm">
               Closed {closed.length > 0 && <span className="ml-1 rounded-full bg-muted-foreground/20 text-muted-foreground px-1.5 py-0.5 text-xs">{closed.length}</span>}
@@ -199,14 +196,6 @@ export default function MenteeSlotRequests() {
               <p className="text-center py-6 text-sm text-muted-foreground">No pending requests</p>
             ) : (
               <div className="space-y-3">{pending.map(renderRequest)}</div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="accepted">
-            {accepted.length === 0 ? (
-              <p className="text-center py-6 text-sm text-muted-foreground">No accepted requests yet</p>
-            ) : (
-              <div className="space-y-3">{accepted.map(renderRequest)}</div>
             )}
           </TabsContent>
 
