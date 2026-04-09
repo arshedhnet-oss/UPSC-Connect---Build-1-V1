@@ -14,6 +14,7 @@ import ReviewModal from "@/components/ReviewModal";
 import SessionCard from "@/components/SessionCard";
 import SlotManager from "@/components/SlotManager";
 import SlotRequestsManager from "@/components/SlotRequestsManager";
+import MenteeSlotRequests from "@/components/MenteeSlotRequests";
 import Navbar from "@/components/Navbar";
 
 const DashboardPage = () => {
@@ -190,6 +191,7 @@ const DashboardPage = () => {
 
         {profile.role === "mentor" && <SlotRequestsManager />}
         {profile.role === "mentor" && <SlotManager userId={user!.id} />}
+        {profile.role === "mentee" && <MenteeSlotRequests />}
 
         {/* Sessions with Tabs */}
         <Card>
