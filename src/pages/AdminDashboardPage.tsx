@@ -807,6 +807,11 @@ const AdminDashboardPage = () => {
               </Card>
             </div>
           </TabsContent>
+
+          {/* Slot Requests Tab */}
+          <TabsContent value="slot-requests">
+            <AdminSlotRequests />
+          </TabsContent>
         </Tabs>
       </div>
 
