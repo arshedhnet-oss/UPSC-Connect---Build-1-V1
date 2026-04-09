@@ -15,6 +15,7 @@ interface SlotRequest {
   requested_start_time: string;
   requested_end_time: string;
   message: string | null;
+  mentor_message: string | null;
   status: string;
   expires_at: string | null;
   meeting_link: string | null;
@@ -165,9 +166,17 @@ export default function MenteeSlotRequests() {
         )}
 
         {(req.status === "rejected" || req.status === "expired_refunded") && (
-          <p className="text-xs text-muted-foreground">
-            {req.status === "rejected" ? "The mentor declined this request. A refund has been initiated." : "The mentor didn't respond in time. A full refund has been initiated."}
-          </p>
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              {req.status === "rejected" ? "The mentor declined this request. A refund has been initiated." : "The mentor didn't respond in time. A full refund has been initiated."}
+            </p>
+            {req.mentor_message && (
+              <div className="rounded-md bg-muted/50 border border-border px-3 py-2">
+                <p className="text-xs text-muted-foreground font-medium">Message from mentor:</p>
+                <p className="text-sm text-foreground italic">"{req.mentor_message}"</p>
+              </div>
+            )}
+          </div>
         )}
       </div>
     );

@@ -14,6 +14,7 @@ interface SlotRequest {
   requested_start_time: string;
   requested_end_time: string;
   message: string | null;
+  mentor_message: string | null;
   status: string;
   payment_id: string | null;
   expires_at: string | null;
@@ -97,7 +98,13 @@ export default function AdminSlotRequests() {
           <span className="text-amber-600">Expires: {format(new Date(r.expires_at), "MMM d, HH:mm")}</span>
         )}
       </div>
-      {r.message && <p className="text-xs text-muted-foreground italic">"{r.message}"</p>}
+      {r.message && <p className="text-xs text-muted-foreground italic">Mentee: "{r.message}"</p>}
+      {r.mentor_message && (
+        <div className="rounded-md bg-muted/50 px-3 py-2">
+          <p className="text-xs text-muted-foreground font-medium">Mentor message:</p>
+          <p className="text-sm text-foreground italic">"{r.mentor_message}"</p>
+        </div>
+      )}
     </div>
   );
 
