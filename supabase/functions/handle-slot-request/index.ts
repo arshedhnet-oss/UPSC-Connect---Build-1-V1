@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { request_id, action } = await req.json();
+    const { request_id, action, mentor_message } = await req.json();
 
     if (!request_id || !["accept", "reject", "payment_confirmed"].includes(action)) {
       return new Response(
@@ -70,6 +70,9 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Validate mentor_message length
+    const sanitizedMessage = typeof mentor_message === "string" ? mentor_message.trim().slice(0, 300) : null;
 
     const adminClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -193,15 +196,20 @@ Deno.serve(async (req) => {
         status: "accepted",
         meeting_link: meetingLink,
         meeting_passcode: passcode,
+        mentor_message: sanitizedMessage,
       }).eq("id", request_id);
 
-      // In-app: mentee
+      // In-app: mentee — include mentor message
+      const menteeNotifMsg = sanitizedMessage
+        ? `${mentorProfile?.name || "Your mentor"} accepted your session for ${request.requested_date} at ${requestedTime}. Message: "${sanitizedMessage}"`
+        : `${mentorProfile?.name || "Your mentor"} accepted your session for ${request.requested_date} at ${requestedTime}.`;
+
       await adminClient.from("notifications").insert({
         user_id: request.mentee_id,
         type: "slot_request_accepted",
         title: "Slot Request Accepted!",
-        message: `${mentorProfile?.name || "Your mentor"} accepted your session for ${request.requested_date} at ${requestedTime}.`,
-        metadata: { request_id, meeting_link: meetingLink },
+        message: menteeNotifMsg,
+        metadata: { request_id, meeting_link: meetingLink, mentor_message: sanitizedMessage },
       });
 
       // In-app: admins
@@ -211,13 +219,13 @@ Deno.serve(async (req) => {
             user_id: uid,
             type: "admin_slot_request_accepted",
             title: "Slot Request Accepted",
-            message: `${mentorProfile?.name || "Mentor"} accepted request from ${menteeProfile?.name || "mentee"} for ${request.requested_date}.`,
-            metadata: { request_id },
+            message: `${mentorProfile?.name || "Mentor"} accepted request from ${menteeProfile?.name || "mentee"} for ${request.requested_date}.${sanitizedMessage ? ` Mentor message: "${sanitizedMessage}"` : ""}`,
+            metadata: { request_id, mentor_message: sanitizedMessage },
           }))
         );
       }
 
-      // Email: mentee — accepted with meeting details
+      // Email: mentee — accepted with meeting details + mentor message
       if (menteeProfile?.email) {
         await sendEmail(adminClient, "slot-request-accepted", menteeProfile.email, `slot-accepted-mentee-${request_id}`, {
           menteeName: menteeProfile.name,
@@ -226,6 +234,7 @@ Deno.serve(async (req) => {
           requestedTime,
           meetingLink,
           meetingPasscode: passcode,
+          mentorMessage: sanitizedMessage,
         });
       }
 
@@ -241,14 +250,14 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Email: admin — accepted
+      // Email: admin — accepted + mentor message
       await sendEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-accepted-admin-${request_id}`, {
         event: "Slot Request Accepted",
         mentorName: mentorProfile?.name || "Unknown",
         menteeName: menteeProfile?.name || "Unknown",
         requestedDate: request.requested_date,
         requestedTime,
-        details: `Meeting link generated: ${meetingLink}. Session confirmed.`,
+        details: `Meeting link generated: ${meetingLink}. Session confirmed.${sanitizedMessage ? ` Mentor message: "${sanitizedMessage}"` : ""}`,
       });
 
       return new Response(
@@ -285,15 +294,22 @@ Deno.serve(async (req) => {
         refundSuccess = true;
       }
 
-      await adminClient.from("booking_requests").update({ status: "rejected" }).eq("id", request_id);
+      await adminClient.from("booking_requests").update({
+        status: "rejected",
+        mentor_message: sanitizedMessage,
+      }).eq("id", request_id);
 
-      // In-app: mentee
+      // In-app: mentee — include mentor message
+      const menteeRejectMsg = sanitizedMessage
+        ? `Your session request for ${request.requested_date} was not accepted. ${refundSuccess ? "A refund has been initiated." : "Please contact support."} Mentor's message: "${sanitizedMessage}"`
+        : `Your session request for ${request.requested_date} was not accepted. ${refundSuccess ? "A refund has been initiated." : "Please contact support."}`;
+
       await adminClient.from("notifications").insert({
         user_id: request.mentee_id,
         type: "slot_request_rejected",
         title: "Slot Request Rejected",
-        message: `Your session request for ${request.requested_date} was not accepted. ${refundSuccess ? "A refund has been initiated." : "Please contact support."}`,
-        metadata: { request_id, refund_initiated: refundSuccess },
+        message: menteeRejectMsg,
+        metadata: { request_id, refund_initiated: refundSuccess, mentor_message: sanitizedMessage },
       });
 
       // In-app: admins
@@ -303,13 +319,13 @@ Deno.serve(async (req) => {
             user_id: uid,
             type: "admin_slot_request_rejected",
             title: "Slot Request Rejected",
-            message: `${mentorProfile?.name || "Mentor"} rejected request. Refund ${refundSuccess ? "initiated" : "failed"}.`,
-            metadata: { request_id, refund_initiated: refundSuccess },
+            message: `${mentorProfile?.name || "Mentor"} rejected request. Refund ${refundSuccess ? "initiated" : "failed"}.${sanitizedMessage ? ` Mentor message: "${sanitizedMessage}"` : ""}`,
+            metadata: { request_id, refund_initiated: refundSuccess, mentor_message: sanitizedMessage },
           }))
         );
       }
 
-      // Email: mentee — rejection
+      // Email: mentee — rejection + mentor message
       if (menteeProfile?.email) {
         await sendEmail(adminClient, "slot-request-rejected", menteeProfile.email, `slot-rejected-mentee-${request_id}`, {
           menteeName: menteeProfile.name,
@@ -317,17 +333,18 @@ Deno.serve(async (req) => {
           requestedDate: request.requested_date,
           requestedTime,
           refundInitiated: refundSuccess,
+          mentorMessage: sanitizedMessage,
         });
       }
 
-      // Email: admin — rejection
+      // Email: admin — rejection + mentor message
       await sendEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-rejected-admin-${request_id}`, {
         event: "Slot Request Rejected",
         mentorName: mentorProfile?.name || "Unknown",
         menteeName: menteeProfile?.name || "Unknown",
         requestedDate: request.requested_date,
         requestedTime,
-        details: `Mentor rejected. Refund ${refundSuccess ? "initiated" : "FAILED – manual action needed"}.`,
+        details: `Mentor rejected. Refund ${refundSuccess ? "initiated" : "FAILED – manual action needed"}.${sanitizedMessage ? ` Mentor message: "${sanitizedMessage}"` : ""}`,
       });
 
       return new Response(
