@@ -7,6 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const ADMIN_EMAIL = "admin@upscconnect.in";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
@@ -18,7 +20,6 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Find expired pending requests
     const { data: expiredRequests, error: fetchErr } = await adminClient
       .from("booking_requests")
       .select("*")
@@ -43,11 +44,14 @@ Deno.serve(async (req) => {
     const keyId = Deno.env.get("RAZORPAY_KEY_ID");
     const keySecret = Deno.env.get("RAZORPAY_KEY_SECRET");
 
+    // Get admin user IDs for in-app notifications
+    const { data: admins } = await adminClient.from("user_roles").select("user_id").eq("role", "admin");
+    const adminUserIds = admins?.map((a: any) => a.user_id) || [];
+
     let processed = 0;
 
     for (const request of expiredRequests) {
       try {
-        // Attempt refund if payment exists
         let refundSuccess = false;
         if (request.payment_id && keyId && keySecret) {
           try {
@@ -70,30 +74,20 @@ Deno.serve(async (req) => {
             console.error(`[Expiry] Refund error for ${request.id}:`, e);
           }
         } else {
-          refundSuccess = true; // Free session, no refund needed
+          refundSuccess = true;
         }
 
-        // Update status
         await adminClient.from("booking_requests").update({
           status: "expired_refunded",
         }).eq("id", request.id);
 
-        // Fetch profile names for notifications/emails
         const { data: menteeProfile } = await adminClient
-          .from("profiles")
-          .select("name, email")
-          .eq("id", request.mentee_id)
-          .single();
-
+          .from("profiles").select("name, email").eq("id", request.mentee_id).single();
         const { data: mentorProfile } = await adminClient
-          .from("profiles")
-          .select("name, email")
-          .eq("id", request.mentor_id)
-          .single();
-
+          .from("profiles").select("name, email").eq("id", request.mentor_id).single();
         const requestedTime = `${request.requested_start_time.slice(0, 5)} – ${request.requested_end_time.slice(0, 5)}`;
 
-        // Notify mentee (in-app)
+        // In-app: mentee
         await adminClient.from("notifications").insert({
           user_id: request.mentee_id,
           type: "slot_request_expired",
@@ -102,27 +96,20 @@ Deno.serve(async (req) => {
           metadata: { request_id: request.id, refund_initiated: refundSuccess },
         });
 
-        // Notify admins (in-app)
-        const { data: admins } = await adminClient
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "admin");
-
-        if (admins) {
-          const adminNotifs = admins.map((a: any) => ({
-            user_id: a.user_id,
-            type: "admin_slot_request_expired",
-            title: "Slot Request Expired",
-            message: `A slot request for ${request.requested_date} expired without mentor response. Refund ${refundSuccess ? "initiated" : "failed"}.`,
-            metadata: { request_id: request.id },
-          }));
-          if (adminNotifs.length > 0) {
-            await adminClient.from("notifications").insert(adminNotifs);
-          }
+        // In-app: admins
+        if (adminUserIds.length > 0) {
+          await adminClient.from("notifications").insert(
+            adminUserIds.map((uid: string) => ({
+              user_id: uid,
+              type: "admin_slot_request_expired",
+              title: "Slot Request Expired",
+              message: `A slot request for ${request.requested_date} expired without mentor response. Refund ${refundSuccess ? "initiated" : "failed"}.`,
+              metadata: { request_id: request.id },
+            }))
+          );
         }
 
-        // Send emails
-        // Mentee expiry email
+        // Email: mentee — expiry
         if (menteeProfile?.email) {
           await adminClient.functions.invoke("send-transactional-email", {
             body: {
@@ -139,33 +126,22 @@ Deno.serve(async (req) => {
           });
         }
 
-        // Admin expiry email
-        if (admins) {
-          for (const admin of admins) {
-            const { data: adminProfile } = await adminClient
-              .from("profiles")
-              .select("email")
-              .eq("id", admin.user_id)
-              .single();
-            if (adminProfile?.email) {
-              await adminClient.functions.invoke("send-transactional-email", {
-                body: {
-                  templateName: "slot-request-admin",
-                  recipientEmail: adminProfile.email,
-                  idempotencyKey: `slot-expired-admin-${request.id}-${admin.user_id}`,
-                  templateData: {
-                    event: "Slot Request Expired",
-                    mentorName: mentorProfile?.name || "Unknown",
-                    menteeName: menteeProfile?.name || "Unknown",
-                    requestedDate: request.requested_date,
-                    requestedTime,
-                    details: `Refund ${refundSuccess ? "initiated successfully" : "FAILED – manual action needed"}`,
-                  },
-                },
-              });
-            }
-          }
-        }
+        // Email: admin — expiry
+        await adminClient.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "slot-request-admin",
+            recipientEmail: ADMIN_EMAIL,
+            idempotencyKey: `slot-expired-admin-${request.id}`,
+            templateData: {
+              event: "Slot Request Expired",
+              mentorName: mentorProfile?.name || "Unknown",
+              menteeName: menteeProfile?.name || "Unknown",
+              requestedDate: request.requested_date,
+              requestedTime,
+              details: `Mentor did not respond. Refund ${refundSuccess ? "initiated successfully" : "FAILED – manual action needed"}`,
+            },
+          },
+        });
 
         processed++;
         console.log(`[Expiry] Processed request ${request.id}`);
