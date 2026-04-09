@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         amount: amount * 100,
         currency: "INR",
-        receipt: `slotreq_${request_id}`,
+        receipt: request_id.replace(/-/g, "").slice(0, 40),
         payment_capture: 1,
       }),
     });
