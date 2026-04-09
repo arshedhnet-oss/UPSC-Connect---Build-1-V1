@@ -5,6 +5,7 @@ import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, LayoutDashboard, CalendarCheck, User, Menu, MessageCircle } from "lucide-react";
+import NotificationBellComponent from "@/components/NotificationBell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +44,7 @@ export default function Navbar() {
     }
   };
 
-  const NotificationBell = () => (
+  const ChatBell = () => (
     <Link to="/chat" className="relative">
       <Button variant="ghost" size="icon" className="h-9 w-9">
         <MessageCircle className="h-5 w-5" />
@@ -108,7 +109,8 @@ export default function Navbar() {
         {user && profile ? (
           <>
             {/* Notification Bell */}
-            <NotificationBell />
+            <NotificationBellComponent />
+            <ChatBell />
 
             {/* Desktop dropdown */}
             <div className="hidden sm:block">
