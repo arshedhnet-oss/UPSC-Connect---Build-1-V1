@@ -72,21 +72,32 @@ export default function MenteeSlotRequests() {
 
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
+    const fetchRequests = async () => {
       const { data } = await supabaseUntyped
         .from("booking_requests")
         .select("*")
         .eq("mentee_id", user.id)
         .order("created_at", { ascending: false });
-      if (data) setRequests(data);
+      if (data && data.length > 0) {
+        // Fetch mentor names
+        const mentorIds = [...new Set(data.map((r: any) => r.mentor_id))];
+        const { data: mentors } = await supabaseUntyped
+          .from("profiles")
+          .select("id, name")
+          .in("id", mentorIds);
+        const mentorMap = new Map((mentors || []).map((m: any) => [m.id, m.name]));
+        setRequests(data.map((r: any) => ({ ...r, mentor: { name: mentorMap.get(r.mentor_id) || "Mentor" } })));
+      } else {
+        setRequests([]);
+      }
       setLoading(false);
     };
-    fetch();
+    fetchRequests();
 
     const channel = supabaseUntyped
       .channel("mentee-slot-requests")
       .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests", filter: `mentee_id=eq.${user.id}` }, () => {
-        fetch();
+        fetchRequests();
       })
       .subscribe();
 
