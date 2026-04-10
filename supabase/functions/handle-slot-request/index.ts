@@ -21,13 +21,35 @@ function generatePasscode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-async function sendEmail(adminClient: any, templateName: string, recipientEmail: string, idempotencyKey: string, templateData: any) {
+// Robust email sender — logs every attempt and result, never silently swallows errors
+async function sendStageEmail(
+  adminClient: any,
+  templateName: string,
+  recipientEmail: string,
+  idempotencyKey: string,
+  templateData: any,
+  context: { requestId: string; stage: string }
+): Promise<{ success: boolean; error?: string }> {
+  const tag = `[Email] request=${context.requestId} stage=${context.stage} template=${templateName} to=${recipientEmail}`;
   try {
-    await adminClient.functions.invoke("send-transactional-email", {
+    console.log(`${tag} — sending`);
+    const { data, error } = await adminClient.functions.invoke("send-transactional-email", {
       body: { templateName, recipientEmail, idempotencyKey, templateData },
     });
+    if (error) {
+      console.error(`${tag} — invoke error:`, error);
+      return { success: false, error: String(error) };
+    }
+    // Check for application-level error in response
+    if (data && typeof data === "object" && data.error) {
+      console.error(`${tag} — app error:`, data.error);
+      return { success: false, error: String(data.error) };
+    }
+    console.log(`${tag} — enqueued successfully`);
+    return { success: true };
   } catch (e) {
-    console.error(`[Email] Failed to send ${templateName} to ${recipientEmail}:`, e);
+    console.error(`${tag} — exception:`, e);
+    return { success: false, error: String(e) };
   }
 }
 
@@ -49,17 +71,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    // Check if this is a service-role call (from webhook fallback)
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const token = authHeader.replace("Bearer ", "");
+    const isServiceRole = token === serviceRoleKey;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let user: { id: string } | null = null;
+
+    if (isServiceRole) {
+      // Service-role calls are trusted (from webhook) — user identity comes from the request body
+      console.log("[SlotRequest] Service-role call detected (webhook fallback)");
+    } else {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      user = authUser;
     }
 
     const { request_id, action, mentor_message } = await req.json();
@@ -71,7 +106,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Validate mentor_message length
     const sanitizedMessage = typeof mentor_message === "string" ? mentor_message.trim().slice(0, 300) : null;
 
     const adminClient = createClient(
@@ -83,6 +117,7 @@ Deno.serve(async (req) => {
       .from("booking_requests").select("*").eq("id", request_id).single();
 
     if (fetchErr || !request) {
+      console.error(`[SlotRequest] Request not found: ${request_id}`, fetchErr);
       return new Response(JSON.stringify({ error: "Request not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -92,23 +127,45 @@ Deno.serve(async (req) => {
     const { data: mentorProfile } = await adminClient.from("profiles").select("name, email").eq("id", request.mentor_id).single();
     const requestedTime = `${request.requested_start_time.slice(0, 5)} – ${request.requested_end_time.slice(0, 5)}`;
     const adminUserIds = await getAdminUserIds(adminClient);
+    const ctx = { requestId: request_id, stage: action };
+
+    console.log(`[SlotRequest] Processing action=${action} request=${request_id} mentor=${request.mentor_id} mentee=${request.mentee_id}`);
 
     // ===== PAYMENT CONFIRMED =====
     if (action === "payment_confirmed") {
-      if (request.mentee_id !== user.id) {
+      // Allow service-role calls (webhook fallback) or the mentee themselves
+      if (!isServiceRole && (!user || request.mentee_id !== user.id)) {
         return new Response(JSON.stringify({ error: "Not authorized" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
+      // Idempotency: if already past pending_payment, skip
+      if (request.status === "pending_mentor_confirmation") {
+        console.log(`[SlotRequest] Already confirmed payment for ${request_id}, skipping`);
+        return new Response(
+          JSON.stringify({ success: true, status: "pending_mentor_confirmation" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString();
 
-      await adminClient.from("booking_requests").update({
+      // Step 1: Update status
+      const { error: updateErr } = await adminClient.from("booking_requests").update({
         status: "pending_mentor_confirmation",
         expires_at: expiresAt,
       }).eq("id", request_id);
 
-      // In-app: notify mentor
+      if (updateErr) {
+        console.error(`[SlotRequest] Failed to update status for ${request_id}:`, updateErr);
+        return new Response(JSON.stringify({ error: "Failed to update request status" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.log(`[SlotRequest] Status updated to pending_mentor_confirmation for ${request_id}`);
+
+      // Step 2: In-app notifications
       await adminClient.from("notifications").insert({
         user_id: request.mentor_id,
         type: "slot_request",
@@ -117,10 +174,9 @@ Deno.serve(async (req) => {
         metadata: { request_id, mentee_id: request.mentee_id },
       });
 
-      // In-app: notify admins
       if (adminUserIds.length > 0) {
         await adminClient.from("notifications").insert(
-          adminUserIds.map((uid) => ({
+          adminUserIds.map((uid: string) => ({
             user_id: uid,
             type: "admin_slot_request",
             title: "New Slot Request Created",
@@ -129,46 +185,52 @@ Deno.serve(async (req) => {
           }))
         );
       }
+      console.log(`[SlotRequest] In-app notifications created for ${request_id}`);
 
-      // Email: mentor — new request
+      // Step 3: Emails — send all, log results
+      const emailResults: { recipient: string; template: string; success: boolean; error?: string }[] = [];
+
       if (mentorProfile?.email) {
-        await sendEmail(adminClient, "slot-request-new", mentorProfile.email, `slot-new-mentor-${request_id}`, {
+        const r = await sendStageEmail(adminClient, "slot-request-new", mentorProfile.email, `slot-new-mentor-${request_id}`, {
           mentorName: mentorProfile.name,
           menteeName: menteeProfile?.name || "A mentee",
           requestedDate: request.requested_date,
           requestedTime,
           message: request.message,
-        });
+        }, ctx);
+        emailResults.push({ recipient: "mentor", template: "slot-request-new", ...r });
       }
 
-      // Email: mentee — confirmation of submission
       if (menteeProfile?.email) {
-        await sendEmail(adminClient, "slot-request-mentee-confirmation", menteeProfile.email, `slot-confirm-mentee-${request_id}`, {
+        const r = await sendStageEmail(adminClient, "slot-request-mentee-confirmation", menteeProfile.email, `slot-confirm-mentee-${request_id}`, {
           menteeName: menteeProfile.name,
           mentorName: mentorProfile?.name || "the mentor",
           requestedDate: request.requested_date,
           requestedTime,
-        });
+        }, ctx);
+        emailResults.push({ recipient: "mentee", template: "slot-request-mentee-confirmation", ...r });
       }
 
-      // Email: admin — new request
-      await sendEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-new-admin-${request_id}`, {
+      const adminR = await sendStageEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-new-admin-${request_id}`, {
         event: "New Slot Request Created",
         mentorName: mentorProfile?.name || "Unknown",
         menteeName: menteeProfile?.name || "Unknown",
         requestedDate: request.requested_date,
         requestedTime,
         details: `Payment confirmed. Awaiting mentor response (4-hour timer started). Mentee contact: ${menteeProfile?.email || "N/A"}, ${menteeProfile?.phone || "N/A"}`,
-      });
+      }, ctx);
+      emailResults.push({ recipient: "admin", template: "slot-request-admin", ...adminR });
+
+      console.log(`[SlotRequest] Email results for ${request_id}:`, JSON.stringify(emailResults));
 
       return new Response(
-        JSON.stringify({ success: true, status: "pending_mentor_confirmation" }),
+        JSON.stringify({ success: true, status: "pending_mentor_confirmation", email_results: emailResults }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Verify mentor authorization
-    if (request.mentor_id !== user.id) {
+    // Verify mentor authorization (accept/reject require an authenticated mentor)
+    if (!user || request.mentor_id !== user.id) {
       return new Response(JSON.stringify({ error: "Not authorized" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -192,14 +254,16 @@ Deno.serve(async (req) => {
       const passcode = generatePasscode();
       const meetingLink = `https://meet.jit.si/${meetingId}`;
 
+      // Step 1: Update status
       await adminClient.from("booking_requests").update({
         status: "accepted",
         meeting_link: meetingLink,
         meeting_passcode: passcode,
         mentor_message: sanitizedMessage,
       }).eq("id", request_id);
+      console.log(`[SlotRequest] Request ${request_id} accepted`);
 
-      // In-app: mentee — include mentor message
+      // Step 2: In-app notifications
       const menteeNotifMsg = sanitizedMessage
         ? `${mentorProfile?.name || "Your mentor"} accepted your session for ${request.requested_date} at ${requestedTime}. Message: "${sanitizedMessage}"`
         : `${mentorProfile?.name || "Your mentor"} accepted your session for ${request.requested_date} at ${requestedTime}.`;
@@ -212,10 +276,9 @@ Deno.serve(async (req) => {
         metadata: { request_id, meeting_link: meetingLink, mentor_message: sanitizedMessage },
       });
 
-      // In-app: admins
       if (adminUserIds.length > 0) {
         await adminClient.from("notifications").insert(
-          adminUserIds.map((uid) => ({
+          adminUserIds.map((uid: string) => ({
             user_id: uid,
             type: "admin_slot_request_accepted",
             title: "Slot Request Accepted",
@@ -224,10 +287,13 @@ Deno.serve(async (req) => {
           }))
         );
       }
+      console.log(`[SlotRequest] Accept in-app notifications created for ${request_id}`);
 
-      // Email: mentee — accepted with meeting details + mentor message
+      // Step 3: Emails
+      const emailResults: { recipient: string; template: string; success: boolean; error?: string }[] = [];
+
       if (menteeProfile?.email) {
-        await sendEmail(adminClient, "slot-request-accepted", menteeProfile.email, `slot-accepted-mentee-${request_id}`, {
+        const r = await sendStageEmail(adminClient, "slot-request-accepted", menteeProfile.email, `slot-accepted-mentee-${request_id}`, {
           menteeName: menteeProfile.name,
           mentorName: mentorProfile?.name || "your mentor",
           requestedDate: request.requested_date,
@@ -235,33 +301,36 @@ Deno.serve(async (req) => {
           meetingLink,
           meetingPasscode: passcode,
           mentorMessage: sanitizedMessage,
-        });
+        }, ctx);
+        emailResults.push({ recipient: "mentee", template: "slot-request-accepted", ...r });
       }
 
-      // Email: mentor — confirmation with meeting details
       if (mentorProfile?.email) {
-        await sendEmail(adminClient, "slot-request-mentor-confirmed", mentorProfile.email, `slot-accepted-mentor-${request_id}`, {
+        const r = await sendStageEmail(adminClient, "slot-request-mentor-confirmed", mentorProfile.email, `slot-accepted-mentor-${request_id}`, {
           mentorName: mentorProfile.name,
           menteeName: menteeProfile?.name || "the mentee",
           requestedDate: request.requested_date,
           requestedTime,
           meetingLink,
           meetingPasscode: passcode,
-        });
+        }, ctx);
+        emailResults.push({ recipient: "mentor", template: "slot-request-mentor-confirmed", ...r });
       }
 
-      // Email: admin — accepted + mentor message
-      await sendEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-accepted-admin-${request_id}`, {
+      const adminR = await sendStageEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-accepted-admin-${request_id}`, {
         event: "Slot Request Accepted",
         mentorName: mentorProfile?.name || "Unknown",
         menteeName: menteeProfile?.name || "Unknown",
         requestedDate: request.requested_date,
         requestedTime,
         details: `Meeting link generated: ${meetingLink}. Session confirmed.${sanitizedMessage ? ` Mentor message: "${sanitizedMessage}"` : ""}`,
-      });
+      }, ctx);
+      emailResults.push({ recipient: "admin", template: "slot-request-admin", ...adminR });
+
+      console.log(`[SlotRequest] Accept email results for ${request_id}:`, JSON.stringify(emailResults));
 
       return new Response(
-        JSON.stringify({ success: true, status: "accepted", meeting_link: meetingLink, meeting_passcode: passcode }),
+        JSON.stringify({ success: true, status: "accepted", meeting_link: meetingLink, meeting_passcode: passcode, email_results: emailResults }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -286,20 +355,27 @@ Deno.serve(async (req) => {
             }
           );
           refundSuccess = refundRes.ok;
-          if (!refundSuccess) console.error("Refund failed:", await refundRes.text());
+          if (!refundSuccess) {
+            const errText = await refundRes.text();
+            console.error(`[SlotRequest] Refund failed for ${request_id}:`, errText);
+          } else {
+            console.log(`[SlotRequest] Refund initiated for ${request_id}`);
+          }
         } catch (e) {
-          console.error("Refund error:", e);
+          console.error(`[SlotRequest] Refund error for ${request_id}:`, e);
         }
       } else {
-        refundSuccess = true;
+        refundSuccess = true; // No payment to refund
       }
 
+      // Step 1: Update status
       await adminClient.from("booking_requests").update({
         status: "rejected",
         mentor_message: sanitizedMessage,
       }).eq("id", request_id);
+      console.log(`[SlotRequest] Request ${request_id} rejected`);
 
-      // In-app: mentee — include mentor message
+      // Step 2: In-app notifications
       const menteeRejectMsg = sanitizedMessage
         ? `Your session request for ${request.requested_date} was not accepted. ${refundSuccess ? "A refund has been initiated." : "Please contact support."} Mentor's message: "${sanitizedMessage}"`
         : `Your session request for ${request.requested_date} was not accepted. ${refundSuccess ? "A refund has been initiated." : "Please contact support."}`;
@@ -312,10 +388,9 @@ Deno.serve(async (req) => {
         metadata: { request_id, refund_initiated: refundSuccess, mentor_message: sanitizedMessage },
       });
 
-      // In-app: admins
       if (adminUserIds.length > 0) {
         await adminClient.from("notifications").insert(
-          adminUserIds.map((uid) => ({
+          adminUserIds.map((uid: string) => ({
             user_id: uid,
             type: "admin_slot_request_rejected",
             title: "Slot Request Rejected",
@@ -324,31 +399,37 @@ Deno.serve(async (req) => {
           }))
         );
       }
+      console.log(`[SlotRequest] Reject in-app notifications created for ${request_id}`);
 
-      // Email: mentee — rejection + mentor message
+      // Step 3: Emails
+      const emailResults: { recipient: string; template: string; success: boolean; error?: string }[] = [];
+
       if (menteeProfile?.email) {
-        await sendEmail(adminClient, "slot-request-rejected", menteeProfile.email, `slot-rejected-mentee-${request_id}`, {
+        const r = await sendStageEmail(adminClient, "slot-request-rejected", menteeProfile.email, `slot-rejected-mentee-${request_id}`, {
           menteeName: menteeProfile.name,
           mentorName: mentorProfile?.name || "the mentor",
           requestedDate: request.requested_date,
           requestedTime,
           refundInitiated: refundSuccess,
           mentorMessage: sanitizedMessage,
-        });
+        }, ctx);
+        emailResults.push({ recipient: "mentee", template: "slot-request-rejected", ...r });
       }
 
-      // Email: admin — rejection + mentor message
-      await sendEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-rejected-admin-${request_id}`, {
+      const adminR = await sendStageEmail(adminClient, "slot-request-admin", ADMIN_EMAIL, `slot-rejected-admin-${request_id}`, {
         event: "Slot Request Rejected",
         mentorName: mentorProfile?.name || "Unknown",
         menteeName: menteeProfile?.name || "Unknown",
         requestedDate: request.requested_date,
         requestedTime,
         details: `Mentor rejected. Refund ${refundSuccess ? "initiated" : "FAILED – manual action needed"}.${sanitizedMessage ? ` Mentor message: "${sanitizedMessage}"` : ""}`,
-      });
+      }, ctx);
+      emailResults.push({ recipient: "admin", template: "slot-request-admin", ...adminR });
+
+      console.log(`[SlotRequest] Reject email results for ${request_id}:`, JSON.stringify(emailResults));
 
       return new Response(
-        JSON.stringify({ success: true, status: "rejected", refund_initiated: refundSuccess }),
+        JSON.stringify({ success: true, status: "rejected", refund_initiated: refundSuccess, email_results: emailResults }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -357,7 +438,7 @@ Deno.serve(async (req) => {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("Function error:", err);
+    console.error("[SlotRequest] Function error:", err);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

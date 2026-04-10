@@ -31,7 +31,7 @@ interface RequestSlotModalProps {
 }
 
 const TIME_OPTIONS = Array.from({ length: 28 }, (_, i) => {
-  const hour = Math.floor(i / 2) + 7; // 7 AM to 20:30
+  const hour = Math.floor(i / 2) + 7;
   const min = i % 2 === 0 ? "00" : "30";
   return `${String(hour).padStart(2, "0")}:${min}`;
 });
@@ -49,6 +49,29 @@ export default function RequestSlotModal({
 
   const isFree = mentorType === "serving_officer";
 
+  // Helper to call handle-slot-request and verify success
+  const confirmPayment = async (requestId: string): Promise<boolean> => {
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    const sess = (await supabaseUntyped.auth.getSession()).data.session;
+    const res = await fetch(
+      `https://${projectId}.supabase.co/functions/v1/handle-slot-request`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sess?.access_token}`,
+        },
+        body: JSON.stringify({ request_id: requestId, action: "payment_confirmed" }),
+      }
+    );
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      console.error("handle-slot-request failed:", data);
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
     if (!userPhone) {
       toast({ title: "Phone number required", description: "Please add your contact number in your dashboard before requesting a slot.", variant: "destructive" });
@@ -65,7 +88,6 @@ export default function RequestSlotModal({
 
     setSubmitting(true);
     try {
-      // Create booking request
       const { data: request, error: insertErr } = await supabaseUntyped
         .from("booking_requests")
         .insert({
@@ -83,21 +105,12 @@ export default function RequestSlotModal({
       if (insertErr) throw insertErr;
 
       if (isFree) {
-        // Free session — skip payment, set expiry directly
-        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-        const sess = (await supabaseUntyped.auth.getSession()).data.session;
-        await fetch(
-          `https://${projectId}.supabase.co/functions/v1/handle-slot-request`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${sess?.access_token}`,
-            },
-            body: JSON.stringify({ request_id: request.id, action: "payment_confirmed" }),
-          }
-        );
-        toast({ title: "Request submitted!", description: "The mentor has been notified." });
+        const ok = await confirmPayment(request.id);
+        if (!ok) {
+          toast({ title: "Request created but notification failed", description: "The mentor will still see your request. Please contact support if needed.", variant: "destructive" });
+        } else {
+          toast({ title: "Request submitted!", description: "The mentor has been notified." });
+        }
         onOpenChange(false);
         return;
       }
@@ -128,29 +141,27 @@ export default function RequestSlotModal({
         order_id: orderData.order_id,
         handler: async (response: any) => {
           try {
-            // Update payment_id on the request
-            await supabaseUntyped.from("booking_requests").update({
+            // Save payment_id
+            const { error: updateErr } = await supabaseUntyped.from("booking_requests").update({
               payment_id: response.razorpay_payment_id,
             }).eq("id", request.id);
 
-            // Confirm payment
-            const sess = (await supabaseUntyped.auth.getSession()).data.session;
-            await fetch(
-              `https://${projectId}.supabase.co/functions/v1/handle-slot-request`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${sess?.access_token}`,
-                },
-                body: JSON.stringify({ request_id: request.id, action: "payment_confirmed" }),
-              }
-            );
+            if (updateErr) {
+              console.error("Failed to save payment_id:", updateErr);
+            }
 
-            toast({ title: "Request submitted!", description: "The mentor has been notified. They have 4 hours to respond." });
+            // Confirm payment on backend and verify success
+            const ok = await confirmPayment(request.id);
+            if (ok) {
+              toast({ title: "Request submitted!", description: "The mentor has been notified. They have 4 hours to respond." });
+            } else {
+              toast({ title: "Payment recorded", description: "Your payment was successful. The request is being processed — you'll receive a notification shortly.", variant: "default" });
+            }
             onOpenChange(false);
-          } catch {
-            toast({ title: "Payment recorded but request update failed", description: "Please contact support.", variant: "destructive" });
+          } catch (err) {
+            console.error("Payment handler error:", err);
+            toast({ title: "Payment recorded but processing delayed", description: "Your payment is safe. The request will be processed shortly.", variant: "default" });
+            onOpenChange(false);
           }
         },
         modal: {
