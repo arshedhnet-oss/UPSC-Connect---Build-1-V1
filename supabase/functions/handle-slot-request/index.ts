@@ -133,7 +133,8 @@ Deno.serve(async (req) => {
 
     // ===== PAYMENT CONFIRMED =====
     if (action === "payment_confirmed") {
-      if (request.mentee_id !== user.id) {
+      // Allow service-role calls (webhook fallback) or the mentee themselves
+      if (!isServiceRole && (!user || request.mentee_id !== user.id)) {
         return new Response(JSON.stringify({ error: "Not authorized" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
