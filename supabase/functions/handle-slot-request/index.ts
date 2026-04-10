@@ -229,8 +229,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify mentor authorization
-    if (request.mentor_id !== user.id) {
+    // Verify mentor authorization (accept/reject require an authenticated mentor)
+    if (!user || request.mentor_id !== user.id) {
       return new Response(JSON.stringify({ error: "Not authorized" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
