@@ -219,7 +219,52 @@ Deno.serve(async (req) => {
       .single();
 
     if (txErr || !transaction) {
-      console.error("booking_not_found: no transaction for order_id", orderId, txErr);
+      // Check if this is a slot request payment (booking_requests table)
+      console.log("no_transaction_found: checking booking_requests for order_id", orderId);
+      const { data: slotRequest } = await supabase
+        .from("booking_requests")
+        .select("id, status, mentee_id, payment_id, razorpay_order_id")
+        .eq("razorpay_order_id", orderId)
+        .single();
+
+      if (slotRequest) {
+        console.log(`slot_request_found: id=${slotRequest.id} status=${slotRequest.status}`);
+        
+        // Idempotency: skip if already processed
+        if (slotRequest.status !== "pending_payment") {
+          console.log(`slot_request_already_processed: status=${slotRequest.status}`);
+          return new Response(JSON.stringify({ status: "already_processed" }), {
+            status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Save payment_id if not already saved
+        if (!slotRequest.payment_id) {
+          await supabase.from("booking_requests").update({ payment_id: paymentId }).eq("id", slotRequest.id);
+          console.log(`slot_request_payment_id_saved: ${paymentId}`);
+        }
+
+        // Trigger payment_confirmed processing via handle-slot-request
+        try {
+          const { data: confirmData, error: confirmErr } = await supabase.functions.invoke("handle-slot-request", {
+            body: { request_id: slotRequest.id, action: "payment_confirmed" },
+            headers: { Authorization: `Bearer ${serviceKey}` },
+          });
+          if (confirmErr) {
+            console.error(`slot_request_confirm_failed:`, confirmErr);
+          } else {
+            console.log(`slot_request_confirmed_via_webhook:`, JSON.stringify(confirmData));
+          }
+        } catch (e) {
+          console.error(`slot_request_confirm_error:`, e);
+        }
+
+        return new Response(JSON.stringify({ status: "slot_request_processed", request_id: slotRequest.id }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      console.error("booking_not_found: no transaction or slot request for order_id", orderId);
       return new Response(JSON.stringify({ error: "Booking not found" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
