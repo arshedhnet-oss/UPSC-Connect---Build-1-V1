@@ -23,6 +23,7 @@ export type Database = {
           meeting_passcode: string | null
           mentee_id: string
           mentor_id: string
+          mentor_message: string | null
           message: string | null
           payment_id: string | null
           razorpay_order_id: string | null
@@ -39,6 +40,7 @@ export type Database = {
           meeting_passcode?: string | null
           mentee_id: string
           mentor_id: string
+          mentor_message?: string | null
           message?: string | null
           payment_id?: string | null
           razorpay_order_id?: string | null
@@ -55,6 +57,7 @@ export type Database = {
           meeting_passcode?: string | null
           mentee_id?: string
           mentor_id?: string
+          mentor_message?: string | null
           message?: string | null
           payment_id?: string | null
           razorpay_order_id?: string | null
