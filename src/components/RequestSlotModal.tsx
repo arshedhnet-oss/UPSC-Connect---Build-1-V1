@@ -50,6 +50,10 @@ export default function RequestSlotModal({
   const isFree = mentorType === "serving_officer";
 
   const handleSubmit = async () => {
+    if (!userPhone) {
+      toast({ title: "Phone number required", description: "Please add your contact number in your dashboard before requesting a slot.", variant: "destructive" });
+      return;
+    }
     if (!date || !startTime || !endTime) {
       toast({ title: "Please select date and time", variant: "destructive" });
       return;
