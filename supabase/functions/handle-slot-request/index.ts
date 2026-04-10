@@ -71,17 +71,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    // Check if this is a service-role call (from webhook fallback)
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const token = authHeader.replace("Bearer ", "");
+    const isServiceRole = token === serviceRoleKey;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let user: { id: string } | null = null;
+
+    if (isServiceRole) {
+      // Service-role calls are trusted (from webhook) — user identity comes from the request body
+      console.log("[SlotRequest] Service-role call detected (webhook fallback)");
+    } else {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      user = authUser;
     }
 
     const { request_id, action, mentor_message } = await req.json();
