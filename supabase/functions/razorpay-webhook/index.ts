@@ -246,12 +246,17 @@ Deno.serve(async (req) => {
 
         // Trigger payment_confirmed processing via handle-slot-request
         try {
-          const { data: confirmData, error: confirmErr } = await supabase.functions.invoke("handle-slot-request", {
-            body: { request_id: slotRequest.id, action: "payment_confirmed" },
-            headers: { Authorization: `Bearer ${serviceKey}` },
+          const confirmRes = await fetch(`${supabaseUrl}/functions/v1/handle-slot-request`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${serviceKey}`,
+            },
+            body: JSON.stringify({ request_id: slotRequest.id, action: "payment_confirmed" }),
           });
-          if (confirmErr) {
-            console.error(`slot_request_confirm_failed:`, confirmErr);
+          const confirmData = await confirmRes.json();
+          if (!confirmRes.ok) {
+            console.error(`slot_request_confirm_failed: status=${confirmRes.status}`, confirmData);
           } else {
             console.log(`slot_request_confirmed_via_webhook:`, JSON.stringify(confirmData));
           }
