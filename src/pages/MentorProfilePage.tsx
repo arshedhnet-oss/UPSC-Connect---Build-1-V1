@@ -351,7 +351,13 @@ const MentorProfilePage = () => {
               <div className="text-center space-y-3">
                 <p className="text-muted-foreground">No upcoming slots available.</p>
                 {user && authProfile?.role === "mentee" && id !== user.id && (
-                  <Button onClick={() => setRequestSlotOpen(true)} variant="outline">
+                  <Button onClick={() => {
+                    if (!authProfile?.phone) {
+                      toast({ title: "Phone number required", description: "Please add your contact number in your dashboard before requesting a slot.", variant: "destructive" });
+                      return;
+                    }
+                    setRequestSlotOpen(true);
+                  }} variant="outline">
                     <CalendarPlus className="h-4 w-4 mr-1.5" /> Request a Slot
                   </Button>
                 )}
@@ -378,7 +384,13 @@ const MentorProfilePage = () => {
                 </div>
                 {user && authProfile?.role === "mentee" && id !== user.id && (
                   <p className="text-center">
-                    <Button variant="link" size="sm" onClick={() => setRequestSlotOpen(true)} className="text-muted-foreground">
+                    <Button variant="link" size="sm" onClick={() => {
+                      if (!authProfile?.phone) {
+                        toast({ title: "Phone number required", description: "Please add your contact number in your dashboard before requesting a slot.", variant: "destructive" });
+                        return;
+                      }
+                      setRequestSlotOpen(true);
+                    }} className="text-muted-foreground">
                       <CalendarPlus className="h-3.5 w-3.5 mr-1" /> None of these work? Request a custom slot
                     </Button>
                   </p>
