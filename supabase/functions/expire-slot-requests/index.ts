@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendStageEmail } from "../_shared/send-stage-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,37 +9,6 @@ const corsHeaders = {
 };
 
 const ADMIN_EMAIL = "admin@upscconnect.in";
-
-// Robust email sender with full logging
-async function sendStageEmail(
-  adminClient: any,
-  templateName: string,
-  recipientEmail: string,
-  idempotencyKey: string,
-  templateData: any,
-  context: { requestId: string; stage: string }
-): Promise<{ success: boolean; error?: string }> {
-  const tag = `[Expiry-Email] request=${context.requestId} stage=${context.stage} template=${templateName} to=${recipientEmail}`;
-  try {
-    console.log(`${tag} — sending`);
-    const { data, error } = await adminClient.functions.invoke("send-transactional-email", {
-      body: { templateName, recipientEmail, idempotencyKey, templateData },
-    });
-    if (error) {
-      console.error(`${tag} — invoke error:`, error);
-      return { success: false, error: String(error) };
-    }
-    if (data && typeof data === "object" && data.error) {
-      console.error(`${tag} — app error:`, data.error);
-      return { success: false, error: String(data.error) };
-    }
-    console.log(`${tag} — enqueued successfully`);
-    return { success: true };
-  } catch (e) {
-    console.error(`${tag} — exception:`, e);
-    return { success: false, error: String(e) };
-  }
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
