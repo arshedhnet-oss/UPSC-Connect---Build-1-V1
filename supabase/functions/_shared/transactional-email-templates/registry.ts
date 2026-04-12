@@ -21,6 +21,9 @@ import { template as slotRequestExpired } from './slot-request-expired.tsx'
 import { template as slotRequestAdmin } from './slot-request-admin.tsx'
 import { template as slotRequestMenteeConfirmation } from './slot-request-mentee-confirmation.tsx'
 import { template as slotRequestMentorConfirmed } from './slot-request-mentor-confirmed.tsx'
+import { template as chatNewMessage } from './chat-new-message.tsx'
+import { template as chatReplyNotification } from './chat-reply-notification.tsx'
+import { template as chatAdminNotification } from './chat-admin-notification.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'admin-mentor-signup': adminMentorSignup,
@@ -35,4 +38,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'slot-request-admin': slotRequestAdmin,
   'slot-request-mentee-confirmation': slotRequestMenteeConfirmation,
   'slot-request-mentor-confirmed': slotRequestMentorConfirmed,
+  'chat-new-message': chatNewMessage,
+  'chat-reply-notification': chatReplyNotification,
+  'chat-admin-notification': chatAdminNotification,
 }
