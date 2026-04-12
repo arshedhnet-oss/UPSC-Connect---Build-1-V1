@@ -173,10 +173,8 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
       }).catch(() => {});
       // Email notification (delayed to allow read-state to settle)
       setTimeout(() => {
-        fetch(`https://${projectId}.supabase.co/functions/v1/send-chat-notification`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        supabaseUntyped.functions.invoke("send-chat-notification", {
+          body: {
             conversationId,
             senderId: user.id,
             receiverId: otherUserId,
@@ -185,8 +183,10 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
             senderRole: profile?.role || "mentee",
             receiverName: otherUser.name,
             receiverRole: isMentee ? "mentor" : "mentee",
-          }),
-        }).catch(() => {});
+          },
+        }).catch((error: unknown) => {
+          console.error("Failed to trigger chat email notification", error);
+        });
       }, 5000);
     }
     setSending(false);
