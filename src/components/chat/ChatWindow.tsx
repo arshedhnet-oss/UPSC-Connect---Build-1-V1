@@ -159,17 +159,35 @@ export default function ChatWindow({ conversationId, otherUser, otherUserId, onB
         triggerAutoResponse();
       }
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      // Push notification
       fetch(`https://${projectId}.supabase.co/functions/v1/send-push-notification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_ids: [otherUserId],
-          title: `New message from ${otherUser.name}`,
+          title: `New message from ${profile?.name || "Someone"}`,
           body: msgText.slice(0, 100),
           url: `/chat?conversation=${conversationId}`,
           tag: `chat-${conversationId}`,
         }),
       }).catch(() => {});
+      // Email notification (delayed to allow read-state to settle)
+      setTimeout(() => {
+        fetch(`https://${projectId}.supabase.co/functions/v1/send-chat-notification`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversationId,
+            senderId: user.id,
+            receiverId: otherUserId,
+            messageText: msgText,
+            senderName: profile?.name || "Someone",
+            senderRole: profile?.role || "mentee",
+            receiverName: otherUser.name,
+            receiverRole: isMentee ? "mentor" : "mentee",
+          }),
+        }).catch(() => {});
+      }, 5000);
     }
     setSending(false);
     inputRef.current?.focus();
