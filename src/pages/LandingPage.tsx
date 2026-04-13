@@ -70,6 +70,8 @@ const LandingPage = () => {
         )}
       </section>
 
+      <ToppersSection />
+
       {/* How It Works */}
       <section id="how-it-works" className="px-4 sm:px-6 py-12 sm:py-20 max-w-4xl mx-auto">
         <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground text-center mb-4">
