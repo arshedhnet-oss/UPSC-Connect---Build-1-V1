@@ -77,11 +77,11 @@ const LandingPage = () => {
         <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground text-center mb-4">
           How UPSC Connect Works
         </h2>
-        <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+        <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8 sm:mb-10">
           Preparing for the UPSC Civil Services Examination can be overwhelming. UPSC Connect simplifies your journey by giving you direct access to experienced mentors who have been through the process themselves.
         </p>
 
-        <div className="space-y-8 sm:space-y-10">
+        <div className="space-y-6 sm:space-y-8">
           <div className="rounded-xl border border-border bg-card p-6 sm:p-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">1</span>
@@ -140,7 +140,7 @@ const LandingPage = () => {
         </div>
 
         {/* Why UPSC Connect */}
-        <div className="mt-12 sm:mt-16 rounded-xl border border-primary/20 bg-primary/5 p-6 sm:p-8 text-center">
+        <div className="mt-8 sm:mt-12 rounded-xl border border-primary/20 bg-primary/5 p-6 sm:p-8 text-center">
           <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-4">Why UPSC Connect?</h3>
           <ul className="space-y-3 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto text-left">
             <li className="flex items-start gap-2"><CircleCheck className="h-5 w-5 mt-0.5 shrink-0 text-primary" /> Direct access to experienced UPSC mentors</li>
@@ -151,7 +151,7 @@ const LandingPage = () => {
         </div>
 
         {/* CTA */}
-        <div className="mt-10 sm:mt-14 text-center">
+        <div className="mt-8 sm:mt-10 text-center">
           <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-3">Start Your UPSC Journey Today</h3>
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
             Whether you are preparing for Prelims, Mains, or Interview, the right mentorship can make a significant difference. Browse mentors and book your first session today.
@@ -163,7 +163,7 @@ const LandingPage = () => {
       </section>
 
       {ENABLE_ORGANISATIONS && (
-        <section className="px-4 sm:px-6 py-12 sm:py-16 bg-card">
+        <section className="px-4 sm:px-6 py-8 sm:py-12 bg-card">
           <div className="max-w-5xl mx-auto text-center">
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">For Coaching Institutes</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
@@ -197,7 +197,7 @@ const LandingPage = () => {
       )}
 
       {/* Contact */}
-      <section className="px-4 sm:px-6 py-12 sm:py-16 max-w-4xl mx-auto text-center">
+      <section className="px-4 sm:px-6 py-8 sm:py-12 max-w-4xl mx-auto text-center">
         <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">Contact Us</h2>
         <p className="text-muted-foreground mb-2">Get in touch with us</p>
         <a href="mailto:admin@upscconnect.in" className="text-primary font-medium hover:underline">
