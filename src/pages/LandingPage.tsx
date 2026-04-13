@@ -5,6 +5,7 @@ import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck, MessageC
 import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import Navbar from "@/components/Navbar";
 import FreeChatModal from "@/components/chat/FreeChatModal";
+import ToppersSection from "@/components/ToppersSection";
 
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
