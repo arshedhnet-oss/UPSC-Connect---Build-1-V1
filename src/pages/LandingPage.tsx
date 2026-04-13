@@ -5,6 +5,7 @@ import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck, MessageC
 import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import Navbar from "@/components/Navbar";
 import FreeChatModal from "@/components/chat/FreeChatModal";
+import ToppersSection from "@/components/ToppersSection";
 
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -68,6 +69,8 @@ const LandingPage = () => {
           </div>
         )}
       </section>
+
+      <ToppersSection />
 
       {/* How It Works */}
       <section id="how-it-works" className="px-4 sm:px-6 py-12 sm:py-20 max-w-4xl mx-auto">
