@@ -1,9 +1,9 @@
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const toppers = [
-  { name: "Abhijit Asokan", air: 234, image: "/images/topper-1.jpg" },
-  { name: "Ajina Jose", air: 669, image: "/images/topper-2.jpg" },
-  { name: "Nithin Pradeep", air: 172, image: "/images/topper-3.jpg" },
+  { name: "Abhijit Asokan", air: 234, image: "/images/topper-1.png" },
+  { name: "Ajina Jose", air: 669, image: "/images/topper-2.png" },
+  { name: "Nithin Pradeep", air: 172, image: "/images/topper-3.png" },
 ];
 
 const ToppersSection = () => {
