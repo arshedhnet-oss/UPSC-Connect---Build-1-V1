@@ -1,9 +1,10 @@
+import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const toppers = [
-  { name: "Abhijit Asokan", air: 234, image: "/images/topper-1.png" },
-  { name: "Ajina Jose", air: 669, image: "/images/topper-2.png" },
-  { name: "Nithin Pradeep", air: 172, image: "/images/topper-3.png" },
+  { name: "Abhijit Asokan", air: 234, image: "/images/topper-1.png", profileId: "753a4c1c-2017-4497-9b10-2924edf0ed11" },
+  { name: "Ajina Jose", air: 669, image: "/images/topper-2.png", profileId: "e8e23d00-c639-4b2a-8c73-f0953b752371" },
+  { name: "Nithin Pradeep", air: 172, image: "/images/topper-3.png", profileId: "8b7150c4-3a59-4967-86a9-ea6a9c7bf485" },
 ];
 
 const ToppersSection = () => {
@@ -19,9 +20,10 @@ const ToppersSection = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {toppers.map((topper) => (
-            <div
+            <Link
               key={topper.name}
-              className="group rounded-xl overflow-hidden border border-border bg-card shadow-sm transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-md"
+              to={`/mentors/${topper.profileId}`}
+              className="group rounded-xl overflow-hidden border border-border bg-card shadow-sm transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-md cursor-pointer"
             >
               <AspectRatio ratio={4 / 5}>
                 <img
@@ -31,7 +33,7 @@ const ToppersSection = () => {
                   className="h-full w-full object-cover object-top"
                 />
               </AspectRatio>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
