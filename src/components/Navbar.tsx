@@ -103,14 +103,6 @@ export default function Navbar() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={scrollToHowItWorks}
-          className="sm:hidden text-xs px-2 border border-input"
-        >
-          How
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
           asChild
           className={`sm:hidden text-xs px-2 ${isActive("/community") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "border border-input"}`}
         >
