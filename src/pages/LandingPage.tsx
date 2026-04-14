@@ -16,7 +16,7 @@ const LandingPage = () => {
       <FreeChatModal open={chatOpen} onOpenChange={setChatOpen} />
 
       {/* Hero */}
-      <section className="px-4 sm:px-6 py-8 sm:py-14 max-w-4xl mx-auto text-center">
+      <section className="px-4 sm:px-6 py-6 sm:py-10 max-w-4xl mx-auto text-center">
         <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground leading-tight animate-fade-in">
           Book 1-on-1 Mentorship<br className="hidden sm:block" /> with UPSC Toppers
         </h2>
