@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -27,6 +28,11 @@ import NotFound from "./pages/NotFound";
 import UnsubscribePage from "./pages/UnsubscribePage";
 import NotificationManager from "./components/NotificationManager";
 import EnableNotificationsPrompt from "./components/EnableNotificationsPrompt";
+
+// Lazy-loaded community pages (zero impact on main bundle)
+const CommunityFeedPage = lazy(() => import("./pages/CommunityFeedPage"));
+const CreatePostPage = lazy(() => import("./pages/CreatePostPage"));
+const PostDetailPage = lazy(() => import("./pages/PostDetailPage"));
 
 const queryClient = new QueryClient();
 
@@ -69,6 +75,9 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/profile" element={<AdminProfilePage />} />
             <Route path="/unsubscribe" element={<UnsubscribePage />} />
+            <Route path="/community" element={<Suspense fallback={<div className="min-h-screen bg-background" />}><CommunityFeedPage /></Suspense>} />
+            <Route path="/community/new" element={<Suspense fallback={<div className="min-h-screen bg-background" />}><CreatePostPage /></Suspense>} />
+            <Route path="/community/:id" element={<Suspense fallback={<div className="min-h-screen bg-background" />}><PostDetailPage /></Suspense>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

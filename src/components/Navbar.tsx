@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, LayoutDashboard, CalendarCheck, User, Menu, MessageCircle } from "lucide-react";
+import { LogOut, LayoutDashboard, CalendarCheck, User, Menu, MessageCircle, Users } from "lucide-react";
 import NotificationBellComponent from "@/components/NotificationBell";
 import {
   DropdownMenu,
@@ -75,6 +75,9 @@ export default function Navbar() {
           <Button variant="ghost" size="sm" onClick={scrollToHowItWorks}>
             How It Works
           </Button>
+          <Button variant="ghost" size="sm" asChild className={isActive("/community") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}>
+            <Link to="/community">Community</Link>
+          </Button>
         </div>
       </div>
       <div className="flex items-center gap-2 sm:gap-3">
@@ -104,6 +107,14 @@ export default function Navbar() {
           className="sm:hidden text-xs px-2 border border-input"
         >
           How
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className={`sm:hidden text-xs px-2 ${isActive("/community") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "border border-input"}`}
+        >
+          <Link to="/community">Community</Link>
         </Button>
 
         {user && profile ? (
