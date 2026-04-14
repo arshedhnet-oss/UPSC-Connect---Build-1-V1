@@ -108,6 +108,14 @@ export default function Navbar() {
         >
           How
         </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className={`sm:hidden text-xs px-2 ${isActive("/community") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "border border-input"}`}
+        >
+          <Link to="/community">Community</Link>
+        </Button>
 
         {user && profile ? (
           <>
