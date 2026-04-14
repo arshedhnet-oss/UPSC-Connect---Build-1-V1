@@ -9,12 +9,12 @@ const toppers = [
 
 const ToppersSection = () => {
   return (
-    <section className="px-4 sm:px-6 py-6 sm:py-12 bg-muted/40">
+    <section className="px-4 sm:px-6 py-4 sm:py-8 bg-muted/40">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3">
           Learn from those who've done it
         </h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto mb-10">
+        <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
           Connect with toppers and officers who've gone through the same journey.
         </p>
 
