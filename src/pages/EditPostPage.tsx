@@ -203,12 +203,10 @@ const EditPostPage = () => {
             maxLength={200}
             className="text-lg font-semibold"
           />
-          <Textarea
+          <RichTextEditor
+            content={content}
+            onChange={setContent}
             placeholder="Write your answer, notes, or essay here..."
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            rows={14}
-            className="resize-y min-h-[200px] leading-relaxed"
           />
 
           <div>
