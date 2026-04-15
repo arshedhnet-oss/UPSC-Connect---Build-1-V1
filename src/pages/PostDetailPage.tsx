@@ -10,16 +10,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MessageSquare, Clock, Reply } from "lucide-react";
+import { ArrowLeft, MessageSquare, Clock, Reply, FileDown } from "lucide-react";
+import PostImageGallery from "@/components/community/PostImageGallery";
+import CommentSection from "@/components/community/CommentSection";
 
 const PostDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [commentText, setCommentText] = useState("");
-  const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
   const { data: post, isLoading: postLoading } = useQuery({
     queryKey: ["community-post", id],
@@ -35,82 +34,10 @@ const PostDetailPage = () => {
     enabled: !!id,
   });
 
-  const { data: comments = [], isLoading: commentsLoading } = useQuery({
-    queryKey: ["community-comments", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("comments" as any)
-        .select("*, profiles!comments_user_id_fkey(name, avatar_url)")
-        .eq("post_id", id!)
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return data as any[];
-    },
-    enabled: !!id,
-  });
-
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
   };
-
-  const formatTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-  };
-
-  const handleComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-    setSubmitting(true);
-    try {
-      const payload: any = {
-        post_id: id,
-        user_id: user!.id,
-        content: commentText.trim(),
-      };
-      if (replyTo) payload.parent_id = replyTo.id;
-      const { error } = await supabase.from("comments" as any).insert(payload as any);
-      if (error) throw error;
-      setCommentText("");
-      setReplyTo(null);
-      queryClient.invalidateQueries({ queryKey: ["community-comments", id] });
-      queryClient.invalidateQueries({ queryKey: ["community-post", id] });
-    } catch (err: any) {
-      toast({ title: "Failed to post comment", description: err.message, variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Organize comments into threads
-  const topLevel = comments.filter((c: any) => !c.parent_id);
-  const replies = comments.filter((c: any) => c.parent_id);
-  const getReplies = (parentId: string) => replies.filter((r: any) => r.parent_id === parentId);
-
-  const CommentItem = ({ comment, isReply = false }: { comment: any; isReply?: boolean }) => (
-    <div className={`${isReply ? "ml-8 border-l-2 border-border pl-4" : ""} py-3`}>
-      <div className="flex items-center gap-2 mb-1">
-        <Avatar className="h-6 w-6">
-          <AvatarImage src={comment.profiles?.avatar_url || undefined} />
-          <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-            {(comment.profiles?.name || "A").slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <span className="text-sm font-medium text-foreground">{comment.profiles?.name || "Anonymous"}</span>
-        <span className="text-xs text-muted-foreground">{formatDate(comment.created_at)} · {formatTime(comment.created_at)}</span>
-      </div>
-      <p className="text-sm text-card-foreground whitespace-pre-wrap leading-relaxed">{comment.content}</p>
-      {user && !isReply && (
-        <button
-          className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
-          onClick={() => setReplyTo({ id: comment.id, name: comment.profiles?.name || "Anonymous" })}
-        >
-          <Reply className="h-3 w-3" /> Reply
-        </button>
-      )}
-    </div>
-  );
 
   if (postLoading) {
     return (
@@ -139,6 +66,10 @@ const PostDetailPage = () => {
     );
   }
 
+  const imageUrls = (post.image_urls || []) as string[];
+  const images = imageUrls.filter((url: string) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url));
+  const otherFiles = imageUrls.filter((url: string) => !/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url));
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -147,7 +78,6 @@ const PostDetailPage = () => {
           <Link to="/community"><ArrowLeft className="h-4 w-4 mr-1" /> Community</Link>
         </Button>
 
-        {/* Post content */}
         <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-3 leading-tight">{post.title}</h1>
         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-6">
           <div className="flex items-center gap-2">
@@ -175,57 +105,33 @@ const PostDetailPage = () => {
           {post.content}
         </div>
 
-        {/* Comments section */}
-        <div className="mt-10 border-t border-border pt-6">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" /> Discussion ({comments.length})
-          </h2>
+        {/* Image gallery */}
+        {images.length > 0 && <PostImageGallery images={images} />}
 
-          {user ? (
-            <form onSubmit={handleComment} className="mb-6">
-              {replyTo && (
-                <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-                  <span>Replying to <span className="font-medium text-foreground">{replyTo.name}</span></span>
-                  <button type="button" onClick={() => setReplyTo(null)} className="text-destructive hover:underline">Cancel</button>
-                </div>
-              )}
-              <Textarea
-                placeholder="Share your thoughts…"
-                value={commentText}
-                onChange={e => setCommentText(e.target.value)}
-                rows={3}
-                className="resize-none mb-2"
-              />
-              <Button type="submit" size="sm" disabled={submitting || !commentText.trim()}>
-                {submitting ? "Posting…" : "Post Comment"}
-              </Button>
-            </form>
-          ) : (
-            <div className="rounded-lg border border-border bg-muted/50 p-4 text-center mb-6">
-              <p className="text-sm text-muted-foreground mb-2">Login to join the discussion</p>
-              <Button size="sm" asChild><Link to="/login">Log in</Link></Button>
-            </div>
-          )}
+        {/* Other file attachments */}
+        {otherFiles.length > 0 && (
+          <div className="mt-6 space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">Attachments</p>
+            {otherFiles.map((url: string, i: number) => {
+              const name = decodeURIComponent(url.split("/").pop()?.split("?")[0] || `File ${i + 1}`);
+              return (
+                <a
+                  key={i}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-lg border border-border p-3 text-sm hover:bg-muted/50 transition-colors"
+                >
+                  <FileDown className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="truncate text-foreground">{name}</span>
+                </a>
+              );
+            })}
+          </div>
+        )}
 
-          {commentsLoading ? (
-            <div className="space-y-3">
-              {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
-            </div>
-          ) : topLevel.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No comments yet. Start the discussion!</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {topLevel.map((comment: any) => (
-                <div key={comment.id}>
-                  <CommentItem comment={comment} />
-                  {getReplies(comment.id).map((reply: any) => (
-                    <CommentItem key={reply.id} comment={reply} isReply />
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Comments */}
+        <CommentSection postId={id!} user={user} />
       </article>
     </div>
   );

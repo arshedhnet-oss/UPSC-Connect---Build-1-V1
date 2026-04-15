@@ -90,6 +90,13 @@ const CommunityFeedPage = () => {
                 >
                   <h2 className="font-display text-lg font-semibold text-card-foreground mb-1 line-clamp-2">{post.title}</h2>
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{getPreview(post.content)}</p>
+                  {post.image_urls?.length > 0 && (
+                    <div className="flex gap-2 mb-3 overflow-hidden">
+                      {(post.image_urls as string[]).filter((url: string) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url)).slice(0, 3).map((url: string, i: number) => (
+                        <img key={i} src={url} alt="" className="h-16 w-16 rounded-md object-cover border border-border" loading="lazy" />
+                      ))}
+                    </div>
+                  )}
                   <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                     <span className="font-medium text-foreground">{post.profiles?.name || "Anonymous"}</span>
                     <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDate(post.created_at)}</span>
