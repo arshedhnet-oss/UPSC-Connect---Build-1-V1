@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MessageSquare, Clock, Reply, FileDown } from "lucide-react";
+import { ArrowLeft, MessageSquare, Clock, Reply, FileDown, Pencil } from "lucide-react";
 import PostImageGallery from "@/components/community/PostImageGallery";
 import CommentSection from "@/components/community/CommentSection";
 
@@ -91,7 +91,14 @@ const PostDetailPage = () => {
           </div>
         )}
 
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-3 leading-tight">{post.title}</h1>
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground leading-tight">{post.title}</h1>
+          {user?.id === post.author_id && (
+            <Button variant="outline" size="sm" asChild className="flex-shrink-0 mt-1">
+              <Link to={`/community/${id}/edit`}><Pencil className="h-3.5 w-3.5 mr-1" /> Edit</Link>
+            </Button>
+          )}
+        </div>
         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-6">
           <div className="flex items-center gap-2">
             <Avatar className="h-7 w-7">

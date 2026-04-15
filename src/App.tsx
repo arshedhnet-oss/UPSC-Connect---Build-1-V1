@@ -33,6 +33,7 @@ import EnableNotificationsPrompt from "./components/EnableNotificationsPrompt";
 const CommunityFeedPage = lazy(() => import("./pages/CommunityFeedPage"));
 const CreatePostPage = lazy(() => import("./pages/CreatePostPage"));
 const PostDetailPage = lazy(() => import("./pages/PostDetailPage"));
+const EditPostPage = lazy(() => import("./pages/EditPostPage"));
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,7 @@ const App = () => (
             <Route path="/community" element={<Suspense fallback={<div className="min-h-screen bg-background" />}><CommunityFeedPage /></Suspense>} />
             <Route path="/community/new" element={<Suspense fallback={<div className="min-h-screen bg-background" />}><CreatePostPage /></Suspense>} />
             <Route path="/community/:id" element={<Suspense fallback={<div className="min-h-screen bg-background" />}><PostDetailPage /></Suspense>} />
+            <Route path="/community/:id/edit" element={<Suspense fallback={<div className="min-h-screen bg-background" />}><EditPostPage /></Suspense>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
