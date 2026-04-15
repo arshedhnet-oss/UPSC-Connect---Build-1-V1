@@ -39,7 +39,7 @@ const CommunityFeedPage = () => {
   };
 
   const getPreview = (content: string) => {
-    const plain = content.replace(/[#*_~`>\-\[\]()]/g, "").trim();
+    const plain = content.replace(/<[^>]*>/g, "").replace(/[#*_~`>\-\[\]()]/g, "").trim();
     return plain.length > 180 ? plain.slice(0, 180) + "…" : plain;
   };
 
