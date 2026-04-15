@@ -121,9 +121,10 @@ const PostDetailPage = () => {
           </div>
         )}
 
-        <div className="prose prose-sm max-w-none text-card-foreground whitespace-pre-wrap leading-[1.8] text-[15px]">
-          {post.content}
-        </div>
+        <div
+          className="prose prose-sm max-w-none text-card-foreground leading-[1.8] text-[15px]"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
         {/* Additional images gallery (skip first since it's the hero) */}
         {images.length > 1 && <PostImageGallery images={images.slice(1)} />}

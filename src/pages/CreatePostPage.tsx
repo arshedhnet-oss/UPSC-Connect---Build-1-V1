@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/community/RichTextEditor";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, X, ImagePlus, FileUp, Loader2 } from "lucide-react";
@@ -158,12 +158,10 @@ const CreatePostPage = () => {
             />
           </div>
           <div>
-            <Textarea
+            <RichTextEditor
+              content={content}
+              onChange={setContent}
               placeholder="Write your answer, notes, or essay here..."
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              rows={14}
-              className="resize-y min-h-[200px] leading-relaxed"
             />
           </div>
 
