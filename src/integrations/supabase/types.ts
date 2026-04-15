@@ -647,6 +647,7 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          image_urls: string[] | null
           tags: string[] | null
           title: string
         }
@@ -656,6 +657,7 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          image_urls?: string[] | null
           tags?: string[] | null
           title: string
         }
@@ -665,6 +667,7 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          image_urls?: string[] | null
           tags?: string[] | null
           title?: string
         }
