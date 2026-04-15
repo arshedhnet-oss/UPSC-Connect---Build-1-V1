@@ -78,6 +78,19 @@ const PostDetailPage = () => {
           <Link to="/community"><ArrowLeft className="h-4 w-4 mr-1" /> Community</Link>
         </Button>
 
+        {/* Hero/poster image */}
+        {images.length > 0 && (
+          <div className="mb-5 -mx-4 sm:mx-0">
+            <img
+              src={images[0]}
+              alt={post.title}
+              className="w-full max-h-[360px] object-cover sm:rounded-xl"
+              loading="eager"
+              onClick={() => {}}
+            />
+          </div>
+        )}
+
         <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-3 leading-tight">{post.title}</h1>
         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-6">
           <div className="flex items-center gap-2">
@@ -105,8 +118,8 @@ const PostDetailPage = () => {
           {post.content}
         </div>
 
-        {/* Image gallery */}
-        {images.length > 0 && <PostImageGallery images={images} />}
+        {/* Additional images gallery (skip first since it's the hero) */}
+        {images.length > 1 && <PostImageGallery images={images.slice(1)} />}
 
         {/* Other file attachments */}
         {otherFiles.length > 0 && (

@@ -86,24 +86,26 @@ const CommunityFeedPage = () => {
                 <Link
                   key={post.id}
                   to={`/community/${post.id}`}
-                  className="block rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
+                  className="block rounded-xl border border-border bg-card overflow-hidden transition-shadow hover:shadow-md"
                 >
-                  <h2 className="font-display text-lg font-semibold text-card-foreground mb-1 line-clamp-2">{post.title}</h2>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{getPreview(post.content)}</p>
-                  {post.image_urls?.length > 0 && (
-                    <div className="flex gap-2 mb-3 overflow-hidden">
-                      {(post.image_urls as string[]).filter((url: string) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url)).slice(0, 3).map((url: string, i: number) => (
-                        <img key={i} src={url} alt="" className="h-16 w-16 rounded-md object-cover border border-border" loading="lazy" />
+                  {/* Poster image */}
+                  {post.image_urls?.length > 0 && (() => {
+                    const heroImg = (post.image_urls as string[]).find((url: string) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url));
+                    return heroImg ? (
+                      <img src={heroImg} alt="" className="w-full h-40 sm:h-48 object-cover" loading="lazy" />
+                    ) : null;
+                  })()}
+                  <div className="p-5">
+                    <h2 className="font-display text-lg font-semibold text-card-foreground mb-1 line-clamp-2">{post.title}</h2>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{getPreview(post.content)}</p>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">{post.profiles?.name || "Anonymous"}</span>
+                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDate(post.created_at)}</span>
+                      <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{post.comment_count || 0}</span>
+                      {post.tags?.length > 0 && post.tags.map((tag: string) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
                       ))}
                     </div>
-                  )}
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">{post.profiles?.name || "Anonymous"}</span>
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDate(post.created_at)}</span>
-                    <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{post.comment_count || 0}</span>
-                    {post.tags?.length > 0 && post.tags.map((tag: string) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-                    ))}
                   </div>
                 </Link>
               ))}
