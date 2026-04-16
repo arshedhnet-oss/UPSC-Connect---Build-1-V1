@@ -6,12 +6,16 @@ import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import Navbar from "@/components/Navbar";
 import FreeChatModal from "@/components/chat/FreeChatModal";
 import ToppersSection from "@/components/ToppersSection";
+import MentorshipStickyBar from "@/components/MentorshipStickyBar";
+import MentorshipProgrammeCard from "@/components/MentorshipProgrammeCard";
+import MentorshipFloatingCTA from "@/components/MentorshipFloatingCTA";
 
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
+      <MentorshipStickyBar />
       <Navbar />
       <FreeChatModal open={chatOpen} onOpenChange={setChatOpen} />
 
@@ -69,6 +73,8 @@ const LandingPage = () => {
           </div>
         )}
       </section>
+
+      <MentorshipProgrammeCard />
 
       <ToppersSection />
 
@@ -220,6 +226,7 @@ const LandingPage = () => {
           <p>© 2026 UPSC Connect. All rights reserved.</p>
         </div>
       </footer>
+      <MentorshipFloatingCTA />
     </div>
   );
 };
