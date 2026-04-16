@@ -24,7 +24,7 @@ const MentorshipProgrammeCard = () => {
               Prelims 2026 Mentorship Programme
             </h2>
             <Badge className="bg-destructive text-destructive-foreground text-[10px] uppercase tracking-wide">
-              Only 10 Seats
+              Only 5 Seats Remaining
             </Badge>
           </div>
           <p className="text-muted-foreground text-sm sm:text-base mb-5">
@@ -46,7 +46,7 @@ const MentorshipProgrammeCard = () => {
           <div className="mb-5">
             <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
               <span>Few spots left</span>
-              <span>10 seats total</span>
+              <span>Only 5 seats remaining</span>
             </div>
             <Progress value={70} className="h-2" />
           </div>
