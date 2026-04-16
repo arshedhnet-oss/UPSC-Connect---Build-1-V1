@@ -74,6 +74,8 @@ const LandingPage = () => {
         )}
       </section>
 
+      <MentorshipProgrammeCard />
+
       <ToppersSection />
 
       {/* How It Works */}
@@ -224,6 +226,7 @@ const LandingPage = () => {
           <p>© 2026 UPSC Connect. All rights reserved.</p>
         </div>
       </footer>
+      <MentorshipFloatingCTA />
     </div>
   );
 };
