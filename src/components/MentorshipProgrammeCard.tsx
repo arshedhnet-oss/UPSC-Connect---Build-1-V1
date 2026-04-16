@@ -9,7 +9,7 @@ const highlights = [
   { icon: Video, text: "Upto 10 One-to-One sessions via Google Meet" },
   { icon: MessageCircle, text: "24\u00d77 Doubt clearance via Telegram chat" },
   { icon: Target, text: "High-value strategy & guidance (including CSAT)" },
-  { icon: BookOpen, text: "Handpicked practice questions from top institutes" },
+  { icon: BookOpen, text: "Handpicked practice questions for Prelims 2026" },
   { icon: ClipboardCheck, text: "Last-minute revision + subject-wise checklist" },
   { icon: Users, text: "Bonus: 1:1 session with a 2025 topper" },
 ];
