@@ -13,7 +13,7 @@ const MentorshipStickyBar = () => {
       <span className="truncate">
         <span className="hidden sm:inline">UC Booster Prelims 2026 Mentorship Programme – </span>
         <span className="sm:hidden">Prelims 2026 Programme – </span>
-        Only 10 Seats
+        Only 5 Seats remaining
       </span>
       <a
         href={PROGRAMME_LINK}
