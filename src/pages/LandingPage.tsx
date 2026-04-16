@@ -15,6 +15,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <MentorshipStickyBar />
       <Navbar />
       <FreeChatModal open={chatOpen} onOpenChange={setChatOpen} />
 
