@@ -6,6 +6,9 @@ import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import Navbar from "@/components/Navbar";
 import FreeChatModal from "@/components/chat/FreeChatModal";
 import ToppersSection from "@/components/ToppersSection";
+import MentorshipStickyBar from "@/components/MentorshipStickyBar";
+import MentorshipProgrammeCard from "@/components/MentorshipProgrammeCard";
+import MentorshipFloatingCTA from "@/components/MentorshipFloatingCTA";
 
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
