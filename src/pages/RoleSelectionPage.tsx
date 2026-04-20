@@ -46,6 +46,7 @@ const RoleSelectionPage = () => {
       <div className="flex items-center justify-center px-4 py-12 sm:py-20">
         <Card className="w-full max-w-lg animate-fade-in">
           <CardHeader className="text-center">
+            <h1 className="sr-only">Choose your UPSC Connect role</h1>
             <CardTitle className="font-display text-2xl">How do you want to use UPSC Connect?</CardTitle>
             <CardDescription>Choose how you'd like to get started</CardDescription>
           </CardHeader>
