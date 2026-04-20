@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
@@ -26,7 +26,7 @@ import { useState } from "react";
 export default function Navbar() {
   const { user, profile, signOut } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const unreadCount = useUnreadCount();
 
