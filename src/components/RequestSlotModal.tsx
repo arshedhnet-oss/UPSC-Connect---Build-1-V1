@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { supabaseUntyped } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { loadRazorpay } from "@/lib/loadRazorpay";
 
 declare global {
   interface Window {
@@ -174,6 +175,7 @@ export default function RequestSlotModal({
         theme: { color: "#1a1a2e" },
       };
 
+      await loadRazorpay();
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err: unknown) {

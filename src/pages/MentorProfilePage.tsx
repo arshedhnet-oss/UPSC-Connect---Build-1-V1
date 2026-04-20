@@ -16,6 +16,7 @@ import StarRating from "@/components/StarRating";
 import FeaturedMentorBadge from "@/components/FeaturedMentorBadge";
 import AirRankLabel from "@/components/AirRankLabel";
 import RequestSlotModal from "@/components/RequestSlotModal";
+import { loadRazorpay } from "@/lib/loadRazorpay";
 
 declare global {
   interface Window {
@@ -221,6 +222,7 @@ const MentorProfilePage = () => {
           theme: { color: "#1a1a2e" },
         };
 
+        await loadRazorpay();
         const rzp = new window.Razorpay(options);
         rzp.open();
       }
