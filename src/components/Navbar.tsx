@@ -32,17 +32,6 @@ export default function Navbar() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const scrollToHowItWorks = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (location.pathname === "/") {
-      document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      navigate("/#how-it-works");
-      setTimeout(() => {
-        document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    }
-  };
 
   const ChatBell = () => (
     <Link to="/chat" className="relative">
@@ -72,8 +61,8 @@ export default function Navbar() {
               <Link to="/organisations">Organisations</Link>
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={scrollToHowItWorks}>
-            How It Works
+          <Button variant="ghost" size="sm" asChild className={isActive("/how-it-works") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}>
+            <Link to="/how-it-works">How It Works</Link>
           </Button>
           <Button variant="ghost" size="sm" asChild className={isActive("/community") ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}>
             <Link to="/community">Community</Link>
