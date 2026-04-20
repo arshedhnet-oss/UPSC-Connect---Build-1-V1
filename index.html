@@ -17,7 +17,8 @@
 
     <!-- ✅ Open Graph (for Google + WhatsApp sharing) -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="UPSC Mentorship by Toppers | 1-on-1 UPSC Guidance" />
+    <meta property="og:site_name" content="UPSC Connect" />
+    <meta property="og:title" content="UPSC Connect - UPSC Mentorship by Toppers | 1-on-1 UPSC Guidance" />
     <meta
       property="og:description"
       content="Connect with UPSC toppers and experienced mentors for personalized guidance. Book 1-on-1 mentorship for Prelims, Mains, and Interview."
@@ -27,7 +28,8 @@
     <!-- ✅ Twitter SEO -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@UPSCConnect" />
-    <meta name="twitter:title" content="UPSC Mentorship by Toppers | Book 1-on-1 Guidance" />
+    <meta name="twitter:domain" content="upscconnect.in" />
+    <meta name="twitter:title" content="UPSC Connect - UPSC Mentorship by Toppers | Book 1-on-1 Guidance" />
     <meta
       name="twitter:description"
       content="Personalized UPSC mentorship from toppers. Crack Prelims, Mains & Interview with expert guidance."
@@ -42,6 +44,30 @@
 
     <!-- ✅ Canonical URL (important for SEO) -->
     <link rel="canonical" href="https://www.upscconnect.in/" />
+
+    <!-- ✅ WebSite + Organization JSON-LD (controls Google Search display name) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://www.upscconnect.in/#website",
+            "name": "UPSC Connect",
+            "alternateName": "UPSC Connect - Mentorship by Toppers",
+            "url": "https://www.upscconnect.in/",
+            "publisher": { "@id": "https://www.upscconnect.in/#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://www.upscconnect.in/#organization",
+            "name": "UPSC Connect",
+            "url": "https://www.upscconnect.in/",
+            "email": "admin@upscconnect.in"
+          }
+        ]
+      }
+    </script>
 
     <!-- Preconnect to font origins to speed up FCP -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
