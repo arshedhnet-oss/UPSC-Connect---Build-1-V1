@@ -24,6 +24,7 @@ import OrganisationSignupPage from "./pages/OrganisationSignupPage";
 import InstituteDashboardPage from "./pages/InstituteDashboardPage";
 import ChatPage from "./pages/ChatPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
+import HowItWorksPage from "./pages/HowItWorksPage";
 import NotFound from "./pages/NotFound";
 import UnsubscribePage from "./pages/UnsubscribePage";
 import NotificationManager from "./components/NotificationManager";
@@ -71,6 +72,7 @@ const App = () => (
               </>
             )}
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/booking-confirmed/:bookingId" element={<BookingConfirmationPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
