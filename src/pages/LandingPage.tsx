@@ -9,6 +9,7 @@ import ToppersSection from "@/components/ToppersSection";
 import MentorshipStickyBar from "@/components/MentorshipStickyBar";
 import MentorshipProgrammeCard from "@/components/MentorshipProgrammeCard";
 import MentorshipFloatingCTA from "@/components/MentorshipFloatingCTA";
+import FAQSection from "@/components/FAQSection";
 
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
