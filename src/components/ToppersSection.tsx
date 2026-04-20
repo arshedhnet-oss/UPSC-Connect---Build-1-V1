@@ -2,9 +2,9 @@ import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const toppers = [
-  { name: "Abhijit Asokan", air: 234, image: "/images/topper-1.png", profileId: "753a4c1c-2017-4497-9b10-2924edf0ed11" },
-  { name: "Ajina Jose", air: 669, image: "/images/topper-2.png", profileId: "e8e23d00-c639-4b2a-8c73-f0953b752371" },
-  { name: "Nithin Pradeep", air: 172, image: "/images/topper-3.png", profileId: "8b7150c4-3a59-4967-86a9-ea6a9c7bf485" },
+  { name: "Abhijit Asokan", air: 234, slug: "topper-1", profileId: "753a4c1c-2017-4497-9b10-2924edf0ed11" },
+  { name: "Ajina Jose", air: 669, slug: "topper-2", profileId: "e8e23d00-c639-4b2a-8c73-f0953b752371" },
+  { name: "Nithin Pradeep", air: 172, slug: "topper-3", profileId: "8b7150c4-3a59-4967-86a9-ea6a9c7bf485" },
 ];
 
 const ToppersSection = () => {
@@ -27,9 +27,14 @@ const ToppersSection = () => {
             >
               <AspectRatio ratio={4 / 5}>
                 <img
-                  src={topper.image}
+                  src={`/images/${topper.slug}-800w.webp`}
+                  srcSet={`/images/${topper.slug}-400w.webp 400w, /images/${topper.slug}-800w.webp 800w`}
+                  sizes="(min-width: 640px) 33vw, 100vw"
                   alt={`${topper.name} – AIR ${topper.air}`}
                   loading="lazy"
+                  decoding="async"
+                  width={800}
+                  height={1000}
                   className="h-full w-full object-cover object-top"
                 />
               </AspectRatio>
