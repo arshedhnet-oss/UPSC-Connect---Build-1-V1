@@ -258,6 +258,8 @@ const LandingPage = () => {
         </div>
       </section>
 
+      <FAQSection />
+
       {/* Contact */}
       <section className="px-4 sm:px-6 py-8 sm:py-12 max-w-4xl mx-auto text-center">
         <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">Contact Us</h2>
