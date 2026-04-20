@@ -43,8 +43,11 @@
     <!-- ✅ Canonical URL (important for SEO) -->
     <link rel="canonical" href="https://www.upscconnect.in/" />
 
-    <!-- Razorpay -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- Preconnect to font origins to speed up FCP -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Razorpay checkout.js is lazy-loaded on demand from src/lib/loadRazorpay.ts to improve FCP -->
   </head>
 
   <body>
