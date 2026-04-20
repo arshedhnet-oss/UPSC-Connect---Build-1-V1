@@ -202,6 +202,61 @@ const LandingPage = () => {
         </section>
       )}
 
+      {/* About / Detailed Features */}
+      <section className="px-4 sm:px-6 py-10 sm:py-14 bg-muted/30 border-y border-border">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground text-center mb-4">
+            Built for Serious UPSC Aspirants
+          </h2>
+          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+            UPSC Connect is a focused mentorship platform that bridges the gap between aspirants and the people who have already cracked the Civil Services Examination. Every feature is designed around one goal: helping you prepare smarter, stay consistent, and walk into the exam hall with clarity.
+          </p>
+
+          <div className="grid sm:grid-cols-2 gap-5 sm:gap-6 mb-8 sm:mb-10">
+            <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+              <h3 className="font-display text-lg font-semibold text-card-foreground mb-2">Verified Mentors, Not Anonymous Coaches</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Every mentor on the platform is a UPSC topper, interview-stage candidate, or domain expert whose credentials we verify before approval. You see their AIR, attempts, optional subject, languages, and subjects of expertise upfront, so you can choose someone whose journey mirrors yours.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+              <h3 className="font-display text-lg font-semibold text-card-foreground mb-2">Personalised 1-on-1 Guidance</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Group coaching gives generic advice. We give you a private session with a mentor who reviews your specific situation: your background, available time, weak areas, optional subject, and answer-writing style. Every session ends with a concrete action plan.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+              <h3 className="font-display text-lg font-semibold text-card-foreground mb-2">Stage-Specific Strategy: Prelims, Mains & Interview</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Whether you are starting your foundation, refining a Mains answer-writing approach, polishing your DAF for the Personality Test, or recovering after a setback, you can pick a mentor who has lived that exact stage and understands what genuinely moves the needle.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+              <h3 className="font-display text-lg font-semibold text-card-foreground mb-2">Transparent Pricing & Instant Booking</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                No hidden packages, no upselling. Each mentor sets their own per-session price, you see availability in real time, pay securely, and receive your meeting link instantly. Sessions are conducted on Google Meet or Jitsi with a private passcode.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+              <h3 className="font-display text-lg font-semibold text-card-foreground mb-2">Free Doubt Chat with a Mentor</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Not ready to book yet? Use our free chat to ask a mentor a quick question about your strategy, optional choice, or daily routine. You typically get a thoughtful, human reply within ten minutes, no payment required.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+              <h3 className="font-display text-lg font-semibold text-card-foreground mb-2">A Community That Learns Together</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Beyond 1-on-1 sessions, our Community space lets aspirants share writeups, model answers, and preparation notes, and discuss them with peers and mentors, so collective wisdom compounds over the long preparation cycle.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-sm sm:text-base text-muted-foreground text-center max-w-3xl mx-auto leading-relaxed">
+            UPSC preparation is a long, often lonely journey. The right mentor at the right moment can save you months of wasted effort, course-correct your strategy, and rebuild your confidence after a tough attempt. UPSC Connect exists so that every aspirant, regardless of city, coaching access, or budget, can sit across the table with someone who has already walked the path.
+          </p>
+        </div>
+      </section>
+
       {/* Contact */}
       <section className="px-4 sm:px-6 py-8 sm:py-12 max-w-4xl mx-auto text-center">
         <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">Contact Us</h2>
