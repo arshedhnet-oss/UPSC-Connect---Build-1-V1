@@ -182,6 +182,7 @@ const MentorOnboardingPage = () => {
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10">
               <GraduationCap className="h-7 w-7 text-accent" />
             </div>
+            <h1 className="sr-only">Apply to become a UPSC Connect mentor</h1>
             <CardTitle className="font-display text-2xl">Mentor Application</CardTitle>
             <CardDescription>
               {step === 1

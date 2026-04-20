@@ -21,9 +21,9 @@ const LandingPage = () => {
 
       {/* Hero */}
       <section className="px-4 sm:px-6 py-6 sm:py-10 max-w-4xl mx-auto text-center">
-        <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground leading-tight animate-fade-in">
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground leading-tight animate-fade-in">
           Book 1-on-1 Mentorship<br className="hidden sm:block" /> with UPSC Toppers
-        </h2>
+        </h1>
         <p className="mt-4 sm:mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.1s" }}>
           Connect with experienced mentors for personalized guidance on your UPSC preparation journey. Book sessions, get expert advice, and crack the exam.
         </p>

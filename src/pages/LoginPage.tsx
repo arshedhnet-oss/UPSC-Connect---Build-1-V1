@@ -41,6 +41,7 @@ const LoginPage = () => {
       <div className="flex items-center justify-center px-4 py-12 sm:py-20">
         <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="text-center">
+            <h1 className="sr-only">Sign in to UPSC Connect</h1>
             <CardTitle className="font-display text-2xl">Welcome Back</CardTitle>
             <CardDescription>Sign in to UPSC Connect</CardDescription>
           </CardHeader>

@@ -82,6 +82,7 @@ const ResetPasswordPage = () => {
       <div className="flex items-center justify-center px-4 py-12 sm:py-20">
         <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="text-center">
+            <h1 className="sr-only">Reset your password</h1>
             <CardTitle className="font-display text-2xl">Reset Password</CardTitle>
             <CardDescription>Enter your new password below</CardDescription>
           </CardHeader>
