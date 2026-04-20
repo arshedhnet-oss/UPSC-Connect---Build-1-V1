@@ -9,6 +9,7 @@ import ToppersSection from "@/components/ToppersSection";
 import MentorshipStickyBar from "@/components/MentorshipStickyBar";
 import MentorshipProgrammeCard from "@/components/MentorshipProgrammeCard";
 import MentorshipFloatingCTA from "@/components/MentorshipFloatingCTA";
+import FAQSection from "@/components/FAQSection";
 
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -256,6 +257,8 @@ const LandingPage = () => {
           </p>
         </div>
       </section>
+
+      <FAQSection />
 
       {/* Contact */}
       <section className="px-4 sm:px-6 py-8 sm:py-12 max-w-4xl mx-auto text-center">
