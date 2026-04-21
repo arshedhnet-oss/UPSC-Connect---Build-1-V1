@@ -56,6 +56,15 @@ const LandingPage = () => {
             </Button>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">⚡ Get a reply in 10 minutes</p>
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => setBookOpen(true)}
+            className="mt-4 rounded-full px-7 py-5 text-sm font-semibold border-2 border-primary/40 text-primary hover:bg-primary/5 hover:border-primary transition-all"
+          >
+            <CalendarCheck className="h-4 w-4 mr-2" />
+            Book a Free 1:1 Session
+          </Button>
         </div>
 
         {/* Secondary CTAs */}
