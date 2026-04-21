@@ -214,7 +214,7 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
           </DialogHeader>
           <div className="flex flex-col sm:flex-row gap-2 mt-2">
             <Button onClick={handleAuthRequired} className="flex-1">Sign Up</Button>
-            <Button variant="outline" onClick={() => { navigate("/login", { state: { from: "/" } }); onOpenChange(false); }} className="flex-1">
+            <Button variant="outline" onClick={() => { navigate("/login", { state: { intent: "book_free_session" } }); onOpenChange(false); }} className="flex-1">
               Log In
             </Button>
           </div>

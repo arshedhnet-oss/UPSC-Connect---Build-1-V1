@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck, MessageCircle, GraduationCap } from "lucide-react";
+import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck, MessageCircle, GraduationCap, CalendarCheck } from "lucide-react";
 import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import Navbar from "@/components/Navbar";
 import FreeChatModal from "@/components/chat/FreeChatModal";
+import BookFreeSessionModal from "@/components/BookFreeSessionModal";
 import ToppersSection from "@/components/ToppersSection";
 import MentorshipStickyBar from "@/components/MentorshipStickyBar";
 import MentorshipProgrammeCard from "@/components/MentorshipProgrammeCard";
@@ -13,6 +14,17 @@ import FAQSection from "@/components/FAQSection";
 
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
+  const [bookOpen, setBookOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Auto-open booking modal after returning from signup/login with intent
+  useEffect(() => {
+    if (searchParams.get("openFreeBooking") === "1") {
+      setBookOpen(true);
+      searchParams.delete("openFreeBooking");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   return (
     <div className="min-h-screen bg-background">
