@@ -44,7 +44,7 @@ const LandingPage = () => {
         {/* Primary CTA - Talk to Mentor */}
         <div className="mt-6 sm:mt-8 flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.15s" }}>
           <div className="relative">
-            <Button size="lg" onClick={() => setChatOpen(true)} className="group relative overflow-hidden rounded-full px-8 sm:px-10 py-6 text-base font-semibold border-0 bg-[hsl(28,100%,50%)] hover:bg-[hsl(28,100%,45%)] text-white shadow-lg shadow-[hsl(28,100%,50%)/0.3] transition-all duration-300 hover:shadow-xl hover:shadow-[hsl(28,100%,50%)/0.4] hover:scale-[1.05] animate-[pulse-glow-orange_2s_ease-in-out_infinite]">
+            <Button size="lg" onClick={() => setChatOpen(true)} className="group relative overflow-hidden rounded-full px-8 sm:px-10 py-6 text-base font-semibold border-0 bg-[hsl(28,100%,50%)] hover:bg-[hsl(28,100%,45%)] text-white shadow-lg shadow-[hsl(28,100%,50%)/0.3] transition-all duration-300 hover:shadow-xl hover:shadow-[hsl(28,100%,50%)/0.4] hover:scale-[1.05]">
               <span className="relative z-10 flex items-center gap-2.5">
                 <span className="relative flex items-center justify-center h-7 w-7 rounded-full bg-white/20 backdrop-blur-sm">
                   <MessageCircle className="h-4 w-4 text-white fill-white/40" />
