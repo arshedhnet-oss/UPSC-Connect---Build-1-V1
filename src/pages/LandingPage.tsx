@@ -31,6 +31,7 @@ const LandingPage = () => {
       <MentorshipStickyBar />
       <Navbar />
       <FreeChatModal open={chatOpen} onOpenChange={setChatOpen} />
+      <BookFreeSessionModal open={bookOpen} onOpenChange={setBookOpen} />
 
       {/* Hero */}
       <section className="px-4 sm:px-6 py-6 sm:py-10 max-w-4xl mx-auto text-center">
