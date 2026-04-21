@@ -14,6 +14,16 @@ const FREE_SESSION_STATUS = "free_session_confirmed";
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_REGEX = /^\d{2}:\d{2}:\d{2}$/;
+
+// Allowed fixed slots (IST). Server enforces this — clients cannot bypass.
+const ALLOWED_SLOTS: Record<string, { end: string; label: string }> = {
+  "10:30:00": { end: "11:00:00", label: "10:30 AM – 11:00 AM" },
+  "11:00:00": { end: "11:30:00", label: "11:00 AM – 11:30 AM" },
+  "11:30:00": { end: "12:00:00", label: "11:30 AM – 12:00 PM" },
+  "12:00:00": { end: "12:30:00", label: "12:00 PM – 12:30 PM" },
+};
 
 function generateMeetingId(bookingId: string): string {
   return `UPSC-${bookingId.slice(0, 8)}`;
@@ -26,6 +36,14 @@ function generatePasscode(): string {
 
 function normalizePhone(input: string): string {
   return input.replace(/\D/g, "").replace(/^91/, "").slice(-10);
+}
+
+// Today in Asia/Kolkata as YYYY-MM-DD
+function todayIST(): string {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit",
+  });
+  return fmt.format(new Date()); // en-CA → YYYY-MM-DD
 }
 
 Deno.serve(async (req) => {
@@ -54,14 +72,37 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { slot_id, name, phone, whatsapp, email } = body;
+    const { booking_date, start_time, end_time, slot_label, name, phone, whatsapp, email } = body;
 
     // Validation
-    if (!slot_id || !name?.trim() || !email?.trim() || !phone?.trim() || !whatsapp?.trim()) {
+    if (!booking_date || !start_time || !end_time || !name?.trim() || !email?.trim() || !phone?.trim() || !whatsapp?.trim()) {
       return new Response(JSON.stringify({ error: "All fields are required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (!DATE_REGEX.test(booking_date) || !TIME_REGEX.test(start_time) || !TIME_REGEX.test(end_time)) {
+      return new Response(JSON.stringify({ error: "Invalid date or time format" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Server-enforced slot template
+    const allowed = ALLOWED_SLOTS[start_time];
+    if (!allowed || allowed.end !== end_time) {
+      return new Response(JSON.stringify({ error: "Invalid time slot" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const enforcedLabel = allowed.label;
+
+    // Server-enforced date: must be tomorrow or later (IST)
+    const today = todayIST();
+    if (booking_date <= today) {
+      return new Response(JSON.stringify({ error: "Bookings must be for a future date (starting tomorrow)" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const cleanPhone = normalizePhone(phone);
     const cleanWhatsapp = normalizePhone(whatsapp);
     if (!PHONE_REGEX.test(cleanPhone)) {
@@ -119,26 +160,73 @@ Deno.serve(async (req) => {
     }
     const mentorId = chatMentor.user_id as string;
 
-    // Validate slot belongs to chat mentor and is bookable
-    const { data: slot, error: slotErr } = await adminClient
+    // Find or create the slot row for (mentor, date, start_time)
+    const { data: existingSlot } = await adminClient
       .from("slots")
-      .select("*")
-      .eq("id", slot_id)
+      .select("id, is_booked, is_active")
       .eq("mentor_id", mentorId)
-      .eq("is_active", true)
+      .eq("date", booking_date)
+      .eq("start_time", start_time)
       .maybeSingle();
-    if (slotErr || !slot) {
-      return new Response(JSON.stringify({ error: "Selected slot is not available" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+
+    let slotId: string;
+    if (existingSlot) {
+      if (existingSlot.is_booked || existingSlot.is_active === false) {
+        return new Response(JSON.stringify({ error: "slot_taken" }), {
+          status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      slotId = existingSlot.id;
+    } else {
+      // Insert a fresh slot row for this fixed template
+      const { data: newSlot, error: slotInsertErr } = await adminClient
+        .from("slots")
+        .insert({
+          mentor_id: mentorId,
+          date: booking_date,
+          start_time,
+          end_time,
+          is_active: true,
+          is_booked: false,
+        })
+        .select("id")
+        .single();
+      if (slotInsertErr || !newSlot) {
+        // Likely a race condition — re-fetch
+        const { data: raceSlot } = await adminClient
+          .from("slots")
+          .select("id, is_booked")
+          .eq("mentor_id", mentorId)
+          .eq("date", booking_date)
+          .eq("start_time", start_time)
+          .maybeSingle();
+        if (!raceSlot || raceSlot.is_booked) {
+          return new Response(JSON.stringify({ error: "slot_taken" }), {
+            status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        slotId = raceSlot.id;
+      } else {
+        slotId = newSlot.id;
+      }
     }
-    if (slot.is_booked) {
-      return new Response(JSON.stringify({ error: "This slot was just booked. Please pick another." }), {
+
+    // Atomically claim the slot — this is the race-condition guard
+    const { data: claimedSlot, error: claimErr } = await adminClient
+      .from("slots")
+      .update({ is_booked: true })
+      .eq("id", slotId)
+      .eq("is_booked", false)
+      .select("id, date, start_time, end_time")
+      .maybeSingle();
+
+    if (claimErr || !claimedSlot) {
+      return new Response(JSON.stringify({ error: "slot_taken" }), {
         status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Duplicate guard: prevent same user booking same slot or any free session in the last 2 minutes
+    // Duplicate guard: prevent rapid-fire double submissions by same user
     const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
     const { count: recentCount } = await adminClient
       .from("bookings")
@@ -147,6 +235,8 @@ Deno.serve(async (req) => {
       .eq("status", FREE_SESSION_STATUS)
       .gte("created_at", twoMinAgo);
     if ((recentCount ?? 0) > 0) {
+      // Roll back the slot claim
+      await adminClient.from("slots").update({ is_booked: false }).eq("id", slotId);
       return new Response(JSON.stringify({ error: "Please wait a moment before booking again." }), {
         status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -158,49 +248,49 @@ Deno.serve(async (req) => {
       .insert({
         mentee_id: user.id,
         mentor_id: mentorId,
-        slot_id: slot.id,
+        slot_id: slotId,
         status: FREE_SESSION_STATUS,
       })
       .select()
       .single();
     if (bookErr || !booking) {
       console.error("[FreeSession] booking insert failed", bookErr);
+      // Roll back the slot claim
+      await adminClient.from("slots").update({ is_booked: false }).eq("id", slotId);
       return new Response(JSON.stringify({ error: "Could not create booking" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Generate meeting + mark slot booked
+    // Generate meeting
     const meetingLink = `https://meet.jit.si/${generateMeetingId(booking.id)}`;
     const passcode = generatePasscode();
     await adminClient.from("bookings").update({
       meeting_link: meetingLink,
       meeting_passcode: passcode,
     }).eq("id", booking.id);
-    await adminClient.from("slots").update({ is_booked: true }).eq("id", slot.id);
 
     const sessionNumber = (usedCount ?? 0) + 1;
 
     // Profile lookups
     const { data: mentorProfile } = await adminClient.from("profiles").select("name, email").eq("id", mentorId).single();
 
-    const sessionDate = new Date(slot.date).toLocaleDateString("en-IN", {
+    const sessionDate = new Date(`${booking_date}T00:00:00+05:30`).toLocaleDateString("en-IN", {
       weekday: "short", year: "numeric", month: "short", day: "numeric", timeZone: "Asia/Kolkata",
     });
-    const sessionTime = `${String(slot.start_time).slice(0, 5)} – ${String(slot.end_time).slice(0, 5)}`;
+    const sessionTime = enforcedLabel;
 
     const ctx = { requestId: booking.id, stage: "free_session_booked" };
 
     // Notifications + chat message
     try {
-      // In-app notifications
       await adminClient.from("notifications").insert([
         {
           user_id: user.id,
           type: "free_session_confirmed",
           title: "Free session booked!",
           message: `Your free 1:1 session with ${mentorProfile?.name ?? "your mentor"} is scheduled for ${sessionDate} at ${sessionTime}.`,
-          metadata: { booking_id: booking.id, meeting_link: meetingLink, session_number: sessionNumber },
+          metadata: { booking_id: booking.id, meeting_link: meetingLink, session_number: sessionNumber, slot_label: enforcedLabel },
         },
         {
           user_id: mentorId,
@@ -215,11 +305,12 @@ Deno.serve(async (req) => {
             mentee_phone: cleanPhone,
             mentee_whatsapp: cleanWhatsapp,
             session_number: sessionNumber,
+            slot_label: enforcedLabel,
           },
         },
       ]);
 
-      // Auto-message in chat: ensure conversation exists, then post message
+      // Auto-message in chat
       const { data: existingConv } = await adminClient
         .from("conversations")
         .select("id")
@@ -236,7 +327,7 @@ Deno.serve(async (req) => {
         conversationId = newConv?.id;
       }
       if (conversationId) {
-        const msg = `Your free 1:1 session has been scheduled for ${sessionDate} at ${sessionTime}.\n\nMeeting link: ${meetingLink}\nPasscode: ${passcode}`;
+        const msg = `Your free 1:1 session has been scheduled for ${sessionDate} at ${sessionTime} (IST).\n\nMeeting link: ${meetingLink}\nPasscode: ${passcode}`;
         await adminClient.from("messages").insert({
           conversation_id: conversationId,
           sender_id: mentorId,
@@ -283,6 +374,7 @@ Deno.serve(async (req) => {
       meeting_passcode: passcode,
       session_date: sessionDate,
       session_time: sessionTime,
+      slot_label: enforcedLabel,
       session_number: sessionNumber,
       mentor_name: mentorProfile?.name ?? null,
     }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });

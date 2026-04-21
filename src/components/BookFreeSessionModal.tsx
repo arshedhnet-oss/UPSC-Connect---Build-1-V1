@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Loader2, CheckCircle2, Copy, Video } from "lucide-react";
-import { format } from "date-fns";
+import { format, addDays, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabaseUntyped } from "@/lib/supabase";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,11 +19,10 @@ interface Props {
   onOpenChange: (v: boolean) => void;
 }
 
-interface Slot {
-  id: string;
-  date: string;
-  start_time: string;
-  end_time: string;
+interface SlotTemplate {
+  start: string; // "HH:MM:SS"
+  end: string;
+  label: string;
 }
 
 interface Confirmation {
@@ -38,6 +37,17 @@ interface Confirmation {
 const PHONE_RE = /^[6-9]\d{9}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Fixed IST slots: 10:30 AM – 12:30 PM in 30-min increments
+const SLOT_TEMPLATES: SlotTemplate[] = [
+  { start: "10:30:00", end: "11:00:00", label: "10:30 AM – 11:00 AM" },
+  { start: "11:00:00", end: "11:30:00", label: "11:00 AM – 11:30 AM" },
+  { start: "11:30:00", end: "12:00:00", label: "11:30 AM – 12:00 PM" },
+  { start: "12:00:00", end: "12:30:00", label: "12:00 PM – 12:30 PM" },
+];
+
+// Bookings can start from tomorrow up to 60 days ahead
+const MAX_DAYS_AHEAD = 60;
+
 function digitsOnly(s: string) {
   return s.replace(/\D/g, "").replace(/^91/, "").slice(-10);
 }
@@ -47,11 +57,12 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [slots, setSlots] = useState<Slot[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [mentorId, setMentorId] = useState<string | null>(null);
+  const [bookedKeys, setBookedKeys] = useState<Set<string>>(new Set()); // `${date}|${start}`
   const [usedCount, setUsedCount] = useState<number | null>(null);
   const [date, setDate] = useState<Date | undefined>();
-  const [slotId, setSlotId] = useState<string>("");
+  const [selectedStart, setSelectedStart] = useState<string>("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -61,6 +72,10 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
 
   const isLoggedIn = !!user;
   const limitReached = usedCount !== null && usedCount >= 2;
+
+  // Earliest selectable date = tomorrow (IST)
+  const minDate = useMemo(() => startOfDay(addDays(new Date(), 1)), []);
+  const maxDate = useMemo(() => startOfDay(addDays(new Date(), MAX_DAYS_AHEAD)), []);
 
   // Pre-fill from profile
   useEffect(() => {
@@ -72,12 +87,12 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
     }
   }, [open, profile]);
 
-  // Load chat mentor's slots + usage count
+  // Load Chat Mentor + already-booked slots for the next 60 days + free session usage
   useEffect(() => {
     if (!open || !isLoggedIn) return;
     let cancelled = false;
     (async () => {
-      setLoadingSlots(true);
+      setLoading(true);
       try {
         const { data: chatMentor } = await supabaseUntyped
           .from("mentor_profiles")
@@ -85,21 +100,32 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
           .eq("is_default_chat_mentor", true)
           .eq("is_approved", true)
           .maybeSingle();
-        if (!chatMentor?.user_id || cancelled) {
-          setSlots([]);
+        if (cancelled) return;
+        if (!chatMentor?.user_id) {
+          setMentorId(null);
+          setBookedKeys(new Set());
           return;
         }
-        const todayStr = new Date().toISOString().slice(0, 10);
-        const { data: slotData } = await supabaseUntyped
+        setMentorId(chatMentor.user_id);
+
+        // Pull all booked/active slot rows for the chat mentor in our window
+        const fromDate = format(minDate, "yyyy-MM-dd");
+        const toDate = format(maxDate, "yyyy-MM-dd");
+        const { data: slotRows } = await supabaseUntyped
           .from("slots")
-          .select("id, date, start_time, end_time")
+          .select("date, start_time, is_booked, is_active")
           .eq("mentor_id", chatMentor.user_id)
-          .eq("is_active", true)
-          .eq("is_booked", false)
-          .gte("date", todayStr)
-          .order("date", { ascending: true })
-          .order("start_time", { ascending: true });
-        if (!cancelled) setSlots((slotData as Slot[]) || []);
+          .gte("date", fromDate)
+          .lte("date", toDate);
+
+        const set = new Set<string>();
+        (slotRows || []).forEach((s: any) => {
+          // Treat booked OR inactive as unavailable
+          if (s.is_booked || s.is_active === false) {
+            set.add(`${s.date}|${String(s.start_time).slice(0, 8)}`);
+          }
+        });
+        if (!cancelled) setBookedKeys(set);
 
         const { count } = await supabaseUntyped
           .from("bookings")
@@ -108,31 +134,31 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
           .eq("status", "free_session_confirmed");
         if (!cancelled) setUsedCount(count ?? 0);
       } finally {
-        if (!cancelled) setLoadingSlots(false);
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [open, isLoggedIn, user]);
+  }, [open, isLoggedIn, user, minDate, maxDate]);
 
   // Reset transient state when closing
   useEffect(() => {
     if (!open) {
       setConfirmation(null);
       setDate(undefined);
-      setSlotId("");
+      setSelectedStart("");
     }
   }, [open]);
-
-  const availableDates = useMemo(() => {
-    const set = new Set(slots.map(s => s.date));
-    return set;
-  }, [slots]);
 
   const slotsForDate = useMemo(() => {
     if (!date) return [];
     const d = format(date, "yyyy-MM-dd");
-    return slots.filter(s => s.date === d);
-  }, [slots, date]);
+    return SLOT_TEMPLATES.map(t => ({
+      ...t,
+      booked: bookedKeys.has(`${d}|${t.start}`),
+    }));
+  }, [date, bookedKeys]);
+
+  const allBookedForDate = date && slotsForDate.length > 0 && slotsForDate.every(s => s.booked);
 
   const handleAuthRequired = () => {
     toast({ title: "Please sign up or log in to book your free 1:1 session." });
@@ -143,11 +169,9 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
   const handleSubmit = async () => {
     if (!isLoggedIn) return handleAuthRequired();
     if (limitReached) return;
+    if (!date) return toast({ title: "Please pick a date", variant: "destructive" });
+    if (!selectedStart) return toast({ title: "Please pick a time slot", variant: "destructive" });
 
-    if (!slotId) {
-      toast({ title: "Please pick a time slot", variant: "destructive" });
-      return;
-    }
     const cleanPhone = digitsOnly(phone);
     const cleanWa = digitsOnly(whatsapp);
     if (!name.trim()) return toast({ title: "Name is required", variant: "destructive" });
@@ -155,11 +179,17 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
     if (!PHONE_RE.test(cleanPhone)) return toast({ title: "Enter a valid 10-digit Indian phone number", variant: "destructive" });
     if (!PHONE_RE.test(cleanWa)) return toast({ title: "Enter a valid 10-digit WhatsApp number", variant: "destructive" });
 
+    const tpl = SLOT_TEMPLATES.find(t => t.start === selectedStart);
+    if (!tpl) return;
+
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke("book-free-session", {
         body: {
-          slot_id: slotId,
+          booking_date: format(date, "yyyy-MM-dd"),
+          start_time: tpl.start,
+          end_time: tpl.end,
+          slot_label: tpl.label,
           name: name.trim(),
           email: email.trim(),
           phone: cleanPhone,
@@ -167,7 +197,6 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
         },
       });
       if (error) {
-        // try to read a detailed message from the body
         const msg = (error as any)?.context?.body
           ? await (error as any).context.body.text?.().catch(() => "")
           : "";
@@ -176,6 +205,15 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
         if (parsed?.error === "limit_reached") {
           toast({ title: "Free session limit reached", description: parsed.message, variant: "destructive" });
           setUsedCount(2);
+        } else if (parsed?.error === "slot_taken") {
+          toast({ title: "Slot just taken", description: "Someone else booked this slot. Please pick another.", variant: "destructive" });
+          // Mark it locally as booked
+          setBookedKeys(prev => {
+            const next = new Set(prev);
+            next.add(`${format(date, "yyyy-MM-dd")}|${tpl.start}`);
+            return next;
+          });
+          setSelectedStart("");
         } else {
           toast({ title: "Booking failed", description: parsed?.error || error.message, variant: "destructive" });
         }
@@ -202,7 +240,6 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
 
   // ---- UI ----
   if (!isLoggedIn && open) {
-    // Auth-gate: render a brief prompt then redirect on action
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md">
@@ -262,7 +299,7 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
               <DialogDescription>
                 {limitReached
                   ? "You've used both your free sessions."
-                  : `Pick a time with our Chat Mentor. ${usedCount !== null ? `${usedCount}/2 free sessions used.` : ""}`}
+                  : `Pick a date and time slot (10:30 AM – 12:30 PM IST). ${usedCount !== null ? `${usedCount}/2 free sessions used.` : ""}`}
               </DialogDescription>
             </DialogHeader>
 
@@ -273,49 +310,65 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
                 </div>
                 <Button className="w-full" onClick={() => { navigate("/mentors"); onOpenChange(false); }}>Browse Paid Mentors</Button>
               </div>
+            ) : !mentorId && !loading ? (
+              <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
+                No mentor available right now. Please check back soon.
+              </div>
             ) : (
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm">Pick a date</Label>
+                  <Label className="text-sm">Pick a date <span className="text-muted-foreground font-normal">(starts tomorrow)</span></Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className={cn("w-full justify-start text-left font-normal mt-1.5", !date && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP") : (loadingSlots ? "Loading availability…" : "Pick a date")}
+                        {date ? format(date, "PPP") : (loading ? "Loading…" : "Pick a date")}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
                         selected={date}
-                        onSelect={(d) => { setDate(d); setSlotId(""); }}
-                        disabled={(d) => !availableDates.has(format(d, "yyyy-MM-dd"))}
+                        onSelect={(d) => { setDate(d); setSelectedStart(""); }}
+                        disabled={(d) => d < minDate || d > maxDate}
+                        defaultMonth={minDate}
                         initialFocus
                         className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
-                  {!loadingSlots && slots.length === 0 && (
-                    <p className="text-xs text-muted-foreground mt-1.5">No slots available right now. Please check back soon.</p>
-                  )}
                 </div>
 
-                {date && slotsForDate.length > 0 && (
+                {date && (
                   <div>
-                    <Label className="text-sm">Available time slots</Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1.5">
-                      {slotsForDate.map(s => (
-                        <Button
-                          key={s.id}
-                          type="button"
-                          variant={slotId === s.id ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setSlotId(s.id)}
-                        >
-                          {s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}
-                        </Button>
-                      ))}
+                    <Label className="text-sm">Available time slots (IST)</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-1.5">
+                      {slotsForDate.map(s => {
+                        const selected = selectedStart === s.start;
+                        return (
+                          <button
+                            key={s.start}
+                            type="button"
+                            disabled={s.booked}
+                            onClick={() => setSelectedStart(s.start)}
+                            className={cn(
+                              "rounded-md border px-3 py-2.5 text-sm font-medium transition-colors text-left",
+                              s.booked && "bg-muted text-muted-foreground line-through cursor-not-allowed border-border",
+                              !s.booked && selected && "bg-primary text-primary-foreground border-primary",
+                              !s.booked && !selected && "bg-background hover:bg-accent border-border"
+                            )}
+                          >
+                            {s.label}
+                            {s.booked && <span className="block text-[10px] mt-0.5 not-italic">Booked</span>}
+                          </button>
+                        );
+                      })}
                     </div>
+                    {allBookedForDate && (
+                      <p className="text-xs text-destructive mt-2">
+                        All slots are booked for this day. Please select another date.
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -338,7 +391,7 @@ export default function BookFreeSessionModal({ open, onOpenChange }: Props) {
                   </div>
                 </div>
 
-                <Button onClick={handleSubmit} disabled={submitting || !slotId} className="w-full">
+                <Button onClick={handleSubmit} disabled={submitting || !selectedStart || !date} className="w-full">
                   {submitting ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Booking…</>) : "Confirm Free Session"}
                 </Button>
               </div>
