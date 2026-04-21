@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,9 @@ const SignupPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const intent = (location.state as { intent?: string } | null)?.intent;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +28,11 @@ const SignupPage = () => {
     try {
       await signUp(email, password, { name, phone, role: "mentee" });
       toast({ title: "Account created!", description: "Welcome to UPSC Connect." });
-      // Welcome email is now sent automatically by useAuth when the profile is created
-      navigate("/role-selection");
+      if (intent === "book_free_session") {
+        navigate("/?openFreeBooking=1");
+      } else {
+        navigate("/role-selection");
+      }
     } catch (err: unknown) {
       toast({ title: "Signup failed", description: err instanceof Error ? err.message : "Something went wrong", variant: "destructive" });
     } finally {

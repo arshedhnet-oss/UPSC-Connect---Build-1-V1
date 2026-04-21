@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Checkbox } from "@/components/ui/checkbox";
 import { setRememberMe } from "@/hooks/useSessionTimeout";
@@ -19,7 +19,9 @@ const LoginPage = () => {
   const [rememberMe, setRememberMeState] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const navState = location.state as { intent?: string; from?: string } | null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +29,11 @@ const LoginPage = () => {
     try {
       setRememberMe(rememberMe);
       await signIn(email, password);
-      navigate("/dashboard");
+      if (navState?.intent === "book_free_session") {
+        navigate("/?openFreeBooking=1");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err: unknown) {
       toast({ title: "Login failed", description: err instanceof Error ? err.message : "Invalid credentials", variant: "destructive" });
     } finally {

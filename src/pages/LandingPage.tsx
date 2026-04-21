@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck, MessageCircle, GraduationCap } from "lucide-react";
+import { BookOpen, Users, Calendar, ArrowRight, Building2, CircleCheck, MessageCircle, GraduationCap, CalendarCheck } from "lucide-react";
 import { ENABLE_ORGANISATIONS } from "@/lib/featureFlags";
 import Navbar from "@/components/Navbar";
 import FreeChatModal from "@/components/chat/FreeChatModal";
+import BookFreeSessionModal from "@/components/BookFreeSessionModal";
 import ToppersSection from "@/components/ToppersSection";
 import MentorshipStickyBar from "@/components/MentorshipStickyBar";
 import MentorshipProgrammeCard from "@/components/MentorshipProgrammeCard";
@@ -13,12 +14,24 @@ import FAQSection from "@/components/FAQSection";
 
 const LandingPage = () => {
   const [chatOpen, setChatOpen] = useState(false);
+  const [bookOpen, setBookOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Auto-open booking modal after returning from signup/login with intent
+  useEffect(() => {
+    if (searchParams.get("openFreeBooking") === "1") {
+      setBookOpen(true);
+      searchParams.delete("openFreeBooking");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   return (
     <div className="min-h-screen bg-background">
       <MentorshipStickyBar />
       <Navbar />
       <FreeChatModal open={chatOpen} onOpenChange={setChatOpen} />
+      <BookFreeSessionModal open={bookOpen} onOpenChange={setBookOpen} />
 
       {/* Hero */}
       <section className="px-4 sm:px-6 py-6 sm:py-10 max-w-4xl mx-auto text-center">
@@ -43,6 +56,15 @@ const LandingPage = () => {
             </Button>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">⚡ Get a reply in 10 minutes</p>
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => setBookOpen(true)}
+            className="mt-4 rounded-full px-7 py-5 text-sm font-semibold border-2 border-primary/40 text-primary hover:bg-primary/5 hover:border-primary transition-all"
+          >
+            <CalendarCheck className="h-4 w-4 mr-2" />
+            Book a Free 1:1 Session
+          </Button>
         </div>
 
         {/* Secondary CTAs */}

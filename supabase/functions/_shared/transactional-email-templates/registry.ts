@@ -24,8 +24,10 @@ import { template as slotRequestMentorConfirmed } from './slot-request-mentor-co
 import { template as chatNewMessage } from './chat-new-message.tsx'
 import { template as chatReplyNotification } from './chat-reply-notification.tsx'
 import { template as chatAdminNotification } from './chat-admin-notification.tsx'
+import { template as freeSessionConfirmed } from './free-session-confirmed.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
+  'free-session-confirmed': freeSessionConfirmed,
   'admin-mentor-signup': adminMentorSignup,
   'admin-mentee-signup': adminMenteeSignup,
   'mentor-welcome': mentorWelcome,
