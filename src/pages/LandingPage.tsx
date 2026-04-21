@@ -44,7 +44,7 @@ const LandingPage = () => {
         {/* Primary CTA - Talk to Mentor */}
         <div className="mt-6 sm:mt-8 flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.15s" }}>
           <div className="relative">
-            <Button size="lg" onClick={() => setChatOpen(true)} className="group relative overflow-hidden rounded-full px-8 sm:px-10 py-6 text-base font-semibold border-0 bg-[hsl(28,100%,50%)] hover:bg-[hsl(28,100%,45%)] text-white shadow-lg shadow-[hsl(28,100%,50%)/0.3] transition-all duration-300 hover:shadow-xl hover:shadow-[hsl(28,100%,50%)/0.4] hover:scale-[1.05] animate-[pulse-glow-orange_2s_ease-in-out_infinite]">
+            <Button size="lg" onClick={() => setChatOpen(true)} className="group relative overflow-hidden rounded-full px-8 sm:px-10 py-6 text-base font-semibold border-0 bg-[hsl(28,100%,50%)] hover:bg-[hsl(28,100%,45%)] text-white shadow-lg shadow-[hsl(28,100%,50%)/0.3] transition-all duration-300 hover:shadow-xl hover:shadow-[hsl(28,100%,50%)/0.4] hover:scale-[1.05]">
               <span className="relative z-10 flex items-center gap-2.5">
                 <span className="relative flex items-center justify-center h-7 w-7 rounded-full bg-white/20 backdrop-blur-sm">
                   <MessageCircle className="h-4 w-4 text-white fill-white/40" />
@@ -58,12 +58,14 @@ const LandingPage = () => {
           <p className="mt-2 text-xs text-muted-foreground">⚡ Get a reply in 10 minutes</p>
           <Button
             size="lg"
-            variant="outline"
             onClick={() => setBookOpen(true)}
-            className="mt-4 rounded-full px-7 py-5 text-sm font-semibold border-2 border-primary/40 text-primary hover:bg-primary/5 hover:border-primary transition-all"
+            className="mt-4 group relative overflow-hidden rounded-full px-8 sm:px-10 py-6 text-base font-semibold border-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.05] animate-[pulse-glow-orange_2s_ease-in-out_infinite]"
           >
-            <CalendarCheck className="h-4 w-4 mr-2" />
-            Book a Free 1:1 Session
+            <span className="relative z-10 flex items-center gap-2.5">
+              <CalendarCheck className="h-4 w-4" />
+              Book a Free 1:1 Session
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </span>
           </Button>
         </div>
 
