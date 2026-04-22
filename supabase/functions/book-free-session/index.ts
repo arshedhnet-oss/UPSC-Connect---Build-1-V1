@@ -164,19 +164,7 @@ Deno.serve(async (req) => {
       }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Find Chat Mentor
-    const { data: chatMentor } = await adminClient
-      .from("mentor_profiles")
-      .select("user_id")
-      .eq("is_default_chat_mentor", true)
-      .eq("is_approved", true)
-      .maybeSingle();
-    if (!chatMentor?.user_id) {
-      return new Response(JSON.stringify({ error: "No mentor available right now. Please try again later." }), {
-        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const mentorId = chatMentor.user_id as string;
+
 
     // Find or create the slot row for (mentor, date, start_time)
     const { data: existingSlot } = await adminClient
