@@ -10,7 +10,9 @@ const corsHeaders = {
 
 const ADMIN_EMAIL = "admin@upscconnect.in";
 const FREE_SESSION_LIMIT = 2;
-const FREE_SESSION_STATUS = "free_session_confirmed";
+// Bookings table check_constraint only allows: pending_payment, confirmed, completed, cancelled.
+// Free sessions are stored as 'confirmed' and identified as "no matching transaction row".
+const FREE_SESSION_STATUS = "confirmed";
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
