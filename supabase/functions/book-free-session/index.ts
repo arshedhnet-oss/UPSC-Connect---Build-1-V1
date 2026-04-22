@@ -10,7 +10,9 @@ const corsHeaders = {
 
 const ADMIN_EMAIL = "admin@upscconnect.in";
 const FREE_SESSION_LIMIT = 2;
-const FREE_SESSION_STATUS = "free_session_confirmed";
+// Bookings table check_constraint only allows: pending_payment, confirmed, completed, cancelled.
+// Free sessions are stored as 'confirmed' and identified as "no matching transaction row".
+const FREE_SESSION_STATUS = "confirmed";
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -126,27 +128,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Server-side limit check
-    const { count: usedCount, error: countErr } = await adminClient
-      .from("bookings")
-      .select("id", { count: "exact", head: true })
-      .eq("mentee_id", user.id)
-      .eq("status", FREE_SESSION_STATUS);
-
-    if (countErr) {
-      console.error("[FreeSession] count error", countErr);
-      return new Response(JSON.stringify({ error: "Could not verify session limit" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    if ((usedCount ?? 0) >= FREE_SESSION_LIMIT) {
-      return new Response(JSON.stringify({
-        error: "limit_reached",
-        message: `You've already used your ${FREE_SESSION_LIMIT} free sessions. You can continue with paid mentorship.`,
-      }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    // Find Chat Mentor
+    // Find Chat Mentor first so we can scope the free-session count to them
     const { data: chatMentor } = await adminClient
       .from("mentor_profiles")
       .select("user_id")
@@ -159,6 +141,30 @@ Deno.serve(async (req) => {
       });
     }
     const mentorId = chatMentor.user_id as string;
+
+    // Server-side limit check: count confirmed bookings with the chat mentor that have NO transaction row (= free sessions)
+    const { data: chatBookings, error: countErr } = await adminClient
+      .from("bookings")
+      .select("id, transactions(id)")
+      .eq("mentee_id", user.id)
+      .eq("mentor_id", mentorId)
+      .eq("status", FREE_SESSION_STATUS);
+
+    if (countErr) {
+      console.error("[FreeSession] count error", countErr);
+      return new Response(JSON.stringify({ error: "Could not verify session limit" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const usedCount = (chatBookings ?? []).filter((b: any) => !b.transactions || b.transactions.length === 0).length;
+    if (usedCount >= FREE_SESSION_LIMIT) {
+      return new Response(JSON.stringify({
+        error: "limit_reached",
+        message: `You've already used your ${FREE_SESSION_LIMIT} free sessions. You can continue with paid mentorship.`,
+      }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+
 
     // Find or create the slot row for (mentor, date, start_time)
     const { data: existingSlot } = await adminClient
