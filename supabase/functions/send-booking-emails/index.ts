@@ -197,9 +197,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Generate meeting link and passcode
-    const { url: meetingLink } = generateMeetingLink(booking_id);
-    const passcode = generatePasscode();
+    // Generate meeting link via Google Meet (Jitsi fallback inside helper)
+    const meeting = await createGoogleMeetLink({
+      bookingId: booking_id,
+      date: slot.date,
+      startTime: slot.start_time,
+      endTime: slot.end_time,
+      summary: `UPSC Connect: ${mentorProfile.name} & ${menteeProfile.name}`,
+      description: `1:1 mentorship session booked via UPSC Connect.`,
+      attendeeEmails: [menteeProfile.email, mentorProfile.email].filter(Boolean) as string[],
+    });
+    const meetingLink = meeting.url;
+    // Google Meet uses host-controlled access (no passcode). Only set passcode for Jitsi fallback.
+    const passcode = meeting.source === "jitsi_fallback" ? generatePasscode() : null;
 
     // Store in booking
     await supabase
