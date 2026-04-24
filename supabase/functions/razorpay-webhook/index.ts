@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createGoogleMeetLink } from "../_shared/create-google-meet.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -319,18 +320,7 @@ Deno.serve(async (req) => {
 
     console.log("booking_confirmed");
 
-    // 9. Create Jitsi meeting
-    const { url: meetingLink } = generateMeetingLink(bookingId);
-    const passcode = generatePasscode();
-
-    await supabase
-      .from("bookings")
-      .update({ meeting_link: meetingLink, meeting_passcode: passcode })
-      .eq("id", bookingId);
-
-    console.log("meeting_created");
-
-    // 10. Fetch profiles and slot
+    // 9. Fetch profiles and slot (needed for both meeting creation and emails)
     const [{ data: menteeProfile }, { data: mentorProfile }, { data: slot }] = await Promise.all([
       supabase.from("profiles").select("name, email").eq("id", booking.mentee_id).single(),
       supabase.from("profiles").select("name, email").eq("id", booking.mentor_id).single(),
@@ -344,6 +334,27 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // 10. Create Google Meet link (falls back to Jitsi automatically on failure)
+    const meeting = await createGoogleMeetLink({
+      bookingId,
+      date: slot.date,
+      startTime: slot.start_time,
+      endTime: slot.end_time,
+      summary: `UPSC Connect: ${mentorProfile.name} & ${menteeProfile.name}`,
+      description: `1:1 mentorship session booked via UPSC Connect.`,
+      attendeeEmails: [menteeProfile.email, mentorProfile.email].filter(Boolean) as string[],
+    });
+    const meetingLink = meeting.url;
+    // Google Meet uses host-controlled access (no passcode). Only set passcode for Jitsi fallback.
+    const passcode = meeting.source === "jitsi_fallback" ? generatePasscode() : null;
+
+    await supabase
+      .from("bookings")
+      .update({ meeting_link: meetingLink, meeting_passcode: passcode })
+      .eq("id", bookingId);
+
+    console.log(`meeting_created (${meeting.source})`);
 
     const sessionDate = new Date(slot.date).toLocaleDateString("en-IN", {
       weekday: "long", year: "numeric", month: "long", day: "numeric",
