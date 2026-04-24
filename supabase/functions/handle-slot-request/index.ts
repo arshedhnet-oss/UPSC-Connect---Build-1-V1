@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendStageEmail } from "../_shared/send-stage-email.ts";
+import { createGoogleMeetLink } from "../_shared/create-google-meet.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -219,9 +220,19 @@ Deno.serve(async (req) => {
 
     // ===== ACCEPT =====
     if (action === "accept") {
-      const meetingId = generateMeetingId();
-      const passcode = generatePasscode();
-      const meetingLink = `https://meet.jit.si/${meetingId}`;
+      // Generate meeting via Google Meet (Jitsi fallback inside helper)
+      const meeting = await createGoogleMeetLink({
+        bookingId: request_id,
+        date: request.requested_date,
+        startTime: request.requested_start_time,
+        endTime: request.requested_end_time,
+        summary: `UPSC Connect: ${mentorProfile?.name ?? "Mentor"} & ${menteeProfile?.name ?? "Mentee"}`,
+        description: `1:1 mentorship session (slot request) booked via UPSC Connect.`,
+        attendeeEmails: [menteeProfile?.email, mentorProfile?.email].filter(Boolean) as string[],
+      });
+      const meetingLink = meeting.url;
+      // Google Meet uses host-controlled access (no passcode). Only set passcode for Jitsi fallback.
+      const passcode = meeting.source === "jitsi_fallback" ? generatePasscode() : null;
 
       // Step 1: Update status
       await adminClient.from("booking_requests").update({
@@ -230,7 +241,7 @@ Deno.serve(async (req) => {
         meeting_passcode: passcode,
         mentor_message: sanitizedMessage,
       }).eq("id", request_id);
-      console.log(`[SlotRequest] Request ${request_id} accepted`);
+      console.log(`[SlotRequest] Request ${request_id} accepted (${meeting.source})`);
 
       // Step 2: In-app notifications
       const menteeNotifMsg = sanitizedMessage
