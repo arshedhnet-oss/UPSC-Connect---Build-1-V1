@@ -116,7 +116,7 @@ const MentorProfilePage = () => {
     }
     // Re-validate slot is still in the future
     const now = new Date();
-    const slotDateTime = new Date(`${slot.date}T${slot.start_time}`);
+    const slotDateTime = new Date(`${slot.date}T${slot.start_time}+05:30`);
     if (slotDateTime <= now) {
       toast({ title: "This time slot is no longer available", variant: "destructive" });
       setSlots(prev => prev.filter(s => s.id !== slot.id));

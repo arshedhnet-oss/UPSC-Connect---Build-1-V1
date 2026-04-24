@@ -116,7 +116,7 @@ const DashboardPage = () => {
   const completedSessions = bookings.filter(b => {
     if (b.status === "completed") return true;
     if (b.slots) {
-      const sessionDate = new Date(`${b.slots.date}T${b.slots.end_time || "23:59:59"}`);
+      const sessionDate = new Date(`${b.slots.date}T${b.slots.end_time || "23:59:59"}+05:30`);
       if (sessionDate < now && b.status !== "pending_payment") return true;
     }
     return false;

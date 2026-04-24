@@ -69,7 +69,9 @@ Deno.serve(async (req) => {
     }
 
     const matchingSlots = slots.filter((slot) => {
-      const slotDateTime = new Date(`${slot.date}T${slot.start_time}`);
+      // Slot date/time are stored in IST. Append +05:30 so the comparison is
+      // timezone-correct regardless of where this function runs (UTC by default).
+      const slotDateTime = new Date(`${slot.date}T${slot.start_time}+05:30`);
       return slotDateTime >= from && slotDateTime <= to;
     });
 
@@ -126,11 +128,12 @@ Deno.serve(async (req) => {
 
       if (!menteeProfile || !mentorProfile) continue;
 
-      const sessionDate = new Date(slot.date).toLocaleDateString("en-IN", {
+      const sessionDate = new Date(`${slot.date}T00:00:00+05:30`).toLocaleDateString("en-IN", {
         weekday: "long",
         year: "numeric",
         month: "long",
         day: "numeric",
+        timeZone: "Asia/Kolkata",
       });
       const sessionTime = `${slot.start_time.slice(0, 5)} – ${slot.end_time.slice(0, 5)}`;
       const meetingLink = booking.meeting_link || "";
