@@ -35,7 +35,9 @@ export function useMeetingReminders() {
         const slot = (b as any).slots;
         if (!slot) continue;
 
-        const sessionTime = new Date(`${slot.date}T${slot.start_time}`);
+        // Slot date/time are stored in IST. Append +05:30 so comparisons work
+        // correctly regardless of the user's local timezone.
+        const sessionTime = new Date(`${slot.date}T${slot.start_time}+05:30`);
         if (sessionTime >= windowStart && sessionTime <= windowEnd) {
           notifiedRef.current.add(b.id);
 
