@@ -290,6 +290,8 @@ Deno.serve(async (req) => {
       meeting_passcode: passcode,
     }).eq("id", booking.id);
 
+    const sessionNumber = (usedCount ?? 0) + 1;
+
     const sessionDate = new Date(`${booking_date}T00:00:00+05:30`).toLocaleDateString("en-IN", {
       weekday: "short", year: "numeric", month: "short", day: "numeric", timeZone: "Asia/Kolkata",
     });
