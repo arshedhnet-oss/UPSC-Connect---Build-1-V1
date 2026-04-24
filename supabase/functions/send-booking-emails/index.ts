@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createGoogleMeetLink } from "../_shared/create-google-meet.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,11 +31,7 @@ async function getOrCreateUnsubscribeToken(supabase: any, email: string): Promis
   return token;
 }
 
-function generateMeetingLink(bookingId: string): { roomName: string; url: string } {
-  const ts = Date.now();
-  const roomName = `upscconnect-${bookingId.replace(/-/g, "").slice(0, 12)}-${ts}`;
-  return { roomName, url: `https://meet.jit.si/${roomName}` };
-}
+// Meeting link is now generated via Google Meet (createGoogleMeetLink). Jitsi remains as automatic fallback inside that helper.
 
 function buildCalendarLink(title: string, date: string, startTime: string, endTime: string, meetingUrl: string, description: string): string {
   const start = `${date.replace(/-/g, "")}T${startTime.replace(/:/g, "")}00`;
@@ -201,9 +198,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Generate meeting link and passcode
-    const { url: meetingLink } = generateMeetingLink(booking_id);
-    const passcode = generatePasscode();
+    // Generate meeting link via Google Meet (Jitsi fallback inside helper)
+    const meeting = await createGoogleMeetLink({
+      bookingId: booking_id,
+      date: slot.date,
+      startTime: slot.start_time,
+      endTime: slot.end_time,
+      summary: `UPSC Connect: ${mentorProfile.name} & ${menteeProfile.name}`,
+      description: `1:1 mentorship session booked via UPSC Connect.`,
+      attendeeEmails: [menteeProfile.email, mentorProfile.email].filter(Boolean) as string[],
+    });
+    const meetingLink = meeting.url;
+    // Google Meet uses host-controlled access (no passcode). Only set passcode for Jitsi fallback.
+    const passcode = meeting.source === "jitsi_fallback" ? generatePasscode() : null;
 
     // Store in booking
     await supabase
