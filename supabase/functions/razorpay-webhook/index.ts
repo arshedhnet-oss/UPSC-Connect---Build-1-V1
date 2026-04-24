@@ -17,11 +17,7 @@ function generatePasscode(): string {
   return code;
 }
 
-function generateMeetingLink(bookingId: string): { roomName: string; url: string } {
-  const ts = Date.now();
-  const roomName = `upscconnect-${bookingId.replace(/-/g, "").slice(0, 12)}-${ts}`;
-  return { roomName, url: `https://meet.jit.si/${roomName}` };
-}
+// Meeting link is now generated via Google Meet (createGoogleMeetLink). Jitsi remains as automatic fallback inside that helper.
 
 function buildCalendarLink(title: string, date: string, startTime: string, endTime: string, meetingUrl: string, description: string): string {
   const start = `${date.replace(/-/g, "")}T${startTime.replace(/:/g, "")}00`;
