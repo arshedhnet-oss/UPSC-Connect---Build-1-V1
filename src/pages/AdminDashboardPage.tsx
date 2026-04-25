@@ -354,6 +354,9 @@ const AdminDashboardPage = () => {
             <TabsTrigger value="slot-requests" className="text-xs sm:text-sm">
               <Clock className="h-4 w-4 mr-1" /> Slot Requests
             </TabsTrigger>
+            <TabsTrigger value="email-tests" className="text-xs sm:text-sm">
+              ✉️ Email Tests
+            </TabsTrigger>
           </TabsList>
 
           {/* Sessions Tab with Upcoming/Completed sub-tabs */}
