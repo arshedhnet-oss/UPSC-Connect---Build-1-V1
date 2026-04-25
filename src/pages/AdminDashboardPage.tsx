@@ -816,6 +816,11 @@ const AdminDashboardPage = () => {
           <TabsContent value="slot-requests">
             <AdminSlotRequests />
           </TabsContent>
+
+          {/* Email Tests Tab */}
+          <TabsContent value="email-tests">
+            <EmailTestPanel />
+          </TabsContent>
         </Tabs>
       </div>
 
