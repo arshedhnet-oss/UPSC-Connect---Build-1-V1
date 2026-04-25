@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import StarRating from "@/components/StarRating";
 import FeaturedMentorControls from "@/components/FeaturedMentorControls";
 import AdminSlotRequests from "@/components/AdminSlotRequests";
+import { EmailTestPanel } from "@/components/admin/EmailTestPanel";
 import {
   AlertDialog,
   AlertDialogAction,
