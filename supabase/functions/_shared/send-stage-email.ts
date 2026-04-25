@@ -1,5 +1,5 @@
 import * as React from 'npm:react@18.3.1'
-import { renderAsync } from 'npm:@react-email/render@0.0.17'
+import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { TEMPLATES } from './transactional-email-templates/registry.ts'
 
 const SITE_NAME = 'UPSC Connect'
