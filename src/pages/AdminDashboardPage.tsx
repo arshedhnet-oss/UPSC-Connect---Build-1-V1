@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import StarRating from "@/components/StarRating";
 import FeaturedMentorControls from "@/components/FeaturedMentorControls";
 import AdminSlotRequests from "@/components/AdminSlotRequests";
+import { EmailTestPanel } from "@/components/admin/EmailTestPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -352,6 +353,9 @@ const AdminDashboardPage = () => {
             </TabsTrigger>
             <TabsTrigger value="slot-requests" className="text-xs sm:text-sm">
               <Clock className="h-4 w-4 mr-1" /> Slot Requests
+            </TabsTrigger>
+            <TabsTrigger value="email-tests" className="text-xs sm:text-sm">
+              ✉️ Email Tests
             </TabsTrigger>
           </TabsList>
 
@@ -811,6 +815,11 @@ const AdminDashboardPage = () => {
           {/* Slot Requests Tab */}
           <TabsContent value="slot-requests">
             <AdminSlotRequests />
+          </TabsContent>
+
+          {/* Email Tests Tab */}
+          <TabsContent value="email-tests">
+            <EmailTestPanel />
           </TabsContent>
         </Tabs>
       </div>
