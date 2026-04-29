@@ -18,4 +18,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // TEMPORARY: source maps enabled to debug forced reflow in production bundle.
+  // Remove `sourcemap: true` once the offending code is identified and fixed.
+  build: {
+    sourcemap: true,
+  },
 }));
