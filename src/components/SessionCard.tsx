@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Video, Copy, Send, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
+import { Video, Copy, Send, ChevronDown, ChevronUp, MessageSquare, FileDown } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import {
