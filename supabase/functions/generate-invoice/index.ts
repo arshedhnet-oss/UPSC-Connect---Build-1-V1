@@ -103,21 +103,21 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceKey);
 
   try {
-    const { booking_id } = await req.json();
+    const { booking_id, force } = await req.json();
     if (!booking_id || typeof booking_id !== "string") {
       return new Response(JSON.stringify({ error: "booking_id required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Idempotency: existing invoice for this booking?
+    // Idempotency: existing invoice for this booking? (skip when force=true)
     const { data: existing } = await supabase
       .from("invoices")
       .select("id, invoice_number, pdf_path")
       .eq("booking_id", booking_id)
       .maybeSingle();
 
-    if (existing && existing.pdf_path) {
+    if (existing && existing.pdf_path && !force) {
       return new Response(JSON.stringify({ status: "exists", invoice: existing }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -140,12 +140,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    const [{ data: mentee }, { data: mentor }, { data: slot }, { data: tx }] = await Promise.all([
+    const [{ data: mentee }, { data: mentor }, { data: slot }, { data: successTx }, { data: latestTx }, { data: mentorProf }] = await Promise.all([
       supabase.from("profiles").select("name, email").eq("id", booking.mentee_id).single(),
       supabase.from("profiles").select("name, email").eq("id", booking.mentor_id).single(),
       supabase.from("slots").select("date, start_time, end_time").eq("id", booking.slot_id).single(),
       supabase.from("transactions").select("amount, razorpay_order_id, razorpay_payment_id, status")
+        .eq("booking_id", booking_id).eq("status", "success")
+        .order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("transactions").select("amount, razorpay_order_id, razorpay_payment_id, status")
         .eq("booking_id", booking_id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("mentor_profiles").select("price_per_session").eq("user_id", booking.mentor_id).maybeSingle(),
     ]);
 
     if (!mentee || !mentor || !slot) {
@@ -154,18 +158,26 @@ Deno.serve(async (req) => {
       });
     }
 
-    const amount = tx?.amount ?? 0;
-    const paymentId = tx?.razorpay_payment_id ?? null;
-    const orderId = tx?.razorpay_order_id ?? null;
+    // Prefer the successful transaction; fall back to mentor's current rate.
+    const tx = successTx ?? latestTx;
+    const amount = successTx?.amount ?? mentorProf?.price_per_session ?? 0;
+    const paymentId = successTx?.razorpay_payment_id ?? tx?.razorpay_payment_id ?? null;
+    const orderId = successTx?.razorpay_order_id ?? tx?.razorpay_order_id ?? null;
     const issuedAt = new Date();
 
     // Build a unique invoice_number using YYMM + count of invoices in this month + 1
     const monthStart = new Date(issuedAt.getFullYear(), issuedAt.getMonth(), 1).toISOString();
-    const { count } = await supabase
-      .from("invoices")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", monthStart);
-    const invoiceNumber = buildInvoiceNumber(issuedAt, (count ?? 0) + 1);
+    let invoiceNumber: string;
+    if (existing) {
+      // Reuse existing number when re-rendering
+      invoiceNumber = existing.invoice_number;
+    } else {
+      const { count } = await supabase
+        .from("invoices")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", monthStart);
+      invoiceNumber = buildInvoiceNumber(issuedAt, (count ?? 0) + 1);
+    }
 
     const sessionDate = new Date(slot.date).toLocaleDateString("en-IN", {
       weekday: "long", day: "2-digit", month: "long", year: "numeric",
