@@ -120,6 +120,20 @@ const SessionCard = ({ booking, role, onChatWithMentee, onReview, onStatusUpdate
             <MessageSquare className="h-4 w-4 mr-1.5" /> Leave Review
           </Button>
         )}
+
+        {/* Download invoice — mentee or admin, confirmed/completed only */}
+        {(role === "mentee" || role === "admin") && (b.status === "confirmed" || b.status === "completed") && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="min-h-[44px] flex-1 sm:flex-none"
+            disabled={downloadingInvoice}
+            onClick={handleDownloadInvoice}
+          >
+            <FileDown className="h-4 w-4 mr-1.5" />
+            {downloadingInvoice ? "Preparing…" : "Invoice"}
+          </Button>
+        )}
         {role === "mentee" && b.status === "completed" && isReviewed && (
           <Badge variant="secondary" className="text-xs self-start">Reviewed</Badge>
         )}
