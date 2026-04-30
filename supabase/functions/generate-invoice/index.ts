@@ -103,21 +103,21 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceKey);
 
   try {
-    const { booking_id } = await req.json();
+    const { booking_id, force } = await req.json();
     if (!booking_id || typeof booking_id !== "string") {
       return new Response(JSON.stringify({ error: "booking_id required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Idempotency: existing invoice for this booking?
+    // Idempotency: existing invoice for this booking? (skip when force=true)
     const { data: existing } = await supabase
       .from("invoices")
       .select("id, invoice_number, pdf_path")
       .eq("booking_id", booking_id)
       .maybeSingle();
 
-    if (existing && existing.pdf_path) {
+    if (existing && existing.pdf_path && !force) {
       return new Response(JSON.stringify({ status: "exists", invoice: existing }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
