@@ -33,8 +33,30 @@ const statusConfig: Record<string, { variant: "default" | "secondary" | "outline
 
 const SessionCard = ({ booking, role, onChatWithMentee, onReview, onStatusUpdate, isReviewed, chattingWith }: SessionCardProps) => {
   const [meetingOpen, setMeetingOpen] = useState(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const { toast } = useToast();
   const b = booking;
+
+  const handleDownloadInvoice = async () => {
+    setDownloadingInvoice(true);
+    try {
+      // Ensure invoice exists, then fetch signed URL
+      await supabase.functions.invoke("generate-invoice", { body: { booking_id: b.id } });
+      const { data, error } = await supabase.functions.invoke("download-invoice", {
+        body: { booking_id: b.id },
+      });
+      if (error || !data?.url) throw error || new Error("No URL");
+      window.open(data.url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      toast({
+        title: "Couldn't download invoice",
+        description: e?.message || "Please try again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  };
 
   const config = statusConfig[b.status] || statusConfig.pending_payment;
   const otherParty = role === "mentee" ? b.mentor : b.mentee;
