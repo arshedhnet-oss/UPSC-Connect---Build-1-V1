@@ -301,6 +301,59 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          booking_id: string
+          created_at: string
+          currency: string
+          id: string
+          invoice_number: string
+          issued_at: string
+          mentee_id: string
+          mentor_id: string
+          payment_id: string | null
+          pdf_path: string | null
+          razorpay_order_id: string | null
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_number: string
+          issued_at?: string
+          mentee_id: string
+          mentor_id: string
+          payment_id?: string | null
+          pdf_path?: string | null
+          razorpay_order_id?: string | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_number?: string
+          issued_at?: string
+          mentee_id?: string
+          mentor_id?: string
+          payment_id?: string | null
+          pdf_path?: string | null
+          razorpay_order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mentor_profiles: {
         Row: {
           air_rank: number | null

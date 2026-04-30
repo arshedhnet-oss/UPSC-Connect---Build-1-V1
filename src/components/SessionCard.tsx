@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Video, Copy, Send, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
+import { Video, Copy, Send, ChevronDown, ChevronUp, MessageSquare, FileDown } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -32,8 +33,30 @@ const statusConfig: Record<string, { variant: "default" | "secondary" | "outline
 
 const SessionCard = ({ booking, role, onChatWithMentee, onReview, onStatusUpdate, isReviewed, chattingWith }: SessionCardProps) => {
   const [meetingOpen, setMeetingOpen] = useState(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const { toast } = useToast();
   const b = booking;
+
+  const handleDownloadInvoice = async () => {
+    setDownloadingInvoice(true);
+    try {
+      // Ensure invoice exists, then fetch signed URL
+      await supabase.functions.invoke("generate-invoice", { body: { booking_id: b.id } });
+      const { data, error } = await supabase.functions.invoke("download-invoice", {
+        body: { booking_id: b.id },
+      });
+      if (error || !data?.url) throw error || new Error("No URL");
+      window.open(data.url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      toast({
+        title: "Couldn't download invoice",
+        description: e?.message || "Please try again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  };
 
   const config = statusConfig[b.status] || statusConfig.pending_payment;
   const otherParty = role === "mentee" ? b.mentor : b.mentee;
@@ -95,6 +118,20 @@ const SessionCard = ({ booking, role, onChatWithMentee, onReview, onStatusUpdate
             onClick={() => onReview(b)}
           >
             <MessageSquare className="h-4 w-4 mr-1.5" /> Leave Review
+          </Button>
+        )}
+
+        {/* Download invoice — mentee or admin, confirmed/completed only */}
+        {(role === "mentee" || role === "admin") && (b.status === "confirmed" || b.status === "completed") && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="min-h-[44px] flex-1 sm:flex-none"
+            disabled={downloadingInvoice}
+            onClick={handleDownloadInvoice}
+          >
+            <FileDown className="h-4 w-4 mr-1.5" />
+            {downloadingInvoice ? "Preparing…" : "Invoice"}
           </Button>
         )}
         {role === "mentee" && b.status === "completed" && isReviewed && (
