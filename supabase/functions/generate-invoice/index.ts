@@ -167,11 +167,17 @@ Deno.serve(async (req) => {
 
     // Build a unique invoice_number using YYMM + count of invoices in this month + 1
     const monthStart = new Date(issuedAt.getFullYear(), issuedAt.getMonth(), 1).toISOString();
-    const { count } = await supabase
-      .from("invoices")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", monthStart);
-    const invoiceNumber = buildInvoiceNumber(issuedAt, (count ?? 0) + 1);
+    let invoiceNumber: string;
+    if (existing) {
+      // Reuse existing number when re-rendering
+      invoiceNumber = existing.invoice_number;
+    } else {
+      const { count } = await supabase
+        .from("invoices")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", monthStart);
+      invoiceNumber = buildInvoiceNumber(issuedAt, (count ?? 0) + 1);
+    }
 
     const sessionDate = new Date(slot.date).toLocaleDateString("en-IN", {
       weekday: "long", day: "2-digit", month: "long", year: "numeric",
