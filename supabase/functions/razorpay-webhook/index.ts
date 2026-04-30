@@ -479,6 +479,18 @@ Deno.serve(async (req) => {
       // Don't fail the webhook for push errors
     }
 
+    // 13. Generate invoice (fire-and-forget; don't block webhook)
+    try {
+      fetch(`${supabaseUrl}/functions/v1/generate-invoice`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceKey}` },
+        body: JSON.stringify({ booking_id: bookingId }),
+      }).then(() => console.log("invoice_generation_triggered"))
+        .catch((e) => console.error("invoice_trigger_error:", e));
+    } catch (e) {
+      console.error("invoice_trigger_error:", e);
+    }
+
     return new Response(
       JSON.stringify({ status: "ok", booking_id: bookingId, meeting_link: meetingLink }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
