@@ -92,9 +92,6 @@ const LandingPage = () => {
           </div>
         )}
       </section>
-
-      <MentorshipProgrammeCard />
-
       <ToppersSection />
 
       {ENABLE_ORGANISATIONS && (
@@ -212,7 +209,6 @@ const LandingPage = () => {
           <p>© 2026 UPSC Connect. All rights reserved.</p>
         </div>
       </footer>
-      <MentorshipFloatingCTA />
     </div>
   );
 };
