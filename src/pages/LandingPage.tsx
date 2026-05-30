@@ -25,7 +25,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <MentorshipStickyBar />
+    <div className="min-h-screen bg-background">
       <Navbar />
       <FreeChatModal open={chatOpen} onOpenChange={setChatOpen} />
       <BookFreeSessionModal open={bookOpen} onOpenChange={setBookOpen} />
